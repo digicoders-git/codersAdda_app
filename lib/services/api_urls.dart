@@ -24,7 +24,17 @@ class ApiUrls {
   static const String verifyPayment = '$baseUrl/payment/verify';
 
   // E-books Endpoints
-  static const String getEbookCategories = '$baseUrl/ebooks-category/get';
+  static const String getEbookCategories = '$baseUrl/ebooks-category/get-with-count';
+  static const String getEbooks = '$baseUrl/ebook/get';
+  static const String getEbookDetails = '$baseUrl/ebook/get'; // We'll append /id manually
+
+  // Shorts Endpoints
+  static const String getActiveShorts = '$baseUrl/shorts/get-active';
+  static const String toggleShortLike = '$baseUrl/short-likes/toggle'; // We'll append /id
+  static const String checkShortLike = '$baseUrl/short-likes/check'; // We'll append /id
+  static const String getShortComments = '$baseUrl/short-comments/get'; // We'll append /id
+  static const String addShortComment = '$baseUrl/short-comments/add'; // We'll append /id
+  static const String deleteShortComment = '$baseUrl/short-comments/delete'; // We'll append /id
 
   // Add more endpoints as per your backend structure here
 }

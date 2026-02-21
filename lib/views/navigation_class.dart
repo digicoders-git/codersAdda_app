@@ -25,19 +25,17 @@ class _MainNavigationState extends State<MainNavigation> {
     });
   }
 
-  final List<Widget> _pages = [
-    HomePage(),
-    MyLearningPage(),
-    ShortsPage(),
-    ProfilePage(),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _pages,
+        children: [
+          HomePage(),
+          MyLearningPage(),
+          ShortsPage(isActive: _currentIndex == 2),
+          ProfilePage(),
+        ],
       ),
       bottomNavigationBar: Container(
         margin: EdgeInsets.all(16),

@@ -40,20 +40,28 @@ class PdfPage extends StatelessWidget {
           ),
           body: Consumer<PdfViewModel>(
             builder: (context, viewModel, child) {
-              if (viewModel.isLoading && viewModel.categories.length <= 1) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              return RefreshIndicator(
-                onRefresh: () => viewModel.fetchCategories(),
-                child: Column(
-                  children: [
-                    _buildCategoryFilter(viewModel),
-                    
-                    Expanded(
-                      child: _buildPdfsList(context, viewModel),
+              return Stack(
+                children: [
+                  RefreshIndicator(
+                    onRefresh: () => viewModel.refreshData(),
+                    child: Column(
+                      children: [
+                        _buildCategoryFilter(viewModel),
+                        
+                        Expanded(
+                          child: _buildPdfsList(context, viewModel),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  if (viewModel.isLoading)
+                    Container(
+                      color: Colors.black.withOpacity(0.1),
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                ],
               );
             },
           ),
@@ -71,7 +79,7 @@ class PdfPage extends StatelessWidget {
         itemCount: viewModel.categories.length,
         itemBuilder: (context, index) {
           final category = viewModel.categories[index];
-          final isSelected = viewModel.selectedCategory == category.name;
+          final isSelected = viewModel.selectedCategoryId == category.id;
           
           return Container(
             margin: EdgeInsets.only(
@@ -81,7 +89,7 @@ class PdfPage extends StatelessWidget {
             ),
             child: FilterChip(
               label: Text(
-                '${category.name} (${category.pdfCount})',
+                '${category.name} (${category.ebookCount})',
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp14,
                   color: isSelected ? Colors.white : AppColors.textColor,
@@ -97,7 +105,7 @@ class PdfPage extends StatelessWidget {
                 ),
               ),
               onSelected: (selected) {
-                viewModel.setSelectedCategory(category.name);
+                viewModel.setSelectedCategory(category);
               },
             ),
           );

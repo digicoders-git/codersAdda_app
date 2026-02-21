@@ -3,12 +3,51 @@ import 'package:coders_adda_app/models/pdf_model.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/views/buy_new_courses_pages/course_purchase_page.dart';
+import 'package:coders_adda_app/services/pdf_service.dart';
 import 'package:flutter/material.dart';
 
-class PdfDetailPage extends StatelessWidget {
+class PdfDetailPage extends StatefulWidget {
   final PdfItem pdf;
 
   const PdfDetailPage({Key? key, required this.pdf}) : super(key: key);
+
+  @override
+  State<PdfDetailPage> createState() => _PdfDetailPageState();
+}
+
+class _PdfDetailPageState extends State<PdfDetailPage> {
+  late PdfItem currentPdf;
+  bool isLoading = true;
+  final PdfService _pdfService = PdfService();
+
+  @override
+  void initState() {
+    super.initState();
+    currentPdf = widget.pdf;
+    _fetchDetails();
+  }
+
+  Future<void> _fetchDetails() async {
+    try {
+      final detailedPdf = await _pdfService.getEbookDetails(widget.pdf.id);
+      if (detailedPdf != null && mounted) {
+        setState(() {
+          currentPdf = detailedPdf;
+          isLoading = false;
+        });
+      } else if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,39 +57,35 @@ class PdfDetailPage extends StatelessWidget {
           'PDF Details',
           style: TextStyle(fontSize: AppSizer.deviceSp20),
         ),
-        actions: [
-         // IconButton(
-            //icon: Icon(Icons.share),
-           // onPressed: _sharePdf,
-         // ),
-        ],
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // PDF Header
-            _buildPdfHeader(),
-            
-            SizedBox(height: AppSizer.deviceHeight3),
-            
-            // PDF Description
-            _buildPdfDescription(),
-            
-            SizedBox(height: AppSizer.deviceHeight3),
-            
-            // PDF Details
-            _buildPdfDetails(),
-            
-            SizedBox(height: AppSizer.deviceHeight3),
-            
-            // Author Info
-            _buildAuthorInfo(),
-          ],
-        ),
-      ),
-      bottomNavigationBar: _buildBottomActionButton(context),
+      body: isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
+            padding: EdgeInsets.all(AppSizer.deviceWidth4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // PDF Header
+                _buildPdfHeader(),
+                
+                SizedBox(height: AppSizer.deviceHeight3),
+                
+                // PDF Description
+                _buildPdfDescription(),
+                
+                SizedBox(height: AppSizer.deviceHeight3),
+                
+                // PDF Details
+                _buildPdfDetails(),
+                
+                SizedBox(height: AppSizer.deviceHeight3),
+                
+                // Author Info
+                _buildAuthorInfo(),
+              ],
+            ),
+          ),
+      bottomNavigationBar: isLoading ? null : _buildBottomActionButton(context),
     );
   }
 
@@ -60,21 +95,29 @@ class PdfDetailPage extends StatelessWidget {
         padding: EdgeInsets.all(AppSizer.deviceWidth4),
         child: Row(
           children: [
-            // PDF Icon
+            // PDF Icon / Thumbnail
             Container(
               width: AppSizer.deviceWidth20,
               height: AppSizer.deviceWidth20,
               decoration: BoxDecoration(
                 color: Colors.red.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
+                image: currentPdf.thumbnail.isNotEmpty 
+                  ? DecorationImage(
+                      image: NetworkImage(currentPdf.thumbnail),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
               ),
-              child: Center(
-                child: Icon(
-                  Icons.picture_as_pdf,
-                  color: Colors.red,
-                  size: AppSizer.deviceSp32,
-                ),
-              ),
+              child: currentPdf.thumbnail.isEmpty 
+                ? Center(
+                    child: Icon(
+                      Icons.picture_as_pdf,
+                      color: Colors.red,
+                      size: AppSizer.deviceSp32,
+                    ),
+                  )
+                : null,
             ),
             
             SizedBox(width: AppSizer.deviceWidth4),
@@ -85,7 +128,7 @@ class PdfDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    pdf.title,
+                    currentPdf.title,
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
@@ -106,7 +149,7 @@ class PdfDetailPage extends StatelessWidget {
                           ),
                           SizedBox(width: AppSizer.deviceWidth1),
                           Text(
-                            pdf.fileSize,
+                            currentPdf.fileSize,
                             style: TextStyle(
                               fontSize: AppSizer.deviceSp12,
                               color: AppColors.onSurfaceVariant,
@@ -117,23 +160,27 @@ class PdfDetailPage extends StatelessWidget {
                       
                       SizedBox(width: AppSizer.deviceWidth4),
                       
-                      // Downloads
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.remove_red_eye,
-                            color: AppColors.onSurfaceVariant,
-                            size: AppSizer.deviceSp14,
+                      // Status Badge
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSizer.deviceWidth2,
+                          vertical: AppSizer.deviceHeight0_5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: currentPdf.isActive 
+                            ? AppColors.successColor.withOpacity(0.1)
+                            : Colors.grey.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          currentPdf.isActive ? 'Active' : 'Inactive',
+                          style: TextStyle(
+                            fontSize: AppSizer.deviceSp10,
+                            color: currentPdf.isActive 
+                              ? AppColors.successColor 
+                              : Colors.grey,
                           ),
-                          SizedBox(width: AppSizer.deviceWidth1),
-                          Text(
-                            '${pdf.viewCount} views',
-                            style: TextStyle(
-                              fontSize: AppSizer.deviceSp12,
-                              color: AppColors.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -148,17 +195,17 @@ class PdfDetailPage extends StatelessWidget {
                 vertical: AppSizer.deviceHeight1,
               ),
               decoration: BoxDecoration(
-                color: pdf.isFree 
+                color: currentPdf.isFree 
                     ? AppColors.successColor.withOpacity(0.1)
                     : AppColors.primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                pdf.isFree ? 'FREE' : '₹${pdf.price}',
+                currentPdf.isFree ? 'FREE' : '₹${currentPdf.price}',
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp14,
                   fontWeight: FontWeight.bold,
-                  color: pdf.isFree 
+                  color: currentPdf.isFree 
                       ? AppColors.successColor 
                       : AppColors.primaryColor,
                 ),
@@ -185,7 +232,7 @@ class PdfDetailPage extends StatelessWidget {
         SizedBox(height: AppSizer.deviceHeight1),
         
         Text(
-          pdf.description,
+          currentPdf.description,
           style: TextStyle(
             fontSize: AppSizer.deviceSp14,
             color: AppColors.onSurfaceVariant,
@@ -216,8 +263,8 @@ class PdfDetailPage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildDetailItem('Category', pdf.category, Icons.category),
-                _buildDetailItem('File Size', pdf.fileSize, Icons.description),
+                _buildDetailItem('Category', currentPdf.category, Icons.category),
+                _buildDetailItem('File Size', currentPdf.fileSize, Icons.description),
                 _buildDetailItem('Format', 'PDF', Icons.format_shapes),
               ],
             ),
@@ -267,7 +314,9 @@ class PdfDetailPage extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  pdf.author.split(' ').map((e) => e[0]).take(2).join(),
+                  currentPdf.author.isNotEmpty 
+                      ? currentPdf.author.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join()
+                      : '?',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -293,7 +342,7 @@ class PdfDetailPage extends StatelessWidget {
                   ),
                   SizedBox(height: AppSizer.deviceHeight0_5),
                   Text(
-                    pdf.author,
+                    currentPdf.author,
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp14,
                       fontWeight: FontWeight.w600,
@@ -324,11 +373,11 @@ class PdfDetailPage extends StatelessWidget {
       child: SafeArea(
         child: SizedBox(
           width: double.infinity,
-          child: pdf.isFree
+          child: currentPdf.isFree
               ? FilledButton(
                   onPressed: () {
-                    // FREE PDF - Direct download
-                    _downloadPdf(context);
+                    // FREE PDF - Enroll for free
+                    _enrollForFree(context);
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.successColor,
@@ -336,7 +385,7 @@ class PdfDetailPage extends StatelessWidget {
                     padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
                   ),
                   child: Text(
-                    'VIEW PDF',
+                    'ENROLL FOR FREE',
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp16,
                       fontWeight: FontWeight.bold,
@@ -348,20 +397,20 @@ class PdfDetailPage extends StatelessWidget {
                     // PAID PDF - Navigate to CourseCheckoutPage
                     // Create a Course object from PdfItem for checkout
                     final courseForCheckout = Course(
-                      id: pdf.id,
-                      title: pdf.title,
-                      description: pdf.description,
-                      instructor: pdf.author,
-                      price: pdf.price,
-                      thumbnail: pdf.thumbnail,
-                      category: pdf.category,
-                      technology: pdf.category,
+                      id: currentPdf.id,
+                      title: currentPdf.title,
+                      description: currentPdf.description,
+                      instructor: currentPdf.author,
+                      price: currentPdf.price,
+                      thumbnail: currentPdf.thumbnail,
+                      category: currentPdf.category,
+                      technology: currentPdf.category,
                       isFree: false,
                       rating: 4.5,
-                      totalStudents: pdf.viewCount,
+                      totalStudents: currentPdf.viewCount,
                       duration: 'Lifetime Access',
                       totalLessons: 1,
-                      createdAt: pdf.uploadedAt,
+                      createdAt: currentPdf.uploadedAt,
                     );
                     
                     Navigator.push(
@@ -377,7 +426,7 @@ class PdfDetailPage extends StatelessWidget {
                     padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
                   ),
                   child: Text(
-                    'BUY NOW - ₹${pdf.price}',
+                    'BUY NOW - ₹${currentPdf.price}',
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp16,
                       fontWeight: FontWeight.bold,
@@ -389,37 +438,47 @@ class PdfDetailPage extends StatelessWidget {
     );
   }
 
-  void _downloadPdf(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('VIEW PDF'),
-        content: Text('Do you want to view pdf "${pdf.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('View "${pdf.title}"...'),
-                  backgroundColor: AppColors.successColor,
-                ),
-              );
-              // Implement actual download logic
-            },
-            child: Text('View'),
-          ),
-        ],
-      ),
-    );
-  }
+  void _enrollForFree(BuildContext context) async {
+    setState(() {
+      isLoading = true;
+    });
 
-//   void _sharePdf() {
-//     // Implement share functionality
-//     // You can use share_plus package
-//   }
- }
+    try {
+      final response = await _pdfService.enrollFreeEbook(currentPdf.id);
+      
+      if (mounted) {
+        if (response['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Enrolled successfully!'),
+              backgroundColor: AppColors.successColor,
+            ),
+          );
+          // After success, you might want to navigate to PDF viewer or update UI
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ?? 'Enrollment failed'),
+              backgroundColor: AppColors.errorColor,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.errorColor,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+}
