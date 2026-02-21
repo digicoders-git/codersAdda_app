@@ -2,7 +2,7 @@ import 'package:coders_adda_app/models/subscription_model.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/veiw_model/subscription_viewmodel.dart';
-import 'package:coders_adda_app/views/subscription_pages/buy_subscription_page.dart';
+import 'package:coders_adda_app/views/subscription_pages/subscription_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -18,8 +18,9 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
   @override
   void initState() {
     super.initState();
-    // Auto-select the Super plan (middle one) by default
-    _selectedPlan = viewModel.plans.firstWhere((plan) => plan.name == "Super");
+    if (viewModel.plans.isNotEmpty) {
+      _selectedPlan = viewModel.plans.first;
+    }
   }
 
   @override
@@ -282,7 +283,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            plan.name,
+                            plan.planType,
                             style: TextStyle(
                               fontSize: AppSizer.deviceSp18,
                               fontWeight: FontWeight.bold,
@@ -338,7 +339,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                 Padding(
                   padding: EdgeInsets.all(AppSizer.deviceWidth4),
                   child: Column(
-                    children: plan.features.map((feature) => Padding(
+                    children: plan.planBenefits.map((feature) => Padding(
                       padding: EdgeInsets.only(bottom: AppSizer.deviceHeight1_5),
                       child: Row(
                         children: [
@@ -536,7 +537,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SubscriptionCheckoutPage(plan: plan),
+        builder: (context) => SubscriptionDetailPage(plan: plan),
       ),
     );
   }

@@ -36,5 +36,10 @@ class ApiUrls {
   static const String addShortComment = '$baseUrl/short-comments/add'; // We'll append /id
   static const String deleteShortComment = '$baseUrl/short-comments/delete'; // We'll append /id
 
-  // Add more endpoints as per your backend structure here
+  // My Library Endpoints
+  static const String getMyLibrary = '$baseUrl/users/my-library';
+
+  // Subscription Endpoints
+  static const String getSubscriptions = '$baseUrl/subscriptions/get';
+  static const String getSubscriptionDetails = '$baseUrl/subscriptions/get'; // append /id
 }

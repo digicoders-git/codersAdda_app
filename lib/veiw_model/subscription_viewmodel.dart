@@ -1,54 +1,44 @@
 import 'package:coders_adda_app/models/subscription_model.dart';
+import 'package:coders_adda_app/services/subscription_service.dart';
 import 'package:flutter/material.dart';
 
 class SubscriptionViewModel with ChangeNotifier {
-  final List<SubscriptionPlan> _plans = [
-    SubscriptionPlan(
-      id: "1",
-      name: "Mobile",
-      price: 99,
-      duration: "1 Month",
-      features: [
-        "Access on 1 device",
-        "All free courses",
-        "Basic PDF access",
-        "Standard support",
-      ],
-      deviceLimit: 1,
-      isPopular: false,
-    ),
-    SubscriptionPlan(
-      id: "2",
-      name: "Super",
-      price: 499,
-      duration: "1 Year",
-      features: [
-        "Access on 4 devices",
-        "All premium courses",
-        "All PDF downloads",
-        "Priority support",
-        "Ad-free experience",
-        "Job opportunities",
-      ],
-      deviceLimit: 4,
-      isPopular: true,
-    ),
-    SubscriptionPlan(
-      id: "3",
-      name: "Premium",
-      price: 299,
-      duration: "6 Months",
-      features: [
-        "Access on 2 devices",
-        "All premium courses",
-        "PDF downloads",
-        "Priority support",
-        "Ad-free experience",
-      ],
-      deviceLimit: 2,
-      isPopular: false,
-    ),
-  ];
+  final SubscriptionService _subscriptionService = SubscriptionService();
+  
+  List<SubscriptionPlan> _plans = [];
+  bool _isLoading = false;
+  String? _errorMessage;
 
   List<SubscriptionPlan> get plans => _plans;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+
+  SubscriptionViewModel() {
+    fetchSubscriptions();
+  }
+
+  Future<void> fetchSubscriptions() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _plans = await _subscriptionService.getSubscriptions();
+    } catch (e) {
+      _errorMessage = e.toString();
+      print('Error in SubscriptionViewModel: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<SubscriptionPlan?> getSubscriptionDetails(String subscriptionId) async {
+    try {
+      return await _subscriptionService.getSubscriptionDetails(subscriptionId);
+    } catch (e) {
+      print('Error fetching subscription details: $e');
+      return null;
+    }
+  }
 }

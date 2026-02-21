@@ -9,11 +9,13 @@ import 'package:provider/provider.dart';
 
 class MyLearningPage extends StatelessWidget {
   final MyLearningViewModel viewModel = MyLearningViewModel();
+  final int initialTabIndex;
 
+  MyLearningPage({this.initialTabIndex = 0});
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => viewModel,
+      create: (context) => viewModel..selectCategory(initialTabIndex),
       child: Consumer<MyLearningViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(

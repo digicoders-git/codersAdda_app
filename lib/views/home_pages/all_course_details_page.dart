@@ -3,6 +3,8 @@ import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/veiw_model/course_detail_viewmodel.dart';
 import 'package:coders_adda_app/views/buy_new_courses_pages/course_purchase_page.dart';
+import 'package:coders_adda_app/views/buy_new_courses_pages/purchase_success_modal.dart';
+import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -468,12 +470,19 @@ class AllCourseDetailPage extends StatelessWidget {
                   final success = await viewModel.enrollInFreeCourse();
                   if (context.mounted) {
                     if (success) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Succesfully enrolled in course!'),
-                          backgroundColor: Colors.green,
-                        ),
+                  PurchaseSuccessModal.show(
+                    context,
+                    title: course.title,
+                    itemType: 'course',
+                    onGoToMyLearning: () {
+                      final tabIndex = PurchaseSuccessModal.getTabIndexForItemType('course', true);
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
+                        (route) => route.isFirst,
                       );
+                    },
+                  );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -484,17 +493,10 @@ class AllCourseDetailPage extends StatelessWidget {
                     }
                   }
                 } else {
-                  final result = await Navigator.push(
+                  Navigator.push(
                     context, 
                     MaterialPageRoute(builder: (context) => CourseCheckoutPage(course: course))
                   );
-                  if (context.mounted && result == true) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Course purchased successfully!'), backgroundColor: Colors.green),
-                    );
-                    // Refresh course details to show enrolled state if needed
-                    viewModel.fetchCourseDetails();
-                  }
                 }
               },
             style: FilledButton.styleFrom(

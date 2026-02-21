@@ -4,12 +4,15 @@ import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/models/course_model.dart';
 import 'package:coders_adda_app/services/course_service.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
+import 'package:coders_adda_app/views/buy_new_courses_pages/purchase_success_modal.dart';
+import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 import 'package:provider/provider.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class CourseCheckoutPage extends StatefulWidget {
-  final Course course; 
-  const CourseCheckoutPage({Key? key, required this.course}) : super(key: key);
+  final Course course;
+  final String itemType;
+  const CourseCheckoutPage({Key? key, required this.course, this.itemType = 'course'}) : super(key: key);
 
   @override
   State<CourseCheckoutPage> createState() => _CourseCheckoutPageState();
@@ -65,10 +68,27 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
 
       if (context.mounted) {
         if (result['success'] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Payment Verified Successfully!'), backgroundColor: Colors.green),
+          final isFree = widget.course.isFree;
+          final tabIndex = PurchaseSuccessModal.getTabIndexForItemType(widget.itemType, isFree);
+          
+          List<String>? customBenefits;
+          if (widget.itemType == 'subscription' && widget.course.description.isNotEmpty) {
+            customBenefits = widget.course.description.split(', ');
+          }
+          
+          PurchaseSuccessModal.show(
+            context,
+            title: widget.course.title,
+            itemType: widget.itemType,
+            customBenefits: customBenefits,
+            onGoToMyLearning: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
+                (route) => route.isFirst,
+              );
+            },
           );
-          Navigator.pop(context, true); // Return true to indicate success
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(result['message'] ?? 'Payment Verification Failed'), backgroundColor: Colors.red),
@@ -517,66 +537,7 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
   }
 
   Widget _buildPaymentMethods() {
-    final List<PaymentMethod> paymentMethods = [
-      PaymentMethod(name: 'UPI', icon: Icons.phone_android, description: 'Google Pay, PhonePe, etc.'),
-      PaymentMethod(name: 'Credit Card', icon: Icons.credit_card, description: 'Visa, MasterCard, RuPay'),
-      PaymentMethod(name: 'Debit Card', icon: Icons.credit_card, description: 'Visa, MasterCard, RuPay'),
-      PaymentMethod(name: 'Net Banking', icon: Icons.account_balance, description: 'All major banks'),
-      PaymentMethod(name: 'Wallet', icon: Icons.wallet, description: 'Paytm, Amazon Pay'),
-    ];
-
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Select Payment Method',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            ...paymentMethods.map((method) => _buildPaymentMethodItem(method)).toList(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethodItem(PaymentMethod method) {
-    return Container(
-      margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
-      child: ListTile(
-        leading: Container(
-          padding: EdgeInsets.all(AppSizer.deviceWidth2),
-          decoration: BoxDecoration(
-            color: AppColors.primaryColor.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(method.icon, color: AppColors.primaryColor, size: AppSizer.deviceSp20),
-        ),
-        title: Text(method.name),
-        subtitle: Text(method.description),
-        trailing: Radio(
-          value: method.name,
-          groupValue: _selectedPaymentMethod,
-          onChanged: (value) {
-            setState(() {
-              _selectedPaymentMethod = value.toString();
-            });
-          },
-        ),
-        onTap: () {
-          setState(() {
-            _selectedPaymentMethod = method.name;
-          });
-        },
-      ),
-    );
+    return SizedBox.shrink(); // Removed payment method selection
   }
 
   Widget _buildPaymentSection(double totalAmount) {
@@ -742,27 +703,25 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
     });
 
     try {
-      // 1. Create Order on Backend
-      final orderResponse = await _courseService.createOrder(widget.course.id);
+      final orderResponse = await _courseService.createOrder(widget.course.id, itemType: widget.itemType);
       
       if (orderResponse['success'] == true) {
         final profile = context.read<ProfileViewModel>().user;
         
-        // 2. Open Razorpay Checkout
         var options = {
           'key': orderResponse['key'],
           'amount': orderResponse['amount'],
           'name': 'Coders Adda',
           'order_id': orderResponse['orderId'],
           'description': widget.course.title,
-          'timeout': 300, // in seconds
+          'timeout': 300,
           'prefill': {
             'contact': profile?.mobile ?? '',
             'email': profile?.email ?? '',
             'name': profile?.name ?? ''
           },
           'theme': {
-            'color': '#2196F3' // Customizing to match primary color
+            'color': '#2196F3'
           }
         };
 

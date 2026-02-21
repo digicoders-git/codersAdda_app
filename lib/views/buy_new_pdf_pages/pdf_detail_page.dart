@@ -3,6 +3,8 @@ import 'package:coders_adda_app/models/pdf_model.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/views/buy_new_courses_pages/course_purchase_page.dart';
+import 'package:coders_adda_app/views/buy_new_courses_pages/purchase_success_modal.dart';
+import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 import 'package:coders_adda_app/services/pdf_service.dart';
 import 'package:flutter/material.dart';
 
@@ -395,7 +397,6 @@ class _PdfDetailPageState extends State<PdfDetailPage> {
               : FilledButton(
                   onPressed: () {
                     // PAID PDF - Navigate to CourseCheckoutPage
-                    // Create a Course object from PdfItem for checkout
                     final courseForCheckout = Course(
                       id: currentPdf.id,
                       title: currentPdf.title,
@@ -416,7 +417,10 @@ class _PdfDetailPageState extends State<PdfDetailPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CourseCheckoutPage(course: courseForCheckout),
+                        builder: (context) => CourseCheckoutPage(
+                          course: courseForCheckout,
+                          itemType: 'ebook',
+                        ),
                       ),
                     );
                   },
@@ -448,13 +452,19 @@ class _PdfDetailPageState extends State<PdfDetailPage> {
       
       if (mounted) {
         if (response['success'] == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Enrolled successfully!'),
-              backgroundColor: AppColors.successColor,
-            ),
+          PurchaseSuccessModal.show(
+            context,
+            title: currentPdf.title,
+            itemType: 'ebook',
+            onGoToMyLearning: () {
+              final tabIndex = PurchaseSuccessModal.getTabIndexForItemType('ebook', true);
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
+                (route) => route.isFirst,
+              );
+            },
           );
-          // After success, you might want to navigate to PDF viewer or update UI
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

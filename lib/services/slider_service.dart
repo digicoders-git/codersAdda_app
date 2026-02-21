@@ -1,32 +1,55 @@
 import 'package:coders_adda_app/models/home_model.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
+import 'package:coders_adda_app/services/home_cache_service.dart';
 
 class SliderService {
   final ApiClient _apiClient = ApiClient();
 
   Future<List<BannerItem>> getSliders() async {
     try {
+      // Check cache first
+      final cached = HomeCacheService.getCachedBanners();
+      if (cached != null && cached.isNotEmpty) {
+        print('Loading banners from cache');
+        return cached.map((json) => BannerItem.fromJson(json)).toList();
+      }
+
+      // Fetch from API
       final response = await _apiClient.get(ApiUrls.getSliders);
       print('Sliders API Response: $response');
       
+      List<BannerItem> banners = [];
+      List<Map<String, dynamic>> rawData = [];
+
       if (response is List) {
-        return response.map((json) => BannerItem.fromJson(json)).toList();
+        rawData = List<Map<String, dynamic>>.from(response);
+        banners = rawData.map((json) => BannerItem.fromJson(json)).toList();
       } else if (response is Map) {
-        // Try all common keys for list data
         final possibleKeys = ['data', 'sliders', 'banners', 'slides', 'result'];
         for (var key in possibleKeys) {
           if (response.containsKey(key) && response[key] is List) {
-            return (response[key] as List)
-                .map((json) => BannerItem.fromJson(json))
-                .toList();
+            rawData = List<Map<String, dynamic>>.from(response[key]);
+            banners = rawData.map((json) => BannerItem.fromJson(json)).toList();
+            break;
           }
         }
       }
+
+      // Save to cache if new data
+      if (rawData.isNotEmpty && HomeCacheService.hasNewBanners(rawData)) {
+        await HomeCacheService.saveBanners(rawData);
+        print('Banners cached');
+      }
       
-      return [];
+      return banners;
     } catch (e) {
       print('Error fetching sliders: $e');
+      // Return cached data on error
+      final cached = HomeCacheService.getCachedBanners();
+      if (cached != null) {
+        return cached.map((json) => BannerItem.fromJson(json)).toList();
+      }
       rethrow;
     }
   }

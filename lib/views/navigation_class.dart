@@ -3,7 +3,7 @@ import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/views/home_pages/home_page.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 import 'package:coders_adda_app/views/profile_pages/profile_page.dart';
-import 'package:coders_adda_app/views/shorts_pages/shorts_page.dart';
+import 'package:coders_adda_app/views/shorts_pages/shorts_fullscreen_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
@@ -33,7 +33,7 @@ class _MainNavigationState extends State<MainNavigation> {
         children: [
           HomePage(),
           MyLearningPage(),
-          ShortsPage(isActive: _currentIndex == 2),
+          Container(),
           ProfilePage(),
         ],
       ),
@@ -124,9 +124,18 @@ class _MainNavigationState extends State<MainNavigation> {
           borderRadius: BorderRadius.circular(15),
           child: InkWell(
             onTap: () {
-              setState(() {
-                _currentIndex = index;
-              });
+              if (index == 2) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ShortsFullscreenPage(),
+                  ),
+                );
+              } else {
+                setState(() {
+                  _currentIndex = index;
+                });
+              }
             },
             borderRadius: BorderRadius.circular(15),
             splashColor: AppColors.primaryColor.withOpacity(0.2),
