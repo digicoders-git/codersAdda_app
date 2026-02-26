@@ -10,7 +10,7 @@ class JobsViewModel with ChangeNotifier {
   final ApiClient _apiClient = ApiClient();
   
   List<JobDetail> _jobs = [];
-  bool _isLoading = false;
+  bool _isLoading = true;
   String? _error;
   
   // Pagination & Filters

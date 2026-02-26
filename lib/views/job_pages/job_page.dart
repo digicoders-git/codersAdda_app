@@ -127,10 +127,24 @@ class _JobsPageState extends State<JobsPage> {
                     Expanded(
                       child: RefreshIndicator(
                         onRefresh: () => viewModel.fetchJobs(refresh: true),
-                        child: viewModel.isLoading && viewModel.allJobs.isEmpty
-                            ? const Center(child: CircularProgressIndicator())
-                            : viewModel.error != null
-                                ? Center(child: Text(viewModel.error!))
+                        child: (viewModel.isLoading && viewModel.allJobs.isEmpty)
+                            ? const SingleChildScrollView(
+                                physics: AlwaysScrollableScrollPhysics(),
+                                child: SizedBox(
+                                  height: 500, // Sufficient height for centering
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                ),
+                              )
+                            : (viewModel.error != null && viewModel.allJobs.isEmpty)
+                                ? SingleChildScrollView(
+                                    physics: AlwaysScrollableScrollPhysics(),
+                                    child: SizedBox(
+                                      height: 500,
+                                      child: Center(child: Text(viewModel.error!)),
+                                    ),
+                                  )
                                 : SingleChildScrollView(
                                     physics: const AlwaysScrollableScrollPhysics(),
                                     padding: EdgeInsets.all(AppSizer.deviceWidth4),
