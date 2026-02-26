@@ -1,4 +1,3 @@
-
 import 'package:coders_adda_app/models/job_model.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
@@ -7,73 +6,199 @@ import 'package:coders_adda_app/views/job_pages/single_job_detailed_page.dart';
 import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 
-class JobsPage extends StatelessWidget {
+
+
+class JobsPage extends StatefulWidget {
+  @override
+  State<JobsPage> createState() => _JobsPageState();
+}
+
+class _JobsPageState extends State<JobsPage> {
   final JobsViewModel viewModel = JobsViewModel();
+  late Razorpay _razorpay;
+
+  @override
+  void initState() {
+    super.initState();
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear();
+    super.dispose();
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    if (viewModel.purchasingJobId != null) {
+      viewModel.verifyJobPayment(
+        viewModel.purchasingJobId!,
+        response, 
+        onSuccess: (msg) => _showSnackBar(msg, Colors.green),
+        onError: (msg) => _showSnackBar(msg, Colors.red),
+      );
+    }
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    viewModel.clearPaymentState();
+    _showSnackBar('Payment Failed: ${response.message}', Colors.red);
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    _showSnackBar('External Wallet: ${response.walletName}', Colors.blue);
+  }
+
+  void _showSnackBar(String message, Color color) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: color),
+      );
+    }
+  }
+
+  void _startPayment(Map<String, dynamic> orderResponse) {
+    final profile = context.read<ProfileViewModel>().user;
+    var options = {
+      'key': orderResponse['key'],
+      'amount': orderResponse['amount'],
+      'name': 'Coders Adda',
+      'order_id': orderResponse['orderId'],
+      'description': 'Job Unlock Payment',
+      'prefill': {
+        'contact': profile?.mobile ?? '',
+        'email': profile?.email ?? '',
+        'name': profile?.name ?? ''
+      },
+      'theme': {'color': '#2196F3'}
+    };
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      _showSnackBar('Error launching Razorpay: $e', Colors.red);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => viewModel,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Premium Jobs',
-            style: TextStyle(fontSize: AppSizer.deviceSp20),
-          ),
-        ),
-        body: Consumer<JobsViewModel>(
-          builder: (context, viewModel, child) {
-            return Column(
-              children: [
-                // Search and Filter Section
-                _buildSearchFilterSection(context, viewModel),
-                
-                // Jobs List
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(AppSizer.deviceWidth4),
-                    child: Column(
-                      children: [
-                        ...viewModel.filteredJobs.map((job) => _buildJobCard(job, context, viewModel)).toList(),
-                        
-                        // No results message
-                        if (viewModel.filteredJobs.isEmpty)
-                          Container(
-                            padding: EdgeInsets.all(AppSizer.deviceWidth8),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.search_off,
-                                  size: AppSizer.deviceSp48,
-                                  color: Colors.grey,
-                                ),
-                                SizedBox(height: AppSizer.deviceHeight2),
-                                Text(
-                                  'No jobs found',
-                                  style: TextStyle(
-                                    fontSize: AppSizer.deviceSp16,
-                                    color: Colors.grey,
+    return ChangeNotifierProvider.value(
+      value: viewModel,
+      child: Consumer<JobsViewModel>(
+        builder: (context, viewModel, child) {
+          return Stack(
+            children: [
+              Scaffold(
+                backgroundColor: Colors.white,
+                appBar: AppBar(
+                  backgroundColor: AppColors.primaryColor,
+                  elevation: 0,
+                  title: Text(
+                    'Jobs Portal',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: AppSizer.deviceSp20,
+                    ),
+                  ),
+                  leading: IconButton(
+                    icon: Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: Icon(Icons.refresh, color: Colors.white),
+                      onPressed: () => viewModel.fetchJobs(refresh: true),
+                    ),
+                  ],
+                ),
+                body: Column(
+                  children: [
+                    // Search and Filter Section
+                    _buildSearchFilterSection(context, viewModel),
+                    
+                    // Jobs List
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: () => viewModel.fetchJobs(refresh: true),
+                        child: viewModel.isLoading && viewModel.allJobs.isEmpty
+                            ? const Center(child: CircularProgressIndicator())
+                            : viewModel.error != null
+                                ? Center(child: Text(viewModel.error!))
+                                : SingleChildScrollView(
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    padding: EdgeInsets.all(AppSizer.deviceWidth4),
+                                    child: Column(
+                                      children: [
+                                        ...viewModel.filteredJobs.map<Widget>((JobDetail job) => _buildJobCard(job, context, viewModel)).toList(),
+                                        
+                                        // No results message
+                                        if (viewModel.filteredJobs.isEmpty && !viewModel.isLoading)
+                                          Container(
+                                            padding: EdgeInsets.all(AppSizer.deviceWidth8),
+                                            child: Column(
+                                              children: [
+                                                Icon(
+                                                  Icons.search_off,
+                                                  size: AppSizer.deviceSp48,
+                                                  color: Colors.grey,
+                                                ),
+                                                SizedBox(height: AppSizer.deviceHeight2),
+                                                Text(
+                                                  'No jobs found',
+                                                  style: TextStyle(
+                                                    fontSize: AppSizer.deviceSp16,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        
+                                        // Pagination Loader
+                                        if (viewModel.isLoading && viewModel.allJobs.isNotEmpty)
+                                          Padding(
+                                            padding: EdgeInsets.all(AppSizer.deviceHeight2),
+                                            child: const Center(child: CircularProgressIndicator()),
+                                          ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  'Try changing your search or filters',
-                                  style: TextStyle(
-                                    fontSize: AppSizer.deviceSp12,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Full Screen Loader for Payments/Unlocks
+              if (viewModel.isProcessingPayment)
+                Container(
+                  color: Colors.black45,
+                  child: Center(
+                    child: Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      child: Padding(
+                        padding: EdgeInsets.all(AppSizer.deviceWidth8),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const CircularProgressIndicator(),
+                            SizedBox(height: AppSizer.deviceHeight2),
+                            const Text('Processing Transaction...', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ],
-            );
-          },
-        ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -114,17 +239,6 @@ class JobsPage extends StatelessWidget {
           // Filter Row
           Row(
             children: [
-              // Job Type Filter
-              Expanded(
-                child: _buildFilterDropdown(
-                  value: viewModel.selectedJobType,
-                  items: ['All Types', ...viewModel.availableJobTypes],
-                  hint: 'Job Type',
-                  onChanged: (value) => viewModel.setSelectedJobType(value!),
-                ),
-              ),
-              SizedBox(width: AppSizer.deviceWidth2),
-              
               // Experience Filter
               Expanded(
                 child: _buildFilterDropdown(
@@ -209,11 +323,6 @@ class JobsPage extends StatelessWidget {
             label: 'Search: "${viewModel.searchQuery}"',
             onRemove: () => viewModel.setSearchQuery(''),
           ),
-        if (viewModel.selectedJobType.isNotEmpty && viewModel.selectedJobType != 'All Types')
-          _buildFilterChip(
-            label: 'Type: ${viewModel.selectedJobType}',
-            onRemove: () => viewModel.setSelectedJobType(''),
-          ),
         if (viewModel.selectedExperience.isNotEmpty && viewModel.selectedExperience != 'All Levels')
           _buildFilterChip(
             label: 'Exp: ${viewModel.selectedExperience}',
@@ -273,11 +382,9 @@ class JobsPage extends StatelessWidget {
     );
   }
 void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
-  final allSkills = viewModel.allJobs
-      .expand((job) => job.skills)
-      .toSet()
-      .toList()
-    ..sort();
+  final allCategories = viewModel.availableJobCategories;
+  final allWorkTypes = viewModel.availableJobTypes;
+  final allPriceTypes = ['All', 'free', 'paid'];
 
   showDialog(
     context: context,
@@ -329,67 +436,56 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Skills Filter
+
+                                  // Work Type Filter
                                   Text(
-                                    'Filter by Skills:',
+                                    'Filter by Work Type:',
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: AppSizer.deviceSp14,
                                     ),
                                   ),
+                                  SizedBox(height: AppSizer.deviceHeight1),
+                                  Wrap(
+                                    spacing: 8.0,
+                                    children: allWorkTypes.map((type) {
+                                      final isSelected = viewModel.selectedWorkType == type;
+                                      return ChoiceChip(
+                                        label: Text(type),
+                                        selected: isSelected,
+                                        onSelected: (selected) {
+                                          setState(() {
+                                            viewModel.setSelectedWorkType(selected ? type : '');
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                  ),
                                   SizedBox(height: AppSizer.deviceHeight2),
-                                  
-                                  // Selected Skills Chips
-                                  if (viewModel.selectedSkills.isNotEmpty) ...[
-                                    Wrap(
-                                      spacing: AppSizer.deviceWidth2,
-                                      runSpacing: AppSizer.deviceHeight1,
-                                      children: viewModel.selectedSkills.map((skill) {
-                                        return Chip(
-                                          label: Text(skill),
-                                          deleteIcon: Icon(Icons.close, size: AppSizer.deviceSp14),
-                                          onDeleted: () {
-                                            setState(() {
-                                              viewModel.removeSelectedSkill(skill);
-                                            });
-                                          },
-                                        );
-                                      }).toList(),
+
+                                  // Price Type Filter
+                                  Text(
+                                    'Filter by Price Type:',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: AppSizer.deviceSp14,
                                     ),
-                                    SizedBox(height: AppSizer.deviceHeight2),
-                                  ],
-                                  Container(
-                                    constraints: BoxConstraints(
-                                      maxHeight: AppSizer.deviceHeight20,
-                                    ),
-                                    child: ListView.builder(
-                                      shrinkWrap: true,
-                                      physics: AlwaysScrollableScrollPhysics(),
-                                      itemCount: allSkills.length,
-                                      itemBuilder: (context, index) {
-                                        final skill = allSkills[index];
-                                        final isSelected = viewModel.selectedSkills.contains(skill);
-                                        
-                                        return CheckboxListTile(
-                                          value: isSelected,
-                                          onChanged: (selected) {
-                                            setState(() {
-                                              if (selected!) {
-                                                viewModel.addSelectedSkill(skill);
-                                              } else {
-                                                viewModel.removeSelectedSkill(skill);
-                                              }
-                                            });
-                                          },
-                                          title: Text(
-                                            skill,
-                                            style: TextStyle(fontSize: AppSizer.deviceSp14),
-                                          ),
-                                          controlAffinity: ListTileControlAffinity.leading,
-                                          dense: true,
-                                        );
-                                      },
-                                    ),
+                                  ),
+                                  SizedBox(height: AppSizer.deviceHeight1),
+                                  Wrap(
+                                    spacing: 8.0,
+                                    children: allPriceTypes.map((type) {
+                                      final isSelected = viewModel.selectedPriceType == type;
+                                      return ChoiceChip(
+                                        label: Text(type),
+                                        selected: isSelected,
+                                        onSelected: (selected) {
+                                          setState(() {
+                                            viewModel.setSelectedPriceType(selected ? type : '');
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
                                   ),
                                 ],
                               ),
@@ -462,12 +558,12 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          job.title,
+                          job.jobTitle,
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp18,
                             fontWeight: FontWeight.bold,
                             color: AppColors.primaryColor,
-                          ),
+                          ) ,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -484,7 +580,7 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      job.position,
+                      job.jobCategory,
                       style: TextStyle(
                         fontSize: AppSizer.deviceSp14,
                         fontWeight: FontWeight.w600,
@@ -532,9 +628,9 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
             children: [
               _buildDetailItem(Icons.location_on, job.location),
               SizedBox(width: AppSizer.deviceWidth3),
-              _buildDetailItem(Icons.work_outline, job.jobType),
+              _buildDetailItem(Icons.work_outline, job.workType),
               SizedBox(width: AppSizer.deviceWidth3),
-              _buildDetailItem(Icons.timeline, job.experience),
+              _buildDetailItem(Icons.timeline, job.requiredExperience),
             ],
           ),
           
@@ -543,11 +639,11 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
           // Salary and Openings Row
           Row(
             children: [
-              _buildDetailItem(Icons.currency_rupee, job.salary),
+              _buildDetailItem(Icons.currency_rupee, job.salaryPackage),
               SizedBox(width: AppSizer.deviceWidth3),
-              _buildDetailItem(Icons.people, '${job.totalOpenings} Openings'),
+              _buildDetailItem(Icons.people, '${job.numberOfOpenings} Openings'),
               SizedBox(width: AppSizer.deviceWidth3),
-              _buildDetailItem(Icons.calendar_today, 'Posted: ${job.addedDate}'),
+              _buildDetailItem(Icons.calendar_today, 'Posted: ${job.createdAt.split('T')[0]}'),
             ],
           ),
           
@@ -566,7 +662,7 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
           Wrap(
             spacing: AppSizer.deviceWidth2,
             runSpacing: AppSizer.deviceHeight1,
-            children: job.skills.map((skill) => Container(
+            children: job.requiredSkills.map((skill) => Container(
               padding: EdgeInsets.symmetric(
                 horizontal: AppSizer.deviceWidth3,
                 vertical: AppSizer.deviceHeight1,
@@ -610,45 +706,50 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                 ),
                 SizedBox(height: AppSizer.deviceHeight2),
                 
-                // Company Name
+                 // Company Name
                 _buildHiddenDetailItem(
                   Icons.business,
-                  'Company: ${_hideMiddleCharacters(job.company)}',
+                  'Company: ${job.companyIsHide ? _hideMiddleCharacters(job.companyName) : job.companyName}',
                 ),
                 SizedBox(height: AppSizer.deviceHeight1),
                 
                 // Company Email
-                _buildHiddenDetailItem(
-                  Icons.email,
-                  'Email: ${_hideMiddleCharacters(job.companyEmail)}',
-                ),
-                SizedBox(height: AppSizer.deviceHeight1),
+                if (job.contactEmail != null) ...[
+                  _buildHiddenDetailItem(
+                    Icons.email,
+                    'Email: ${job.companyIsHide ? _hideMiddleCharacters(job.contactEmail!) : job.contactEmail!}',
+                  ),
+                  SizedBox(height: AppSizer.deviceHeight1),
+                ],
                 
                 // Company Mobile
-                _buildHiddenDetailItem(
-                  Icons.phone,
-                  'Mobile: ${_hideMiddleCharacters(job.companyMobile)}',
-                ),
-                SizedBox(height: AppSizer.deviceHeight1),
+                if (job.companyMobile != null) ...[
+                  _buildHiddenDetailItem(
+                    Icons.phone,
+                    'Mobile: ${job.companyIsHide ? _hideMiddleCharacters(job.companyMobile!) : job.companyMobile!}',
+                  ),
+                  SizedBox(height: AppSizer.deviceHeight1),
+                ],
                 
                 // Company Website
-                _buildHiddenDetailItem(
-                  Icons.language,
-                  'Website: ${_hideMiddleCharacters(job.companyWebsite.replaceAll('https://', '').replaceAll('http://', ''))}',
-                ),
+                if (job.companyWebsite != null) ...[
+                  _buildHiddenDetailItem(
+                    Icons.language,
+                    'Website: ${job.companyIsHide ? _hideMiddleCharacters(job.companyWebsite!.replaceAll('https://', '').replaceAll('http://', '')) : job.companyWebsite!}',
+                  ),
+                ],
               ],
             ),
           ),
           
           SizedBox(height: AppSizer.deviceHeight1),
           
-          // Action Buttons
-          Row(
+           Row(
             children: [
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    _showSaveConfirmation(context, job.title);
+                    _showSaveConfirmation(context, job.jobTitle);
                   },
                   icon: Icon(Icons.bookmark_border, size: AppSizer.deviceSp16),
                   label: Text(
@@ -664,34 +765,94 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                 ),
               ),
               SizedBox(width: AppSizer.deviceWidth1),
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: () {
-                    if (canApply) {
-                      _showApplyDialog(context, job.title, job, () {
-                        viewModel.applyForJob(job.id);
+              // Show button based on priceType and CompanyIsHide
+              if (job.priceType == 'free')
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      final profileViewModel = context.read<ProfileViewModel>();
+                      viewModel.handleJobUnlock(
+                        job, 
+                        profileViewModel,
+                        onSuccess: (msg) {
+                          _showSnackBar(msg, Colors.green);
+                          _navigateToJobDetails(context, job);
+                        },
+                        onError: (msg) => _showSnackBar(msg, Colors.red),
+                        onPaymentRequired: (orderResponse) => _startPayment(orderResponse),
+                      );
+                    },
+                    icon: Icon(
+                      viewModel.purchasingJobId == job.id ? Icons.hourglass_empty : Icons.check_circle_outline,
+                      size: AppSizer.deviceSp16,
+                    ),
+                    label: Text(
+                      viewModel.purchasingJobId == job.id ? 'Processing...' : 'Free Enroll',
+                      style: TextStyle(fontSize: AppSizer.deviceSp16),
+                    ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                )
+
+              else if (!job.locked)
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () => _navigateToJobDetails(context, job),
+                    icon: Icon(Icons.visibility, size: AppSizer.deviceSp16),
+                    label: Text(
+                      'View Details',
+                      style: TextStyle(fontSize: AppSizer.deviceSp16),
+                    ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                )
+              else if (job.companyIsHide || job.priceType == 'paid')
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      _showUnlockDialog(context, job.jobTitle, job, () {
+                        final profileViewModel = context.read<ProfileViewModel>();
+                        viewModel.handleJobUnlock(
+                          job, 
+                          profileViewModel,
+                          onSuccess: (msg) {
+                            _showSnackBar(msg, Colors.green);
+                            _navigateToJobDetails(context, job);
+                          },
+                          onError: (msg) => _showSnackBar(msg, Colors.red),
+                          onPaymentRequired: (orderResponse) => _startPayment(orderResponse),
+                        );
                       });
-                    } else {
-                      _showSubscriptionPrompt(context);
-                    }
-                  },
-                  icon: Icon(
-                    canApply ? Icons.lock_open : Icons.lock,
-                    size: AppSizer.deviceSp16,
-                  ),
-                  label: Text(
-                    canApply ? 'Unlock Now' : 'Premium',
-                    style: TextStyle(fontSize: AppSizer.deviceSp16),
-                  ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: canApply ? AppColors.primaryColor : Colors.amber,
-                    padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    },
+                    icon: Icon(
+                      viewModel.purchasingJobId == job.id ? Icons.hourglass_empty : Icons.lock_open,
+                      size: AppSizer.deviceSp16,
+                    ),
+                    label: Text(
+                      viewModel.purchasingJobId == job.id ? 'Processing...' : 'Unlock Now',
+                      style: TextStyle(fontSize: AppSizer.deviceSp16),
+                    ),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ],
@@ -826,12 +987,12 @@ Widget _buildHiddenDetailItem(IconData icon, String text) {
     );
   }
 
- void _showApplyDialog(BuildContext context, String jobTitle, JobDetail job, VoidCallback onApply) {
+ void _showUnlockDialog(BuildContext context, String jobTitle, JobDetail job, VoidCallback onApply) {
   showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text('Unlock for Job'),
-      content: Text('Are you sure you want to apply for $jobTitle?'),
+      title: Text('Unlock Job Details'),
+      content: Text('Are you sure you want to unlock the details for $jobTitle?'),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
@@ -841,9 +1002,8 @@ Widget _buildHiddenDetailItem(IconData icon, String text) {
           onPressed: () {
             Navigator.pop(context); // Dialog close karo
             onApply(); // Job apply logic execute karo
-            _navigateToJobDetails(context, job); // JobDetailsPage open karo
           },
-          child: Text('Unlock'),
+          child: Text('Unlock Now'),
         ),
       ],
     ),

@@ -1,218 +1,327 @@
-
 import 'package:coders_adda_app/models/job_model.dart';
+import 'package:coders_adda_app/services/api_client.dart';
+import 'package:coders_adda_app/services/api_urls.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+
 
 class JobsViewModel with ChangeNotifier {
-  final List<JobDetail> _jobs = [
-    JobDetail(
-      id: "1",
-      title: "Senior Flutter Developer",
-      company: "TechCorp Inc.",
-      location: "Lucknow",
-      experience: "3-5 years",
-      jobType: "Work From Home",
-      skills: ["Flutter", "Dart", "Firebase", "REST API"],
-      salary: "₹12-18 LPA",
-      position: "Senior Developer",
-      totalOpenings: 5,
-      companyAddress: "123 Tech Park, Bangalore, Karnataka",
-      companyEmail: "hr@techcorp.com",
-      companyMobile: "+91 9876543210",
-      companyWebsite: "https://techcorp.com",
-      description: "We are looking for an experienced Flutter developer...",
-      applyLink: "https://example.com/apply/1",
-      addedDate: "15 Dec 2023",
-      lastDate: "30 Jan 2024",
-    ),
-    JobDetail(
-      id: "2",
-      title: "Junior Flutter Developer",
-      company: "StartUp Solutions",
-      location: "Noida",
-      experience: "Fresher",
-      jobType: "Work From Office",
-      skills: ["Flutter", "Dart", "Git", "OOP"],
-      salary: "₹6-8 LPA",
-      position: "Junior Developer",
-      totalOpenings: 10,
-      companyAddress: "456 Startup Lane, Hyderabad, Telangana",
-      companyEmail: "careers@startupsol.com",
-      companyMobile: "+91 9123456780",
-      companyWebsite: "https://startupsol.com",
-      description: "Fresh graduates are welcome to apply...",
-      applyLink: "https://example.com/apply/2",
-      addedDate: "18 Dec 2023",
-      lastDate: "15 Feb 2024",
-    ),
-    JobDetail(
-      id: "3",
-      title: "Flutter Team Lead",
-      company: "Enterprise Tech",
-      location: "Delhi",
-      experience: "5-8 years",
-      jobType: "Hybrid",
-      skills: ["Flutter", "Team Management", "Architecture", "CI/CD"],
-      salary: "₹20-25 LPA",
-      position: "Team Lead",
-      totalOpenings: 2,
-      companyAddress: "789 Corporate Tower, Delhi",
-      companyEmail: "jobs@enterprisetech.com",
-      companyMobile: "+91 9988776655",
-      companyWebsite: "https://enterprisetech.com",
-      description: "Lead our Flutter development team...",
-      applyLink: "https://example.com/apply/3",
-      addedDate: "20 Dec 2023",
-      lastDate: "10 Feb 2024",
-    ),
-    JobDetail(
-      id: "4",
-      title: "Android Engineer",
-      company: "MobileFirst",
-      location: "Bangalore",
-      experience: "2-4 years",
-      jobType: "Work From Office",
-      skills: ["Android", "Kotlin", "Java", "XML"],
-      salary: "₹15-20 LPA",
-      position: "Android Developer",
-      totalOpenings: 3,
-      companyAddress: "321 Mobile Street, Bangalore",
-      companyEmail: "hr@mobilefirst.com",
-      companyMobile: "+91 8899776655",
-      companyWebsite: "https://mobilefirst.com",
-      description: "Join our team to build amazing mobile applications...",
-      applyLink: "https://example.com/apply/4",
-      addedDate: "22 Dec 2023",
-      lastDate: "20 Feb 2024",
-    ),
-    JobDetail(
-      id: "5",
-      title: "iOS Developer",
-      company: "Apple Solutions",
-      location: "Remote",
-      experience: "3-6 years",
-      jobType: "Work From Home",
-      skills: ["iOS", "Swift", "UIKit", "Core Data"],
-      salary: "₹18-22 LPA",
-      position: "iOS Developer",
-      totalOpenings: 4,
-      companyAddress: "654 iOS Park, Pune",
-      companyEmail: "careers@apple-sol.com",
-      companyMobile: "+91 7766554433",
-      companyWebsite: "https://apple-sol.com",
-      description: "Looking for experienced iOS developers...",
-      applyLink: "https://example.com/apply/5",
-      addedDate: "25 Dec 2023",
-      lastDate: "25 Feb 2024",
-    ),
-  ];
+  final ApiClient _apiClient = ApiClient();
+  
+  List<JobDetail> _jobs = [];
+  bool _isLoading = false;
+  String? _error;
+  
+  // Pagination & Filters
+  int _currentPage = 1;
+  int _totalPages = 1;
+  int _limit = 10;
+  
+  String searchQuery = '';
+  String selectedJobCategory = '';
+  String selectedLocation = '';
+  String selectedExperience = '';
+  String selectedWorkType = '';
+  String selectedJobStatus = '';
+  String selectedPriceType = '';
+  double? minPrice;
+  double? maxPrice;
+  Set<String> selectedSkills = {};
+  
+  bool _isProcessingPayment = false;
+  String? _purchasingJobId;
 
-  final Set<String> _viewedJobs = {};
-  final Set<String> _appliedJobs = {};
-  static const int _maxFreeApplications = 3;
-
+  // View Getters
   List<JobDetail> get allJobs => _jobs;
+  bool get isLoading => _isLoading;
+  bool get isProcessingPayment => _isProcessingPayment;
+  String? get purchasingJobId => _purchasingJobId;
+  String? get error => _error;
+  int get currentPage => _currentPage;
+  int get totalPages => _totalPages;
+  
+  // For UI Compatibility (if still used)
+  List<JobDetail> get filteredJobs => _jobs; 
 
-  bool canApplyForJob(String jobId) {
-    return _appliedJobs.contains(jobId) || _appliedJobs.length < _maxFreeApplications;
+  JobsViewModel() {
+    fetchJobs();
   }
 
-  void applyForJob(String jobId) {
-    if (!_appliedJobs.contains(jobId)) {
-      _appliedJobs.add(jobId);
+  Future<void> fetchJobs({bool refresh = false}) async {
+    if (refresh) {
+      _currentPage = 1;
+      _jobs = [];
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // Build Query Parameters
+      Map<String, String> queryParams = {
+        'page': _currentPage.toString(),
+        'limit': _limit.toString(),
+      };
+
+      if (searchQuery.isNotEmpty) queryParams['search'] = searchQuery;
+      if (selectedJobCategory.isNotEmpty && selectedJobCategory != 'All') queryParams['jobCategory'] = selectedJobCategory;
+      if (selectedLocation.isNotEmpty) queryParams['location'] = selectedLocation;
+      if (selectedExperience.isNotEmpty && selectedExperience != 'All Levels') queryParams['requiredExperience'] = selectedExperience;
+      if (selectedWorkType.isNotEmpty && selectedWorkType != 'All Types') queryParams['workType'] = selectedWorkType;
+      if (selectedJobStatus.isNotEmpty) queryParams['jobStatus'] = selectedJobStatus;
+      if (selectedPriceType.isNotEmpty && selectedPriceType != 'All') queryParams['priceType'] = selectedPriceType;
+      if (minPrice != null) queryParams['minPrice'] = minPrice!.toInt().toString();
+      if (maxPrice != null) queryParams['maxPrice'] = maxPrice!.toInt().toString();
+
+      // Construct URL with parameters
+      String queryString = Uri(queryParameters: queryParams).query;
+      String url = '${ApiUrls.getJobsV3}?$queryString';
+
+      final response = await _apiClient.get(url);
+
+      if (response['success'] == true) {
+        List<dynamic> data = response['data'] ?? [];
+        List<JobDetail> newJobs = data.map((item) => JobDetail.fromJson(item)).toList();
+        
+        if (refresh) {
+          _jobs = newJobs;
+        } else {
+          _jobs.addAll(newJobs);
+        }
+        
+        _totalPages = response['totalPages'] ?? 1;
+        _currentPage = response['page'] ?? 1;
+      } else {
+        _error = response['message'] ?? 'Failed to load jobs';
+      }
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  int get remainingFreeApplications => _maxFreeApplications - _appliedJobs.length;
-  bool get hasFreeApplicationsRemaining => _appliedJobs.length < _maxFreeApplications;
-
-String searchQuery = '';
-  String selectedJobType = '';
-  String selectedExperience = '';
-  Set<String> selectedSkills = {};
-  
-  List<JobDetail> get filteredJobs {
-    List<JobDetail> filtered = allJobs;
-    
-
-    if (searchQuery.isNotEmpty) {
-      filtered = filtered.where((job) =>
-        job.title.toLowerCase().contains(searchQuery.toLowerCase()) ||
-        job.skills.any((skill) => skill.toLowerCase().contains(searchQuery.toLowerCase())) ||
-        job.company.toLowerCase().contains(searchQuery.toLowerCase()) ||
-        job.location.toLowerCase().contains(searchQuery.toLowerCase())
-      ).toList();
-    }
-    
-
-    if (selectedJobType.isNotEmpty && selectedJobType != 'All Types') {
-      filtered = filtered.where((job) => job.jobType == selectedJobType).toList();
-    }
-    
-
-    if (selectedExperience.isNotEmpty && selectedExperience != 'All Levels') {
-      filtered = filtered.where((job) => job.experience == selectedExperience).toList();
-    }
-    
-
-    if (selectedSkills.isNotEmpty) {
-      filtered = filtered.where((job) =>
-        selectedSkills.every((skill) => job.skills.contains(skill))
-      ).toList();
-    }
-    
-    return filtered;
-  }
-  
-  List<String> get availableJobTypes {
-    return allJobs.map((job) => job.jobType).toSet().toList()..sort();
-  }
-  
-  List<String> get availableExperiences {
-    return allJobs.map((job) => job.experience).toSet().toList()..sort();
-  }
-  
-  bool get hasActiveFilters {
-    return searchQuery.isNotEmpty ||
-        (selectedJobType.isNotEmpty && selectedJobType != 'All Types') ||
-        (selectedExperience.isNotEmpty && selectedExperience != 'All Levels') ||
-        selectedSkills.isNotEmpty;
-  }
-  
-
+  // Filter setters
   void setSearchQuery(String query) {
     searchQuery = query;
-    notifyListeners();
+    fetchJobs(refresh: true);
   }
-  
-  void setSelectedJobType(String type) {
-    selectedJobType = type;
-    notifyListeners();
+
+  void setSelectedJobCategory(String category) {
+    selectedJobCategory = category;
+    fetchJobs(refresh: true);
   }
-  
+
+  void setSelectedLocation(String location) {
+    selectedLocation = location;
+    fetchJobs(refresh: true);
+  }
+
   void setSelectedExperience(String experience) {
     selectedExperience = experience;
-    notifyListeners();
+    fetchJobs(refresh: true);
   }
-  
-  void addSelectedSkill(String skill) {
-    selectedSkills.add(skill);
-    notifyListeners();
+
+  void setSelectedWorkType(String type) {
+    selectedWorkType = type;
+    fetchJobs(refresh: true);
   }
-  
-  void removeSelectedSkill(String skill) {
-    selectedSkills.remove(skill);
-    notifyListeners();
+
+  void setSelectedPriceType(String type) {
+    selectedPriceType = type;
+    fetchJobs(refresh: true);
   }
-  
+
+  void setPriceRange(double? min, double? max) {
+    minPrice = min;
+    maxPrice = max;
+    fetchJobs(refresh: true);
+  }
+
   void clearAllFilters() {
     searchQuery = '';
-    selectedJobType = '';
+    selectedJobCategory = '';
+    selectedLocation = '';
     selectedExperience = '';
+    selectedWorkType = '';
+    selectedJobStatus = '';
+    selectedPriceType = '';
+    minPrice = null;
+    maxPrice = null;
     selectedSkills.clear();
+    fetchJobs(refresh: true);
+  }
+
+  void addSelectedSkill(String skill) {
+    selectedSkills.add(skill);
+    fetchJobs(refresh: true);
+  }
+
+  void removeSelectedSkill(String skill) {
+    selectedSkills.remove(skill);
+    fetchJobs(refresh: true);
+  }
+
+  // Pagination
+  void loadNextPage() {
+    if (_currentPage < _totalPages && !_isLoading) {
+      _currentPage++;
+      fetchJobs();
+    }
+  }
+
+  bool get hasActiveFilters {
+    return searchQuery.isNotEmpty ||
+        selectedJobCategory.isNotEmpty ||
+        selectedLocation.isNotEmpty ||
+        selectedExperience.isNotEmpty ||
+        selectedWorkType.isNotEmpty ||
+        selectedPriceType.isNotEmpty ||
+        minPrice != null ||
+        maxPrice != null ||
+        selectedSkills.isNotEmpty;
+  }
+
+  // Keeping these getter stubs for UI compatibility if they were used for dropdown items
+  List<String> get availableJobTypes => ['Work From Office', 'Work From Home', 'Hybrid'];
+  List<String> get availableExperiences => ['Fresher', '1-2 Years', '3-5 Years', '5+ Years'];
+  List<String> get availableJobCategories => ['Frontend', 'Backend', 'Full Stack', 'App Developer', 'UI/UX'];
+
+  bool canApplyForJob(String jobId) {
+    // This logic might need to be updated based on API response/user state
+    return true; 
+  }
+
+  void applyForJob(String jobId) {
+    // Logic for applying/unlocking
     notifyListeners();
   }
 
- 
- 
+  // --- Payment & Unlocking Logic ---
+
+  Future<void> handleJobUnlock(JobDetail job, ProfileViewModel profileViewModel, {required Function(String) onSuccess, required Function(String) onError, required Function(Map<String, dynamic>) onPaymentRequired}) async {
+    _isProcessingPayment = true;
+    _purchasingJobId = job.id;
+    notifyListeners();
+
+    try {
+      if (job.priceType == 'free') {
+        // Case 1: Truly free job
+        final response = await _apiClient.post(ApiUrls.enrollFreeItem, {
+          'itemType': 'job',
+          'itemId': job.id,
+        });
+
+        if (response['success'] == true) {
+          onSuccess('Successfully enrolled for ${job.jobTitle}');
+          _updateLocalJobLockedStatus(job.id, false);
+          fetchJobs(refresh: true); // background refresh
+          _isProcessingPayment = false;
+          _purchasingJobId = null;
+          notifyListeners();
+        } else {
+          _isProcessingPayment = false;
+          _purchasingJobId = null;
+          notifyListeners();
+          onError(response['message'] ?? 'Enrollment failed');
+        }
+      } else {
+        // Case 2: Paid or Locked job
+        final freeUnlocks = profileViewModel.user?.freeJobUnlocksUsed ?? 0;
+
+        if (freeUnlocks < 3) {
+          // Use one of the 3 free unlocks
+          final response = await _apiClient.post(ApiUrls.enrollFreeItem, {
+            'itemType': 'jobV3',
+            'itemId': job.id,
+          });
+
+          if (response['success'] == true) {
+            onSuccess('Job unlocked successfully using 1 free credit!');
+            await profileViewModel.fetchUserProfile(); // Update credits
+            _updateLocalJobLockedStatus(job.id, false);
+            fetchJobs(refresh: true);
+            _isProcessingPayment = false;
+            _purchasingJobId = null;
+            notifyListeners();
+          } else {
+            _isProcessingPayment = false;
+            _purchasingJobId = null;
+            notifyListeners();
+            onError(response['message'] ?? 'Unlocking failed');
+          }
+        } else {
+          // Payment required
+          final orderResponse = await _apiClient.post(ApiUrls.createOrder, {
+            'itemType': 'job',
+            'itemId': job.id,
+          });
+
+          if (orderResponse['success'] == true) {
+            _isProcessingPayment = false;
+            notifyListeners();
+            onPaymentRequired(orderResponse);
+          } else {
+            _isProcessingPayment = false;
+            _purchasingJobId = null;
+            notifyListeners();
+            onError(orderResponse['message'] ?? 'Failed to create order');
+          }
+        }
+      }
+    } catch (e) {
+      _isProcessingPayment = false;
+      _purchasingJobId = null;
+      notifyListeners();
+      onError('Error: $e');
+    }
+  }
+
+  void clearPaymentState() {
+    _isProcessingPayment = false;
+    _purchasingJobId = null;
+    notifyListeners();
+  }
+
+  Future<void> verifyJobPayment(String jobId, PaymentSuccessResponse response, {required Function(String) onSuccess, required Function(String) onError}) async {
+    _isProcessingPayment = true;
+    notifyListeners();
+
+    try {
+      final verifyBody = {
+        'razorpay_order_id': response.orderId,
+        'razorpay_payment_id': response.paymentId,
+        'razorpay_signature': response.signature,
+        'itemId': jobId,
+        'itemType': 'job',
+      };
+
+      final result = await _apiClient.post(ApiUrls.verifyPayment, verifyBody);
+
+      if (result['success'] == true) {
+        onSuccess('Payment verified! Job unlocked successfully.');
+        _updateLocalJobLockedStatus(jobId, false);
+        fetchJobs(refresh: true);
+      } else {
+        onError(result['message'] ?? 'Payment verification failed');
+      }
+    } catch (e) {
+      onError('Verification error: $e');
+    } finally {
+      _isProcessingPayment = false;
+      _purchasingJobId = null;
+      notifyListeners();
+    }
+  }
+
+  void _updateLocalJobLockedStatus(String jobId, bool isLocked) {
+    final index = _jobs.indexWhere((j) => j.id == jobId);
+    if (index != -1) {
+      _jobs[index] = _jobs[index].copyWith(locked: isLocked);
+      notifyListeners();
+    }
+  }
 }

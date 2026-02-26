@@ -42,4 +42,7 @@ class ApiUrls {
   // Subscription Endpoints
   static const String getSubscriptions = '$baseUrl/subscriptions/get';
   static const String getSubscriptionDetails = '$baseUrl/subscriptions/get'; // append /id
+
+  // Jobs V3 Endpoints
+  static const String getJobsV3 = '$baseUrl/job-v3/get';
 }

@@ -17,6 +17,7 @@ class UserProfile {
   final DateTime createdAt;
   final int walletBalance;
   final int referralCount;
+  final int freeJobUnlocksUsed;
 
   UserProfile({
     required this.id,
@@ -37,6 +38,7 @@ class UserProfile {
     required this.createdAt,
     this.walletBalance = 0,
     this.referralCount = 0,
+    this.freeJobUnlocksUsed = 0,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -60,6 +62,7 @@ class UserProfile {
       createdAt: DateTime.parse(user['createdAt'] ?? DateTime.now().toIso8601String()),
       walletBalance: user['walletBalance'] ?? 0,
       referralCount: user['referralCount'] ?? 0,
+      freeJobUnlocksUsed: user['freeJobUnlocksUsed'] ?? 0,
     );
   }
 }
