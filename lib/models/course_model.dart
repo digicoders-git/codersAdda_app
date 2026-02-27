@@ -165,6 +165,7 @@ class CourseCategory {
       name: capitalizedName,
       technology: rawName,
       isActive: json['isActive'] ?? true,
+      courseCount: json['courseCount'] ?? 0,
     );
   }
 }

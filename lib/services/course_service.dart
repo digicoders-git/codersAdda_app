@@ -5,9 +5,10 @@ import 'package:coders_adda_app/services/api_urls.dart';
 class CourseService {
   final ApiClient _apiClient = ApiClient();
 
-  Future<List<CourseCategory>> getCategories() async {
+  Future<List<CourseCategory>> getCategories({required String priceType}) async {
     try {
-      final response = await _apiClient.get(ApiUrls.getCourseCategories);
+      final String url = '${ApiUrls.getCourseCategories}?priceType=$priceType';
+      final response = await _apiClient.get(url);
       if (response['success'] == true) {
         final List<dynamic> data = response['data'];
         return data.map((item) => CourseCategory.fromJson(item)).toList();
@@ -15,6 +16,21 @@ class CourseService {
       return [];
     } catch (e) {
       print('Error fetching categories: $e');
+      return [];
+    }
+  }
+
+  Future<List<Course>> getCoursesByCategoryName(String categoryName) async {
+    try {
+      final String url = '${ApiUrls.getCoursesByCategoryName}?categoryName=$categoryName';
+      final response = await _apiClient.get(url);
+      if (response['success'] == true) {
+        final List<dynamic> data = response['data'];
+        return data.map((item) => Course.fromJson(item)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching courses by category: $e');
       return [];
     }
   }

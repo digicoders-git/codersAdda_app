@@ -22,7 +22,8 @@ class PdfViewModel with ChangeNotifier {
   List<PdfItem> get paidPdfs => _allPdfs.where((pdf) => !pdf.isFree).toList();
 
   List<PdfItem> get filteredPdfs {
-    return _selectedTabIndex == 0 ? freePdfs : paidPdfs;
+    final bool lookingForFree = _selectedTabIndex == 0;
+    return _allPdfs.where((pdf) => pdf.isFree == lookingForFree).toList();
   }
 
   PdfViewModel() {
@@ -30,57 +31,69 @@ class PdfViewModel with ChangeNotifier {
   }
 
   Future<void> refreshData() async {
-    await Future.wait([
-      fetchCategories(),
-      fetchPdfs(categoryId: _selectedCategoryId),
-    ]);
-  }
-
-  Future<void> fetchCategories() async {
     _isLoading = true;
     notifyListeners();
     
-    final cats = await _pdfService.getEbookCategories();
+    final priceType = _selectedTabIndex == 0 ? 'free' : 'paid';
+    await Future.wait([
+      fetchCategories(priceType),
+      fetchPdfs(categoryId: _selectedCategoryId),
+    ]);
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> fetchCategories(String priceType) async {
+    final cats = await _pdfService.getEbookCategories(priceType: priceType);
     int totalCount = cats.fold(0, (sum, item) => sum + item.ebookCount);
     
     _categories = [
       PdfCategory(id: 'all', name: 'All', ebookCount: totalCount, icon: '📚'),
       ...cats
     ];
-    
-    _isLoading = false;
-    notifyListeners();
   }
 
   Future<void> fetchPdfs({String? categoryId}) async {
-    _isLoading = true;
-    notifyListeners();
-    
     try {
-      final String? catId = (categoryId == null || categoryId == 'all') ? null : categoryId;
+      final priceType = _selectedTabIndex == 0 ? 'free' : 'paid';
       
-      // Fetch both free and paid PDFs as per requirement
-      final freeResults = await _pdfService.getEbooks(isActive: true, priceType: 'free', categoryId: catId);
-      final paidResults = await _pdfService.getEbooks(isActive: true, priceType: 'paid', categoryId: catId);
-      
-      _allPdfs = [...freeResults, ...paidResults];
+      if (_selectedCategoryId == 'all') {
+        _allPdfs = await _pdfService.getEbooks(
+          isActive: true, 
+          priceType: priceType, 
+          categoryId: null
+        );
+      } else {
+        // Fetch by name as requested (API returns both free & paid)
+        _allPdfs = await _pdfService.getEbooksByCategoryName(_selectedCategory);
+      }
     } catch (e) {
       print('Error in fetchPdfs: $e');
     }
-    
-    _isLoading = false;
-    notifyListeners();
   }
 
   void setSelectedCategory(PdfCategory category) {
-    _selectedCategory = category.name;
-    _selectedCategoryId = category.id;
-    fetchPdfs(categoryId: _selectedCategoryId);
+    if (_selectedCategoryId != category.id) {
+      _selectedCategory = category.name;
+      _selectedCategoryId = category.id;
+      // Triggers fetchPdfs inside refreshData or just call it here
+      _isLoading = true;
+      notifyListeners();
+      fetchPdfs(categoryId: _selectedCategoryId).then((_) {
+        _isLoading = false;
+        notifyListeners();
+      });
+    }
   }
 
   void setSelectedTabIndex(int index) {
-    _selectedTabIndex = index;
-    notifyListeners();
+    if (_selectedTabIndex != index) {
+      _selectedTabIndex = index;
+      _selectedCategoryId = 'all';
+      _selectedCategory = 'All';
+      refreshData();
+    }
   }
 
   void incrementDownloadCount(String pdfId) {

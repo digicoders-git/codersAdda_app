@@ -12,7 +12,8 @@ class ApiUrls {
   // Courses Endpoints
   static const String getAllCourses = '$baseUrl/courses';
   static const String getCourseDetails = '$baseUrl/course/get'; // We'll append /id manually
-  static const String getCourseCategories = '$baseUrl/CourseCategory/get';
+  static const String getCourseCategories = '$baseUrl/CourseCategory/course-count';
+  static const String getCoursesByCategoryName = '$baseUrl/CourseCategory/get-by-name';
   static const String getCoursesByFilter = '$baseUrl/course/get'; 
 
   // Sliders Endpoints
@@ -25,6 +26,7 @@ class ApiUrls {
 
   // E-books Endpoints
   static const String getEbookCategories = '$baseUrl/ebooks-category/get-with-count';
+  static const String getEbooksByCategoryName = '$baseUrl/ebooks-category/get-by-name';
   static const String getEbooks = '$baseUrl/ebook/get';
   static const String getEbookDetails = '$baseUrl/ebook/get'; // We'll append /id manually
 

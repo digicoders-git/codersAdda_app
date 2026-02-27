@@ -14,12 +14,15 @@ class CourseViewModel with ChangeNotifier {
   final CourseService _courseService = CourseService();
 
   CourseViewModel() {
-    fetchCategories();
-    fetchCourses(); // Initial fetch for first tab (Free)
+    _init();
   }
 
-  Future<void> fetchCategories() async {
-    final fetchedCategories = await _courseService.getCategories();
+  Future<void> _init() async {
+    await fetchCourses(); 
+  }
+
+  Future<void> fetchCategories(String priceType) async {
+    final fetchedCategories = await _courseService.getCategories(priceType: priceType);
     
     // Always start with 'All'
     _categories = [
@@ -35,7 +38,6 @@ class CourseViewModel with ChangeNotifier {
     if (fetchedCategories.isNotEmpty) {
       _categories.addAll(fetchedCategories);
     }
-    notifyListeners();
   }
 
   Future<void> fetchCourses() async {
@@ -44,9 +46,19 @@ class CourseViewModel with ChangeNotifier {
 
     try {
       final priceType = _selectedTabIndex == 0 ? 'free' : 'paid';
-      _allCourses = await _courseService.getCoursesByFilter(priceType: priceType);
       
-      // Update course count in categories based on fetched data
+      // Fetch categories FIRST to get updated list and counts from API
+      await fetchCategories(priceType);
+      
+      if (_selectedTechnology == 'All') {
+        // Fetch ALL courses for this price type
+        _allCourses = await _courseService.getCoursesByFilter(priceType: priceType);
+      } else {
+        // Fetch courses for SPECIFIC category (API returns both free & paid)
+        _allCourses = await _courseService.getCoursesByCategoryName(_selectedTechnology);
+      }
+      
+      // Update 'All' category count and sync any discrepancies if necessary
       _updateCategoryCounts();
     } catch (e) {
       print('Error in CourseViewModel fetchCourses: $e');
@@ -57,29 +69,18 @@ class CourseViewModel with ChangeNotifier {
   }
 
   void _updateCategoryCounts() {
-    // Basic implementation: update counts for currently fetched list
-    for (var i = 1; i < _categories.length; i++) {
-      final tech = _categories[i].technology;
-      final count = _allCourses.where((c) => 
-        c.technology.toLowerCase() == tech.toLowerCase()).length;
-      
-      _categories[i] = CourseCategory(
-        id: _categories[i].id,
-        name: _categories[i].name,
-        technology: tech,
-        courseCount: count,
-        icon: _categories[i].icon,
+    // Update 'All' count based on total courses fetched
+    if (_categories.isNotEmpty) {
+      _categories[0] = CourseCategory(
+        id: 'all',
+        name: 'All',
+        technology: 'All',
+        courseCount: _allCourses.length,
+        icon: '📚',
       );
     }
     
-    // Update 'All' count
-    _categories[0] = CourseCategory(
-      id: 'all',
-      name: 'All',
-      technology: 'All',
-      courseCount: _allCourses.length,
-      icon: '📚',
-    );
+    // Note: Other categories already have counts from fetchCategories() API call
   }
 
   void initializeTabController(TickerProvider vsync) {
@@ -109,17 +110,25 @@ class CourseViewModel with ChangeNotifier {
   int get selectedTabIndex => _selectedTabIndex;
 
   List<Course> get filteredCourses {
+    final bool lookingForFree = _selectedTabIndex == 0;
+    
+    // Filter by price type (Free vs Premium)
+    final coursesByPrice = _allCourses.where((course) => course.isFree == lookingForFree).toList();
+
     if (_selectedTechnology == 'All') {
-      return _allCourses;
+      return coursesByPrice;
     }
     
-    return _allCourses.where((course) => 
+    // Further filter by technology/category
+    return coursesByPrice.where((course) => 
       course.technology.toLowerCase() == _selectedTechnology.toLowerCase()).toList();
   }
 
   void setSelectedTechnology(String technology) {
-    _selectedTechnology = technology;
-    notifyListeners();
+    if (_selectedTechnology != technology) {
+      _selectedTechnology = technology;
+      fetchCourses(); // Fetch from API for the selected category
+    }
   }
 
   void setSelectedTabIndex(int index) {

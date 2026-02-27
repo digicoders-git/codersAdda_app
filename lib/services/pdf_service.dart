@@ -5,9 +5,9 @@ import 'package:coders_adda_app/services/api_urls.dart';
 class PdfService {
   final ApiClient _apiClient = ApiClient();
 
-  Future<List<PdfCategory>> getEbookCategories() async {
+  Future<List<PdfCategory>> getEbookCategories({required String priceType}) async {
     try {
-      final response = await _apiClient.get(ApiUrls.getEbookCategories);
+      final response = await _apiClient.get('${ApiUrls.getEbookCategories}?priceType=$priceType');
       if (response['success'] == true) {
         final List<dynamic> data = response['data'];
         return data.map((item) => PdfCategory.fromJson(item)).toList();
@@ -15,6 +15,21 @@ class PdfService {
       return [];
     } catch (e) {
       print('Error fetching ebook categories: $e');
+      return [];
+    }
+  }
+
+  Future<List<PdfItem>> getEbooksByCategoryName(String categoryName) async {
+    try {
+      final String url = '${ApiUrls.getEbooksByCategoryName}?categoryName=$categoryName';
+      final response = await _apiClient.get(url);
+      if (response['success'] == true) {
+        final List<dynamic> data = response['data'];
+        return data.map((item) => PdfItem.fromJson(item)).toList();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching ebooks by category: $e');
       return [];
     }
   }
