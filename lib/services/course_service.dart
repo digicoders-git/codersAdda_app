@@ -116,4 +116,32 @@ class CourseService {
       rethrow;
     }
   }
+
+  Future<List<dynamic>> getCurriculumByCourse(String courseId) async {
+    try {
+      final String url = '${ApiUrls.getCurriculumByCourse}/$courseId';
+      final response = await _apiClient.get(url);
+      if (response['success'] == true) {
+        return response['data'] as List<dynamic>;
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching curriculum: $e');
+      return [];
+    }
+  }
+
+  Future<List<dynamic>> getLecturesByTopic(String topicId) async {
+    try {
+      final String url = '${ApiUrls.getLectureByTopic}/$topicId';
+      final response = await _apiClient.get(url);
+      if (response['success'] == true) {
+        return response['data'] as List<dynamic>;
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching lectures: $e');
+      return [];
+    }
+  }
 }

@@ -15,6 +15,8 @@ class ApiUrls {
   static const String getCourseCategories = '$baseUrl/CourseCategory/course-count';
   static const String getCoursesByCategoryName = '$baseUrl/CourseCategory/get-by-name';
   static const String getCoursesByFilter = '$baseUrl/course/get'; 
+  static const String getCurriculumByCourse = '$baseUrl/curriculum/get/by-course';
+  static const String getLectureByTopic = '$baseUrl/lecture/get/by-topic'; 
 
   // Sliders Endpoints
   static const String getSliders = '$baseUrl/sliders/get';

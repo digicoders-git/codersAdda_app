@@ -14,6 +14,7 @@ class Course {
   final int totalLessons;
   final DateTime createdAt;
 
+  final String promoVideoUrl;
   final List<String> whatYouWillLearn;
   final List<CourseModule> curriculum;
   final List<CourseFAQ> faqs;
@@ -34,6 +35,7 @@ class Course {
     required this.duration,
     this.totalLessons = 0,
     required this.createdAt,
+    this.promoVideoUrl = '',
     this.whatYouWillLearn = const [],
     this.curriculum = const [],
     this.faqs = const [],
@@ -74,6 +76,7 @@ class Course {
       createdAt: json['createdAt'] != null 
           ? DateTime.parse(json['createdAt']) 
           : DateTime.now(),
+      promoVideoUrl: _safeString(json['promoVideo']),
       whatYouWillLearn: (json['whatYouWillLearn'] is List)
           ? List<String>.from(json['whatYouWillLearn'])
           : [],
@@ -226,13 +229,20 @@ class CourseLesson {
   });
 
   factory CourseLesson.fromJson(Map<String, dynamic> json) {
+    String extractUrl(dynamic value) {
+      if (value == null) return '';
+      if (value is String) return value;
+      if (value is Map && value.containsKey('url')) return value['url']?.toString() ?? '';
+      return value.toString();
+    }
+
     return CourseLesson(
       id: json['_id'] ?? '',
       title: json['title'] ?? '',
       duration: json['duration'] ?? '0:00',
-      videoUrl: json['videoUrl'] ?? '',
-      pdfUrl: json['pdfUrl'],
-      thumbnailUrl: json['thumbnailUrl'],
+      videoUrl: extractUrl(json['video'] ?? json['videoUrl']),
+      pdfUrl: extractUrl(json['pdf'] ?? json['pdfUrl']),
+      thumbnailUrl: extractUrl(json['thumbnail'] ?? json['thumbnailUrl']),
       isFree: !(json['isLocked'] ?? false),
       isLocked: json['isLocked'] ?? false,
       isCompleted: false,

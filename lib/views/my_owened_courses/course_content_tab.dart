@@ -24,6 +24,7 @@ class CourseContentTab extends StatelessWidget {
             side: BorderSide(color: AppColors.outline),
           ),
           child: ExpansionTile(
+            initiallyExpanded: viewModel.selectedTopicId == section.id,
             title: Text(
               section.title,
               style: TextStyle(
@@ -34,88 +35,73 @@ class CourseContentTab extends StatelessWidget {
             ),
             trailing: Icon(Icons.keyboard_arrow_down, color: AppColors.primaryColor),
             children: [
-              if (section.topics.isEmpty)
-                Padding(
-  padding: EdgeInsets.all(AppSizer.deviceWidth4),
-  child: Container(
-    padding: EdgeInsets.all(AppSizer.deviceWidth4),
-    decoration: BoxDecoration(
-      color: Colors.grey[50],
-      borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
-      border: Border.all(color: AppColors.outline.withOpacity(0.3)),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: AppSizer.deviceWidth8,
-          height: AppSizer.deviceWidth8,
-          decoration: BoxDecoration(
-            color: AppColors.primaryColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
-          ),
-          child: Icon(
-            Icons.play_arrow,
-            color: AppColors.primaryColor,
-            size: AppSizer.deviceSp16,
-          ),
-        ),
-        SizedBox(width: AppSizer.deviceWidth4),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Introduction to Course',
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textColor,
-                ),
-              ),
-              SizedBox(height: AppSizer.deviceHeight1),
-              Row(
-                children: [
-                  Icon(
-                    Icons.schedule,
-                    size: AppSizer.deviceSp12,
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                  SizedBox(width: AppSizer.deviceWidth1),
-                  Text(
-                    '10:30 mins',
-                    style: TextStyle(
-                      fontSize: AppSizer.deviceSp12,
-                      color: AppColors.onSurfaceVariant,
+              if (section.lessons.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('No lessons in this section'),
+                )
+              else
+                ...section.lessons.map((lesson) {
+                  final isSelected = viewModel.selectedLesson?.id == lesson.id;
+                  return InkWell(
+                    onTap: () => viewModel.selectLesson(lesson, section.id),
+                    child: Container(
+                      padding: EdgeInsets.all(AppSizer.deviceWidth4),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.primaryColor.withOpacity(0.05) : Colors.transparent,
+                        border: Border(top: BorderSide(color: AppColors.outline.withOpacity(0.3))),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: AppSizer.deviceWidth8,
+                            height: AppSizer.deviceWidth8,
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.primaryColor : AppColors.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
+                            ),
+                            child: Icon(
+                              isSelected ? Icons.pause : Icons.play_arrow,
+                              color: isSelected ? Colors.white : AppColors.primaryColor,
+                              size: AppSizer.deviceSp16,
+                            ),
+                          ),
+                          SizedBox(width: AppSizer.deviceWidth4),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  lesson.title,
+                                  style: TextStyle(
+                                    fontSize: AppSizer.deviceSp14,
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                    color: isSelected ? AppColors.primaryColor : AppColors.textColor,
+                                  ),
+                                ),
+                                SizedBox(height: AppSizer.deviceHeight1),
+                                Row(
+                                  children: [
+                                    Icon(Icons.schedule, size: AppSizer.deviceSp12, color: AppColors.onSurfaceVariant),
+                                    SizedBox(width: AppSizer.deviceWidth1),
+                                    Text(
+                                      lesson.duration,
+                                      style: TextStyle(fontSize: AppSizer.deviceSp12, color: AppColors.onSurfaceVariant),
+                                    ),
+                                    if (lesson.isLocked) ...[
+                                      SizedBox(width: AppSizer.deviceWidth3),
+                                      Icon(Icons.lock, size: AppSizer.deviceSp12, color: Colors.orange),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(width: AppSizer.deviceWidth3),
-                  Icon(
-                    Icons.videocam,
-                    size: AppSizer.deviceSp12,
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                  SizedBox(width: AppSizer.deviceWidth1),
-                  Text(
-                    'Video',
-                    style: TextStyle(
-                      fontSize: AppSizer.deviceSp12,
-                      color: AppColors.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Icon(
-          Icons.lock_open,
-          color: AppColors.primaryColor,
-          size: AppSizer.deviceSp18,
-        ),
-      ],
-    ),
-  ),
-),
+                  );
+                }).toList(),
             ],
           ),
         );

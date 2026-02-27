@@ -4,7 +4,6 @@ import 'package:coders_adda_app/veiw_model/my_learning_courses_play_viewmodel.da
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-
 class FAQsTab extends StatelessWidget {
   const FAQsTab({Key? key}) : super(key: key);
 
@@ -12,6 +11,10 @@ class FAQsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = Provider.of<CoursePlayerViewModel>(context);
     
+    if (viewModel.faqs.isEmpty) {
+      return const Center(child: Text('No FAQs available for this course'));
+    }
+
     return ListView.builder(
       padding: EdgeInsets.all(AppSizer.deviceWidth4),
       itemCount: viewModel.faqs.length,

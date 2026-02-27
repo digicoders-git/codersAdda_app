@@ -1,69 +1,87 @@
 import 'package:flutter/material.dart';
-import 'package:coders_adda_app/models/my_learning_courses_play_model.dart';
+import 'package:coders_adda_app/models/course_model.dart';
+import 'package:coders_adda_app/services/course_service.dart';
 
 class CoursePlayerViewModel extends ChangeNotifier {
-  late final CourseVideo _courseModel;
+  final CourseService _courseService = CourseService();
+  
+  Course? _course;
+  bool _isLoading = false;
+  String? _errorMessage;
+  CourseLesson? _selectedLesson;
+  String? _selectedTopicId;
+  bool _isPlayingPromo = false;
 
-  CoursePlayerViewModel() {
-    _courseModel = CourseVideo(
-      overallRating: 4.6,
-      ratingDistribution: {5: 82, 4: 7, 3: 5, 2: 1, 1: 5},
-      reviews: [
-        ReviewItem(
-          name: 'Rangrez Abuzar Ali Ashraf Ali',
-          initial: 'R',
-          rating: 5,
-          comment: 'we need update lectures.',
-        ),
-        ReviewItem(
-          name: 'Lakhjeet',
-          initial: 'L',
-          rating: 5,
-          comment: 'sir kali linux downlod khaa se kre aap discription me link add kr do pless',
-        ),
-        ReviewItem(
-          name: 'Tushar Kumar',
-          initial: 'T',
-          rating: 5,
-          comment: 'Great course content!',
-        ),
-      ],
-      faqs: [
-        FAQItem(
-          question: 'What is ethical hacking?',
-          answer: 'An permitted attempt to acquire unauthorised access to a computer system, application, or data is referred to as ethical hacking. Duplicating the techniques and behaviours of malevolent attackers is part of carrying out an ethical hack.',
-        ),
-        FAQItem(
-          question: 'What are different types of ethical hacking?',
-          answer: 'Different types include Web Application Hacking, System Hacking, Web Server Hacking, Wireless Network Hacking, and Social Engineering.',
-        ),
-        FAQItem(
-          question: 'Can we hack wifi using Python?',
-          answer: 'Yes, Python can be used for network security testing including WiFi security assessment with proper authorization.',
-        ),
-      ],
-      courseSections: [
-        CourseSection(title: 'Getting Started', topics: []),
-        CourseSection(title: 'Basics of Ethical Hacking', topics: []),
-        CourseSection(title: 'Ethical Hacking Phases', topics: []),
-        CourseSection(title: 'Hacking and IP Addresses', topics: []),
-        CourseSection(title: 'Hacking and Ports', topics: []),
-        CourseSection(title: 'Hacking and Domain Name Servers', topics: []),
-      ],
-    );
+  CoursePlayerViewModel(String courseId) {
+    fetchCourseDetails(courseId);
   }
 
-  CourseVideo get courseModel => _courseModel;
-  
-  double get overallRating => _courseModel.overallRating;
-  
-  Map<int, int> get ratingDistribution => _courseModel.ratingDistribution;
-  
-  List<ReviewItem> get reviews => _courseModel.reviews;
-  
-  List<FAQItem> get faqs => _courseModel.faqs;
-  
-  List<CourseSection> get courseSections => _courseModel.courseSections;
+  // Getters
+  Course? get course => _course;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  CourseLesson? get selectedLesson => _selectedLesson;
+  String? get selectedTopicId => _selectedTopicId;
+  bool get isPlayingPromo => _isPlayingPromo;
+
+  String? get currentVideoUrl {
+    if (_isPlayingPromo) return _course?.promoVideoUrl;
+    return _selectedLesson?.videoUrl;
+  }
+
+  void playPromoVideo() {
+    _isPlayingPromo = true;
+    _selectedLesson = null;
+    notifyListeners();
+  }
+
+  // New Getters to maintain compatibility with existing UI if needed
+  List<CourseReview> get reviews => _course?.reviews ?? [];
+  List<CourseFAQ> get faqs => _course?.faqs ?? [];
+  List<CourseModule> get courseSections => _course?.curriculum ?? [];
+
+  Future<void> fetchCourseDetails(String courseId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _course = await _courseService.getCourseDetailsById(courseId);
+      if (_course != null && _course!.curriculum.isNotEmpty) {
+        // Automatically select the first lesson if available
+        for (var module in _course!.curriculum) {
+          if (module.lessons.isNotEmpty) {
+            _selectedLesson = module.lessons.first;
+            _selectedTopicId = module.id;
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      _errorMessage = 'Failed to load course details: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void selectLesson(CourseLesson lesson, String topicId) {
+    _selectedLesson = lesson;
+    _selectedTopicId = topicId;
+    _isPlayingPromo = false;
+    notifyListeners();
+  }
+
+  // If curriculum needs refreshing from separate APIs
+  Future<void> refreshCurriculum() async {
+    if (_course == null) return;
+    try {
+      final data = await _courseService.getCurriculumByCourse(_course!.id);
+      // Update local course object if needed, though usually getCourseDetails handles it
+    } catch (e) {
+      print('Error refreshing curriculum: $e');
+    }
+  }
 }
 
 

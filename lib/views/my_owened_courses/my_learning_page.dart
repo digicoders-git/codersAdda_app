@@ -200,7 +200,7 @@ class MyLearningPage extends StatelessWidget {
         // Navigate to course player
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => MyLearningCoursePlayer()),
+          MaterialPageRoute(builder: (context) => MyLearningCoursePlayer(courseId: course.id)),
         );
       },
       child: Card(
