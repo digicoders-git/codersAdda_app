@@ -5,6 +5,19 @@ import 'package:coders_adda_app/services/api_urls.dart';
 class CourseService {
   final ApiClient _apiClient = ApiClient();
 
+  Future<Map<String, dynamic>> validateCoupon(String code, double amount) async {
+    try {
+      final body = {
+        'code': code,
+        'amount': amount,
+      };
+      final response = await _apiClient.post(ApiUrls.validateCoupon, body);
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<List<CourseCategory>> getCategories({required String priceType}) async {
     try {
       final String url = '${ApiUrls.getCourseCategories}?priceType=$priceType';
@@ -79,12 +92,15 @@ class CourseService {
     }
   }
 
-  Future<Map<String, dynamic>> createOrder(String itemId, {String itemType = 'course'}) async {
+  Future<Map<String, dynamic>> createOrder(String itemId, {String itemType = 'course', String? couponCode}) async {
     try {
       final body = {
         'itemType': itemType,
         'itemId': itemId,
       };
+      if (couponCode != null && couponCode.isNotEmpty) {
+        body['couponCode'] = couponCode;
+      }
       final response = await _apiClient.post(ApiUrls.createOrder, body);
       return response;
     } catch (e) {

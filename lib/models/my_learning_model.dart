@@ -115,7 +115,7 @@ class MyLearningPdf {
     return MyLearningPdf(
       id: json['_id'] ?? '',
       title: json['title'] ?? '',
-      size: '0 MB',
+      size: json['pdf']?['fileSize'] ?? '0 MB',
       isFree: json['priceType'] == 'free',
       downloadUrl: json['pdf']?['url'] ?? '',
       authorName: json['authorName'] ?? '',

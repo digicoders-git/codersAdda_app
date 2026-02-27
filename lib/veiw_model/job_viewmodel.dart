@@ -202,7 +202,7 @@ class JobsViewModel with ChangeNotifier {
 
   // --- Payment & Unlocking Logic ---
 
-  Future<void> handleJobUnlock(JobDetail job, ProfileViewModel profileViewModel, {required Function(String) onSuccess, required Function(String) onError, required Function(Map<String, dynamic>) onPaymentRequired}) async {
+  Future<void> handleJobUnlock(JobDetail job, ProfileViewModel profileViewModel, {required Function(String) onSuccess, required Function(String) onError, required Function(Map<String, dynamic>) onPaymentRequired, String? couponCode}) async {
     _isProcessingPayment = true;
     _purchasingJobId = job.id;
     notifyListeners();
@@ -258,6 +258,7 @@ class JobsViewModel with ChangeNotifier {
           final orderResponse = await _apiClient.post(ApiUrls.createOrder, {
             'itemType': 'job',
             'itemId': job.id,
+            if (couponCode != null && couponCode.isNotEmpty) 'couponCode': couponCode,
           });
 
           if (orderResponse['success'] == true) {

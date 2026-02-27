@@ -7,6 +7,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:coders_adda_app/veiw_model/job_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
+import 'package:coders_adda_app/services/course_service.dart';
 
 class JobDetailsPage extends StatefulWidget {
   final JobDetail job;
@@ -20,6 +21,13 @@ class JobDetailsPage extends StatefulWidget {
 class _JobDetailsPageState extends State<JobDetailsPage> {
   late Razorpay _razorpay;
   final JobsViewModel _viewModel = JobsViewModel();
+  final TextEditingController _couponController = TextEditingController();
+  final CourseService _courseService = CourseService();
+  bool _isValidatingCoupon = false;
+  String? _couponErrorMessage;
+  double? _discountAmount;
+  double? _finalAmount;
+  bool _isCouponApplied = false;
 
   @override
   void initState() {
@@ -33,6 +41,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
   @override
   void dispose() {
     _razorpay.clear();
+    _couponController.dispose();
     super.dispose();
   }
 
@@ -538,37 +547,128 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
   }
 
   void _showApplyDialog(BuildContext context, JobsViewModel viewModel, JobDetail job) {
+    _couponController.clear();
+    _couponErrorMessage = null;
+    _isCouponApplied = false;
+    _discountAmount = null;
+    _finalAmount = null;
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(job.priceType == 'free' ? 'Enroll for Job' : 'Unlock Job Details'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Are you sure you want to ${job.priceType == 'free' ? 'enroll for' : 'unlock'} ${job.jobTitle} at ${job.companyName}?'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              final profileViewModel = context.read<ProfileViewModel>();
-              viewModel.handleJobUnlock(
-                job, 
-                profileViewModel,
-                onSuccess: (msg) => _showSnackBar(msg, Colors.green),
-                onError: (msg) => _showSnackBar(msg, Colors.red),
-                onPaymentRequired: (orderResponse) => _startPayment(orderResponse),
-              );
-            },
-            child: Text(job.priceType == 'free' ? 'Enroll Now' : 'Unlock Now'),
-          ),
-        ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text(job.priceType == 'free' ? 'Enroll for Job' : 'Unlock Job Details'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Are you sure you want to ${job.priceType == 'free' ? 'enroll for' : 'unlock'} ${job.jobTitle} at ${job.companyName}?'),
+                if (job.priceType != 'free') ...[
+                  SizedBox(height: AppSizer.deviceHeight2),
+                  if (job.price != null) ...[
+                    Text('Original Price: ₹${job.price}', style: TextStyle(fontWeight: FontWeight.w500)),
+                    if (_isCouponApplied) ...[
+                      Text('Discount: -₹$_discountAmount', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                      Text('Total To Pay: ₹$_finalAmount', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppSizer.deviceSp16)),
+                    ],
+                    SizedBox(height: AppSizer.deviceHeight2),
+                  ],
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _couponController,
+                          decoration: InputDecoration(
+                            labelText: 'Coupon Code (Optional)',
+                            hintText: 'Enter code',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.confirmation_number_outlined),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: _isValidatingCoupon ? null : () async {
+                          final code = _couponController.text.trim();
+                          if (code.isEmpty) return;
+                          
+                          setDialogState(() {
+                            _isValidatingCoupon = true;
+                            _couponErrorMessage = null;
+                          });
+                          
+                          try {
+                            double amount = job.price.toDouble();
+                            final res = await _courseService.validateCoupon(code, amount);
+                            if (res['success'] == true) {
+                              setDialogState(() {
+                                _isCouponApplied = true;
+                                _discountAmount = (res['discountAmount'] as num).toDouble();
+                                _finalAmount = (res['finalAmount'] as num).toDouble();
+                              });
+                              setState(() {}); // Update outer UI just in case
+                            } else {
+                              setDialogState(() {
+                                _couponErrorMessage = res['message'] ?? 'Invalid coupon';
+                                _isCouponApplied = false;
+                              });
+                            }
+                          } catch (e) {
+                            setDialogState(() {
+                              _couponErrorMessage = e.toString().replaceAll('Exception:', '').replaceAll('Error:', '').trim();
+                              _isCouponApplied = false;
+                            });
+                          } finally {
+                            setDialogState(() {
+                              _isValidatingCoupon = false;
+                            });
+                          }
+                        },
+                        child: _isValidatingCoupon 
+                          ? SizedBox(height: 15, width: 15, child: CircularProgressIndicator(strokeWidth: 2))
+                          : Text('Apply'),
+                      ),
+                    ],
+                  ),
+                  if (_couponErrorMessage != null) 
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(_couponErrorMessage!, style: TextStyle(color: Colors.red, fontSize: AppSizer.deviceSp12)),
+                    ),
+                  if (_isCouponApplied)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text('Coupon Applied Successfully!', style: TextStyle(color: Colors.green, fontSize: AppSizer.deviceSp12, fontWeight: FontWeight.bold)),
+                    ),
+                ],
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: _isValidatingCoupon ? null : () {
+                  final coupon = _couponController.text.trim();
+                  Navigator.pop(context);
+                  final profileViewModel = context.read<ProfileViewModel>();
+                  viewModel.handleJobUnlock(
+                    job, 
+                    profileViewModel,
+                    couponCode: _isCouponApplied ? coupon : null,
+                    onSuccess: (msg) => _showSnackBar(msg, Colors.green),
+                    onError: (msg) => _showSnackBar(msg, Colors.red),
+                    onPaymentRequired: (orderResponse) => _startPayment(orderResponse),
+                  );
+                },
+                child: Text(job.priceType == 'free' ? 'Enroll Now' : 'Unlock Now'),
+              ),
+            ],
+          );
+        }
       ),
     );
   }

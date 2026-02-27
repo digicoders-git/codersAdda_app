@@ -1,8 +1,10 @@
-// views/subscription_checkout_page.dart
-import 'package:flutter/material.dart';
-import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
-import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/models/subscription_model.dart';
+import 'package:coders_adda_app/services/course_service.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
+import 'package:provider/provider.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:coders_adda_app/views/buy_new_courses_pages/purchase_success_modal.dart';
+import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 
 class SubscriptionCheckoutPage extends StatefulWidget {
   final SubscriptionPlan plan;
@@ -17,21 +19,79 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
   final TextEditingController _couponController = TextEditingController();
   bool _isCouponApplied = false;
   double _discountAmount = 0;
+  double? _finalAmount;
+  double? _discountPercent;
   String _selectedCoupon = '';
   String _selectedPaymentMethod = 'UPI';
-  
-  final List<SubscriptionCoupon> _availableCoupons = [
-    SubscriptionCoupon(code: 'STUDENT30', discount: 30, description: '30% off for students', type: 'percentage'),
-    SubscriptionCoupon(code: 'WELCOME20', discount: 20, description: '20% off on first subscription', type: 'percentage'),
-    SubscriptionCoupon(code: 'FLAT50', discount: 50, description: 'Flat ₹50 off', type: 'fixed'),
-    SubscriptionCoupon(code: 'CODERS25', discount: 25, description: '25% off for Coders Adda', type: 'percentage'),
-  ];
+  bool _isValidatingCoupon = false;
+  String? _couponErrorMessage;
+
+  late Razorpay _razorpay;
+  final CourseService _courseService = CourseService();
+  bool _isProcessing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear();
+    _couponController.dispose();
+    super.dispose();
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    setState(() => _isProcessing = true);
+    try {
+      final verifyBody = {
+        'razorpay_order_id': response.orderId,
+        'razorpay_payment_id': response.paymentId,
+        'razorpay_signature': response.signature,
+      };
+      final result = await _courseService.verifyPayment(verifyBody);
+      if (mounted) {
+        if (result['success'] == true) {
+          PurchaseSuccessModal.show(
+            context,
+            title: widget.plan.name,
+            itemType: 'subscription',
+            onGoToMyLearning: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: 3)), // Assuming 3 is subscription tab
+                (route) => route.isFirst,
+              );
+            },
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Verification failed'), backgroundColor: Colors.red));
+        }
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Payment Failed: ${response.message}'), backgroundColor: Colors.red));
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('External Wallet: ${response.walletName}')));
+  }
 
   @override
   Widget build(BuildContext context) {
     final double basePrice = widget.plan.price;
-    final double gst = basePrice * 0.18; // 18% GST
-    final double totalAmount = basePrice + gst - _discountAmount;
+    final double totalAmount = _finalAmount ?? basePrice;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -64,15 +124,16 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
                   SizedBox(height: AppSizer.deviceHeight4),
 
                   // Coupon Section
-                  _buildCouponSection(),
+                  _buildCouponSection(basePrice),
                   SizedBox(height: AppSizer.deviceHeight4),
-
+/*
                   // Available Coupons
                   _buildAvailableCoupons(),
                   SizedBox(height: AppSizer.deviceHeight4),
+*/
 
                   // Price Breakdown
-                  _buildPriceBreakdown(basePrice, gst, totalAmount),
+                  _buildPriceBreakdown(basePrice, totalAmount),
                   SizedBox(height: AppSizer.deviceHeight4),
 
                   // Payment Methods
@@ -203,7 +264,7 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
     );
   }
 
-  Widget _buildCouponSection() {
+  Widget _buildCouponSection(double amount) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -238,20 +299,29 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
                 ),
                 SizedBox(width: AppSizer.deviceWidth2),
                 ElevatedButton(
-                  onPressed: _applyCoupon,
+                  onPressed: _isValidatingCoupon ? null : () => _applyCoupon(amount),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text(
-                    'Apply',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: _isValidatingCoupon 
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : Text(
+                        'Apply',
+                        style: TextStyle(color: Colors.white),
+                      ),
                 ),
               ],
             ),
+            if (_couponErrorMessage != null) ...[
+              SizedBox(height: AppSizer.deviceHeight1),
+              Text(
+                _couponErrorMessage!,
+                style: TextStyle(color: Colors.red, fontSize: AppSizer.deviceSp12),
+              ),
+            ],
             if (_isCouponApplied) ...[
               SizedBox(height: AppSizer.deviceHeight2),
               Container(
@@ -304,106 +374,10 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
   }
 
   Widget _buildAvailableCoupons() {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Available Coupons',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            ..._availableCoupons.map((coupon) => _buildCouponItem(coupon)).toList(),
-          ],
-        ),
-      ),
-    );
+    return SizedBox.shrink();
   }
 
-  Widget _buildCouponItem(SubscriptionCoupon coupon) {
-    return Container(
-      margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
-      padding: EdgeInsets.all(AppSizer.deviceWidth3),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(AppSizer.deviceWidth2),
-            decoration: BoxDecoration(
-              color: AppColors.primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              coupon.code,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryColor,
-              ),
-            ),
-          ),
-          SizedBox(width: AppSizer.deviceWidth3),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  coupon.description,
-                  style: TextStyle(
-                    fontSize: AppSizer.deviceSp14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  coupon.type == 'percentage' 
-                      ? '${coupon.discount}% OFF' 
-                      : '₹${coupon.discount} OFF',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: AppSizer.deviceSp12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              _couponController.text = coupon.code;
-              _applyCoupon();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSizer.deviceWidth3,
-                vertical: AppSizer.deviceHeight1,
-              ),
-            ),
-            child: Text(
-              'Apply',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: AppSizer.deviceSp12,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPriceBreakdown(double basePrice, double gst, double totalAmount) {
+  Widget _buildPriceBreakdown(double basePrice, double totalAmount) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -419,14 +393,13 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
               ),
             ),
             SizedBox(height: AppSizer.deviceHeight3),
-            _buildPriceRow('Subscription Price', '₹${basePrice.toStringAsFixed(2)}'),
-            _buildPriceRow('GST (18%)', '₹${gst.toStringAsFixed(2)}'),
+            _buildPriceRow('Original Price', '₹${basePrice.toStringAsFixed(2)}'),
             if (_discountAmount > 0)
-              _buildPriceRow('Discount', '-₹${_discountAmount.toStringAsFixed(2)}', isDiscount: true),
+              _buildPriceRow('Coupon Discount', '-₹${_discountAmount.toStringAsFixed(2)}', isDiscount: true),
             Divider(),
             SizedBox(height: AppSizer.deviceHeight2),
             _buildPriceRow(
-              'Total Amount',
+              'Total To Pay',
               '₹${totalAmount.toStringAsFixed(2)}',
               isTotal: true,
             ),
@@ -564,7 +537,7 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
             ),
             Expanded(
               child: ElevatedButton(
-                onPressed: _proceedToPayment,
+                onPressed: _isProcessing ? null : _proceedToPayment,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryColor,
                   padding: EdgeInsets.symmetric(
@@ -575,14 +548,16 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: Text(
-                  'Subscribe Now',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: AppSizer.deviceSp16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isProcessing 
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : Text(
+                      'Subscribe Now',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: AppSizer.deviceSp16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
               ),
             ),
           ],
@@ -637,34 +612,46 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
     );
   }
 
-  void _applyCoupon() {
+  void _applyCoupon(double amount) async {
     final enteredCode = _couponController.text.trim();
-    final coupon = _availableCoupons.firstWhere(
-      (c) => c.code == enteredCode,
-      orElse: () => SubscriptionCoupon(code: '', discount: 0, description: '', type: ''),
-    );
+    if (enteredCode.isEmpty) return;
 
-    if (coupon.code.isNotEmpty) {
+    setState(() {
+      _isValidatingCoupon = true;
+      _couponErrorMessage = null;
+    });
+
+    try {
+      final response = await _courseService.validateCoupon(enteredCode, amount);
+      if (response['success'] == true) {
+        setState(() {
+          _isCouponApplied = true;
+          _selectedCoupon = enteredCode;
+          _discountAmount = (response['discountAmount'] as num).toDouble();
+          _finalAmount = (response['finalAmount'] as num).toDouble();
+          _discountPercent = (response['discountPercent'] as num).toDouble();
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Coupon Applied Successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _couponErrorMessage = response['message'] ?? 'Invalid coupon code';
+        });
+      }
+    } catch (e) {
       setState(() {
-        _isCouponApplied = true;
-        _selectedCoupon = coupon.code;
-        _discountAmount = coupon.type == 'percentage' 
-            ? (widget.plan.price * coupon.discount / 100)
-            : coupon.discount.toDouble();
+        _couponErrorMessage = e.toString().replaceAll('Exception:', '').replaceAll('Error:', '').trim();
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Coupon applied successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Invalid coupon code'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    } finally {
+      setState(() {
+        _isValidatingCoupon = false;
+      });
     }
   }
 
@@ -672,65 +659,58 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
     setState(() {
       _isCouponApplied = false;
       _discountAmount = 0;
+      _finalAmount = null;
+      _discountPercent = null;
       _selectedCoupon = '';
       _couponController.clear();
+      _couponErrorMessage = null;
     });
   }
 
-  void _proceedToPayment() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Confirm Subscription'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Plan: ${widget.plan.name}'),
-            Text('Duration: ${widget.plan.duration}'),
-            Text('Amount: ₹${(widget.plan.price * 1.18 - _discountAmount).toStringAsFixed(2)}'),
-            Text('Payment Method: $_selectedPaymentMethod'),
-            if (_isCouponApplied) Text('Coupon: $_selectedCoupon'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _processSubscriptionPayment();
-            },
-            child: Text('Confirm Payment'),
-          ),
-        ],
-      ),
-    );
+  void _proceedToPayment() async {
+    setState(() => _isProcessing = true);
+    try {
+      final couponCode = _isCouponApplied ? _selectedCoupon : null;
+      final orderResponse = await _courseService.createOrder(
+        widget.plan.id, 
+        itemType: 'subscription', 
+        couponCode: couponCode
+      );
+
+      if (orderResponse['success'] == true) {
+        final profile = context.read<ProfileViewModel>().user;
+        var options = {
+          'key': orderResponse['key'],
+          'amount': orderResponse['amount'],
+          'name': 'Coders Adda',
+          'order_id': orderResponse['orderId'],
+          'description': widget.plan.name,
+          'timeout': 300,
+          'prefill': {
+            'contact': profile?.mobile ?? '',
+            'email': profile?.email ?? '',
+            'name': profile?.name ?? ''
+          },
+          'theme': {'color': '#2196F3'}
+        };
+        _razorpay.open(options);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(orderResponse['message'] ?? 'Order creation failed'), backgroundColor: Colors.red)
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
   }
 
   void _processSubscriptionPayment() {
-    // Simulate payment processing
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Processing subscription...'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-
-    // After payment success
-    Future.delayed(Duration(seconds: 2), () {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Subscription activated successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      
-      // Go back to previous page
-      Navigator.pop(context);
-    });
+    // This method is now replaced by _proceedToPayment logic directly or called via Confirm
+    _proceedToPayment();
   }
 }
 

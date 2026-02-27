@@ -22,15 +22,12 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
   final TextEditingController _couponController = TextEditingController();
   bool _isCouponApplied = false;
   double _discountAmount = 0;
+  double? _finalAmount;
+  double? _discountPercent;
   String _selectedCoupon = '';
   String _selectedPaymentMethod = 'UPI';
-  
-  final List<Coupon> _availableCoupons = [
-    Coupon(code: 'STUDENT50', discount: 50, description: '50% off for students', type: 'percentage'),
-    Coupon(code: 'WELCOME30', discount: 30, description: '30% off on first purchase', type: 'percentage'),
-    Coupon(code: 'FLAT100', discount: 100, description: 'Flat ₹100 off', type: 'fixed'),
-    Coupon(code: 'CODERS20', discount: 20, description: '20% off for Coders Adda', type: 'percentage'),
-  ];
+  bool _isValidatingCoupon = false;
+  String? _couponErrorMessage;
 
   late Razorpay _razorpay;
   final CourseService _courseService = CourseService();
@@ -131,8 +128,7 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
   @override
   Widget build(BuildContext context) {
     final double basePrice = widget.course.price;
-    final double gst = basePrice * 0.18; // 18% GST
-    final double totalAmount = basePrice + gst - _discountAmount;
+    final double totalAmount = _finalAmount ?? basePrice;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -165,15 +161,16 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
                   SizedBox(height: AppSizer.deviceHeight4),
 
                   // Coupon Section
-                  _buildCouponSection(),
+                  _buildCouponSection(basePrice),
                   SizedBox(height: AppSizer.deviceHeight4),
-
+/*
                   // Available Coupons
                   _buildAvailableCoupons(),
                   SizedBox(height: AppSizer.deviceHeight4),
+*/
 
                   // Price Breakdown
-                  _buildPriceBreakdown(basePrice, gst, totalAmount),
+                  _buildPriceBreakdown(basePrice, totalAmount),
                   SizedBox(height: AppSizer.deviceHeight4),
 
                   // Payment Methods
@@ -280,7 +277,7 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
     );
   }
 
-  Widget _buildCouponSection() {
+  Widget _buildCouponSection(double amount) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -315,20 +312,29 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
                 ),
                 SizedBox(width: AppSizer.deviceWidth2),
                 ElevatedButton(
-                  onPressed: _applyCoupon,
+                  onPressed: _isValidatingCoupon ? null : () => _applyCoupon(amount),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text(
-                    'Apply',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  child: _isValidatingCoupon 
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : Text(
+                        'Apply',
+                        style: TextStyle(color: Colors.white),
+                      ),
                 ),
               ],
             ),
+            if (_couponErrorMessage != null) ...[
+              SizedBox(height: AppSizer.deviceHeight1),
+              Text(
+                _couponErrorMessage!,
+                style: TextStyle(color: Colors.red, fontSize: AppSizer.deviceSp12),
+              ),
+            ],
             if (_isCouponApplied) ...[
               SizedBox(height: AppSizer.deviceHeight2),
               Container(
@@ -381,106 +387,10 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
   }
 
   Widget _buildAvailableCoupons() {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Available Coupons',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            ..._availableCoupons.map((coupon) => _buildCouponItem(coupon)).toList(),
-          ],
-        ),
-      ),
-    );
+    return SizedBox.shrink();
   }
 
-  Widget _buildCouponItem(Coupon coupon) {
-    return Container(
-      margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
-      padding: EdgeInsets.all(AppSizer.deviceWidth3),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(AppSizer.deviceWidth2),
-            decoration: BoxDecoration(
-              color: AppColors.primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              coupon.code,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.primaryColor,
-              ),
-            ),
-          ),
-          SizedBox(width: AppSizer.deviceWidth3),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  coupon.description,
-                  style: TextStyle(
-                    fontSize: AppSizer.deviceSp14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                Text(
-                  coupon.type == 'percentage' 
-                      ? '${coupon.discount}% OFF' 
-                      : '₹${coupon.discount} OFF',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: AppSizer.deviceSp12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              _couponController.text = coupon.code;
-              _applyCoupon();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
-              ),
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSizer.deviceWidth3,
-                vertical: AppSizer.deviceHeight1,
-              ),
-            ),
-            child: Text(
-              'Apply',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: AppSizer.deviceSp12,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPriceBreakdown(double basePrice, double gst, double totalAmount) {
+  Widget _buildPriceBreakdown(double basePrice, double totalAmount) {
     return Card(
       elevation: 2,
       child: Padding(
@@ -496,14 +406,13 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
               ),
             ),
             SizedBox(height: AppSizer.deviceHeight3),
-            _buildPriceRow('Course Price', '₹${basePrice.toStringAsFixed(2)}'),
-            _buildPriceRow('GST (18%)', '₹${gst.toStringAsFixed(2)}'),
+            _buildPriceRow('Original Price', '₹${basePrice.toStringAsFixed(2)}'),
             if (_discountAmount > 0)
-              _buildPriceRow('Discount', '-₹${_discountAmount.toStringAsFixed(2)}', isDiscount: true),
+              _buildPriceRow('Coupon Discount', '-₹${_discountAmount.toStringAsFixed(2)}', isDiscount: true),
             Divider(),
             SizedBox(height: AppSizer.deviceHeight2),
             _buildPriceRow(
-              'Total Amount',
+              'Total To Pay',
               '₹${totalAmount.toStringAsFixed(2)}',
               isTotal: true,
             ),
@@ -657,34 +566,46 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
     );
   }
 
-  void _applyCoupon() {
+  void _applyCoupon(double amount) async {
     final enteredCode = _couponController.text.trim();
-    final coupon = _availableCoupons.firstWhere(
-      (c) => c.code == enteredCode,
-      orElse: () => Coupon(code: '', discount: 0, description: '', type: ''),
-    );
+    if (enteredCode.isEmpty) return;
 
-    if (coupon.code.isNotEmpty) {
+    setState(() {
+      _isValidatingCoupon = true;
+      _couponErrorMessage = null;
+    });
+
+    try {
+      final response = await _courseService.validateCoupon(enteredCode, amount);
+      if (response['success'] == true) {
+        setState(() {
+          _isCouponApplied = true;
+          _selectedCoupon = enteredCode;
+          _discountAmount = (response['discountAmount'] as num).toDouble();
+          _finalAmount = (response['finalAmount'] as num).toDouble();
+          _discountPercent = (response['discountPercent'] as num).toDouble();
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Coupon Applied Successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _couponErrorMessage = response['message'] ?? 'Invalid coupon code';
+        });
+      }
+    } catch (e) {
       setState(() {
-        _isCouponApplied = true;
-        _selectedCoupon = coupon.code;
-        _discountAmount = coupon.type == 'percentage' 
-            ? (widget.course.price * coupon.discount / 100)
-            : coupon.discount.toDouble();
+        _couponErrorMessage = e.toString().replaceAll('Exception:', '').replaceAll('Error:', '').trim();
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Coupon applied successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Invalid coupon code'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    } finally {
+      setState(() {
+        _isValidatingCoupon = false;
+      });
     }
   }
 
@@ -692,8 +613,11 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
     setState(() {
       _isCouponApplied = false;
       _discountAmount = 0;
+      _finalAmount = null;
+      _discountPercent = null;
       _selectedCoupon = '';
       _couponController.clear();
+      _couponErrorMessage = null;
     });
   }
 
@@ -703,7 +627,8 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
     });
 
     try {
-      final orderResponse = await _courseService.createOrder(widget.course.id, itemType: widget.itemType);
+      final couponCode = _isCouponApplied ? _selectedCoupon : null;
+      final orderResponse = await _courseService.createOrder(widget.course.id, itemType: widget.itemType, couponCode: couponCode);
       
       if (orderResponse['success'] == true) {
         final profile = context.read<ProfileViewModel>().user;

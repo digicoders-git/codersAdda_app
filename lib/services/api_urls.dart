@@ -47,4 +47,7 @@ class ApiUrls {
 
   // Jobs V3 Endpoints
   static const String getJobsV3 = '$baseUrl/job-v3/get';
+
+  // Coupon Endpoints
+  static const String validateCoupon = '$baseUrl/coupon/validate';
 }

@@ -116,12 +116,19 @@ class ApiClient {
       case 201:
         return jsonDecode(response.body);
       case 400:
-        throw Exception('Bad Request: ${response.body}');
+      case 404:
+        try {
+          final body = jsonDecode(response.body);
+          if (body is Map && body.containsKey('message')) {
+            return body;
+          }
+        } catch (_) {}
+        throw Exception('Error: ${response.body}');
       case 401:
       case 403:
-        // You can add logic here to logout user if token expires
         throw Exception('Unauthorized: Please login again');
       case 500:
+        throw Exception('Internal Server Error');
       default:
         throw Exception('Error occurred with status code: ${response.statusCode}');
     }
