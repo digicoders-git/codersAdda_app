@@ -4,6 +4,7 @@ import 'package:coders_adda_app/veiw_model/my_learning_courses_play_viewmodel.da
 import 'package:coders_adda_app/views/my_owened_courses/course_faq_tab_page.dart';
 import 'package:coders_adda_app/views/my_owened_courses/course_review_page.dart';
 import 'package:coders_adda_app/views/my_owened_courses/course_syllabus_page.dart';
+import 'package:coders_adda_app/views/common/in_app_pdf_viewer_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pod_player/pod_player.dart';
@@ -106,10 +107,21 @@ class _CourseDetailScreenState extends State<MyLearningCoursePlayer>
                   width: double.infinity,
                   height: AppSizer.deviceHeight25,
                   color: Colors.black,
-                  child: _podController != null && _podController!.isInitialised
-                      ? PodVideoPlayer(controller: _podController!)
-                      : const Center(
-                          child: CircularProgressIndicator(color: Colors.white)),
+                  child: (viewModel.currentVideoUrl == null || viewModel.currentVideoUrl!.isEmpty)
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.videocam_off, color: Colors.white54, size: 48),
+                              SizedBox(height: 8),
+                              Text('No video available for this lesson', style: TextStyle(color: Colors.white54)),
+                            ],
+                          ),
+                        )
+                      : _podController != null && _podController!.isInitialised
+                          ? PodVideoPlayer(controller: _podController!)
+                          : const Center(
+                              child: CircularProgressIndicator(color: Colors.white)),
                 ),
 
                 // ── Rest of screen (scrollable info + fixed tabs) ──

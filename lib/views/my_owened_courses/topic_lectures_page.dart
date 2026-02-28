@@ -4,6 +4,7 @@ import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/veiw_model/my_learning_courses_play_viewmodel.dart';
 import 'package:coders_adda_app/views/my_owened_courses/lecture_video_player_page.dart';
+import 'package:coders_adda_app/views/common/in_app_pdf_viewer_page.dart';
 import 'package:flutter/material.dart';
 
 class TopicLecturesPage extends StatefulWidget {
@@ -337,8 +338,14 @@ class _LectureCard extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Opening PDF: ${lecture.resource.url}')),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => InAppPdfViewerPage(
+                                  pdfUrl: lecture.resource.url,
+                                  title: lecture.title,
+                                ),
+                              ),
                             );
                           },
                           icon: const Icon(Icons.picture_as_pdf, size: 18),

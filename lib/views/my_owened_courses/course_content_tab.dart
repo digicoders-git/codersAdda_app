@@ -61,7 +61,9 @@ class CourseContentTab extends StatelessWidget {
                               borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
                             ),
                             child: Icon(
-                              isSelected ? Icons.pause : Icons.play_arrow,
+                              (lesson.videoUrl.isEmpty && lesson.pdfUrl != null && lesson.pdfUrl!.isNotEmpty)
+                                  ? Icons.picture_as_pdf
+                                  : (isSelected ? Icons.pause : Icons.play_arrow),
                               color: isSelected ? Colors.white : AppColors.primaryColor,
                               size: AppSizer.deviceSp16,
                             ),

@@ -1,10 +1,10 @@
 import 'package:coders_adda_app/models/course_model.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
+import 'package:coders_adda_app/views/common/in_app_pdf_viewer_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pod_player/pod_player.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class LectureVideoPlayerPage extends StatefulWidget {
   final CourseLecture lecture;
@@ -26,20 +26,17 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
     _initPlayer();
   }
 
-  Future<void> _openPdf(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not open PDF. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+  void _openPdf(String url) {
+    if (url.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InAppPdfViewerPage(
+          pdfUrl: url,
+          title: widget.lecture.title,
+        ),
+      ),
+    );
   }
 
   void _initPlayer() {

@@ -140,6 +140,8 @@ class _MyLearningPdfViewerState extends State<MyLearningPdfViewer> {
               : SfPdfViewer.file(
                   File(_localPath!),
                   key: _pdfViewerKey,
+                  canShowScrollHead: false,
+                  canShowScrollStatus: false,
                 ),
     );
   }
