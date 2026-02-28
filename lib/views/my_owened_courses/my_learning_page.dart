@@ -658,16 +658,7 @@ class MyLearningPage extends StatelessWidget {
                           Icon(
                             Icons.picture_as_pdf,
                             color: Colors.red,
-                            size: AppSizer.deviceSp32,
-                          ),
-                          SizedBox(height: AppSizer.deviceHeight1),
-                          Text(
-                            "$pageCount Pages",
-                            style: TextStyle(
-                              fontSize: AppSizer.deviceSp12,
-                              color: Colors.red,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            size: AppSizer.deviceSp40,
                           ),
                         ],
                       ),
