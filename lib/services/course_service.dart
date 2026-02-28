@@ -117,12 +117,13 @@ class CourseService {
     }
   }
 
-  Future<List<dynamic>> getCurriculumByCourse(String courseId) async {
+  Future<List<CurriculumTopic>> getCurriculumByCourse(String courseId) async {
     try {
       final String url = '${ApiUrls.getCurriculumByCourse}/$courseId';
       final response = await _apiClient.get(url);
       if (response['success'] == true) {
-        return response['data'] as List<dynamic>;
+        final List<dynamic> data = response['data'];
+        return data.map((item) => CurriculumTopic.fromJson(item)).toList();
       }
       return [];
     } catch (e) {
@@ -131,12 +132,13 @@ class CourseService {
     }
   }
 
-  Future<List<dynamic>> getLecturesByTopic(String topicId) async {
+  Future<List<CourseLecture>> getLecturesByTopic(String topicId) async {
     try {
       final String url = '${ApiUrls.getLectureByTopic}/$topicId';
       final response = await _apiClient.get(url);
       if (response['success'] == true) {
-        return response['data'] as List<dynamic>;
+        final List<dynamic> data = response['data'];
+        return data.map((item) => CourseLecture.fromJson(item)).toList();
       }
       return [];
     } catch (e) {

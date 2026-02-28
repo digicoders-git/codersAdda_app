@@ -6,7 +6,9 @@ class CoursePlayerViewModel extends ChangeNotifier {
   final CourseService _courseService = CourseService();
   
   Course? _course;
+  List<CurriculumTopic> _curriculumTopics = [];
   bool _isLoading = false;
+  bool _isCurriculumLoading = false;
   String? _errorMessage;
   CourseLesson? _selectedLesson;
   String? _selectedTopicId;
@@ -18,7 +20,9 @@ class CoursePlayerViewModel extends ChangeNotifier {
 
   // Getters
   Course? get course => _course;
+  List<CurriculumTopic> get curriculumTopics => _curriculumTopics;
   bool get isLoading => _isLoading;
+  bool get isCurriculumLoading => _isCurriculumLoading;
   String? get errorMessage => _errorMessage;
   CourseLesson? get selectedLesson => _selectedLesson;
   String? get selectedTopicId => _selectedTopicId;
@@ -47,6 +51,13 @@ class CoursePlayerViewModel extends ChangeNotifier {
 
     try {
       _course = await _courseService.getCourseDetailsById(courseId);
+      
+      // Also fetch specialized curriculum
+      _isCurriculumLoading = true;
+      notifyListeners();
+      _curriculumTopics = await _courseService.getCurriculumByCourse(courseId);
+      _isCurriculumLoading = false;
+
       if (_course != null && _course!.curriculum.isNotEmpty) {
         // Automatically select the first lesson if available
         for (var module in _course!.curriculum) {

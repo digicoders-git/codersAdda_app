@@ -249,3 +249,95 @@ class CourseLesson {
     );
   }
 }
+
+class CurriculumTopic {
+  final String id;
+  final String course;
+  final String topic;
+  final bool isActive;
+  final DateTime createdAt;
+
+  CurriculumTopic({
+    required this.id,
+    required this.course,
+    required this.topic,
+    required this.isActive,
+    required this.createdAt,
+  });
+
+  factory CurriculumTopic.fromJson(Map<String, dynamic> json) {
+    return CurriculumTopic(
+      id: json['_id'] ?? '',
+      course: json['course'] ?? '',
+      topic: json['topic'] ?? '',
+      isActive: json['isActive'] ?? true,
+      createdAt: json['createdAt'] != null 
+          ? DateTime.parse(json['createdAt']) 
+          : DateTime.now(),
+    );
+  }
+}
+
+class LectureVideo {
+  final String url;
+  final String publicId;
+  LectureVideo({required this.url, required this.publicId});
+  factory LectureVideo.fromJson(Map<String, dynamic> json) =>
+      LectureVideo(url: json['url'] ?? '', publicId: json['public_id'] ?? '');
+}
+
+class CourseLecture {
+  final String id;
+  final String title;
+  final String description;
+  final String duration;
+  final int srNo;
+  final String privacy;
+  final bool isActive;
+  final LectureVideo video;
+  final LectureVideo thumbnail;
+  final LectureVideo resource;
+  final String courseName;
+  final String topicName;
+
+  CourseLecture({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.duration,
+    required this.srNo,
+    required this.privacy,
+    required this.isActive,
+    required this.video,
+    required this.thumbnail,
+    required this.resource,
+    required this.courseName,
+    required this.topicName,
+  });
+
+  bool get isLocked => privacy == 'locked';
+
+  factory CourseLecture.fromJson(Map<String, dynamic> json) {
+    return CourseLecture(
+      id: json['_id'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      duration: json['duration'] ?? '0:00',
+      srNo: json['srNo'] ?? 0,
+      privacy: json['privacy'] ?? 'locked',
+      isActive: json['isActive'] ?? true,
+      video: json['video'] != null
+          ? LectureVideo.fromJson(json['video'])
+          : LectureVideo(url: '', publicId: ''),
+      thumbnail: json['thumbnail'] != null
+          ? LectureVideo.fromJson(json['thumbnail'])
+          : LectureVideo(url: '', publicId: ''),
+      resource: json['resource'] != null
+          ? LectureVideo.fromJson(json['resource'])
+          : LectureVideo(url: '', publicId: ''),
+      courseName: (json['course'] is Map) ? (json['course']['title'] ?? '') : '',
+      topicName: (json['topic'] is Map) ? (json['topic']['topic'] ?? '') : '',
+    );
+  }
+}
+
