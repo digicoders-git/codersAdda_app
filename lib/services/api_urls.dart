@@ -52,4 +52,8 @@ class ApiUrls {
 
   // Coupon Endpoints
   static const String validateCoupon = '$baseUrl/coupon/validate';
+
+  // Ambassador Endpoints
+  static const String applyAmbassador = '$baseUrl/ambassador/apply';
+  static const String getAmbassadorStatus = '$baseUrl/ambassador/status';
 }

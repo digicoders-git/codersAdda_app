@@ -596,8 +596,12 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
+import 'package:coders_adda_app/services/api_client.dart';
+import 'package:coders_adda_app/services/api_urls.dart';
 
 class RefralProgram extends StatefulWidget {
   const RefralProgram({super.key});
@@ -615,9 +619,52 @@ class _RefralProgramState extends State<RefralProgram> {
   final TextEditingController _courseController = TextEditingController();
 
   bool _isRegistered = false;
-  String _referralCode = "CAD2024AMB9876";
+  bool _isLoading = false;
+  bool _isFetchingStatus = true;
+  String _status = 'Pending';
+  bool _isAmbassadorReal = false;
+  String _referralCode = "";
   int _successfulReferrals = 0;
   double _totalEarned = 0.0;
+  final ApiClient _apiClient = ApiClient();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStatus();
+  }
+
+  Future<void> _fetchStatus() async {
+    try {
+      final response = await _apiClient.get(ApiUrls.getAmbassadorStatus);
+      if (response != null && response['success'] == true) {
+        final statusVal = response['status']?.toString() ?? 'pending';
+        final statusValLower = statusVal.toLowerCase();
+        
+        final refCode = response['referralCode']?.toString() ?? "";
+        
+        setState(() {
+          _isRegistered = (statusValLower != 'none' && statusValLower != 'null' && statusValLower != '');
+          _status = statusVal;
+          _isAmbassadorReal = response['isAmbassador'] ?? false;
+          _referralCode = (refCode.toLowerCase() == 'none' || refCode.toLowerCase() == 'null') ? "" : refCode;
+          _totalEarned = (response['walletBalance'] ?? 0).toDouble();
+          _successfulReferrals = response['referralCount'] ?? 0;
+          _isFetchingStatus = false;
+        });
+      } else {
+        setState(() {
+          _isRegistered = false;
+          _isFetchingStatus = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isRegistered = false;
+        _isFetchingStatus = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -640,7 +687,9 @@ class _RefralProgramState extends State<RefralProgram> {
           ),
         ),
       ),
-      body: _isRegistered ? _buildAmbassadorDashboard() : _buildRegistrationForm(),
+      body: _isFetchingStatus 
+          ? Center(child: CircularProgressIndicator(color: AppColors.primaryColor))
+          : _isRegistered ? _buildAmbassadorDashboard() : _buildRegistrationForm(),
     );
   }
 
@@ -695,22 +744,6 @@ class _RefralProgramState extends State<RefralProgram> {
             ),
           ),
 
-          // Benefits Grid
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            childAspectRatio: 1.2,
-            crossAxisSpacing: AppSizer.deviceWidth3,
-            mainAxisSpacing: AppSizer.deviceHeight2,
-            padding: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
-            children: [
-              _buildBenefitCard('💸', 'Cash Rewards', 'Earn up to ₹10,000', Colors.orange),
-              _buildBenefitCard('🏆', 'Certification', 'Official certificate', Colors.blue),
-              _buildBenefitCard('📚', 'Free Courses', 'Premium access', Colors.green),
-              _buildBenefitCard('🚀', 'Growth', 'Build your network', Colors.purple),
-            ],
-          ),
 
           // Registration Form
           Card(
@@ -805,7 +838,7 @@ class _RefralProgramState extends State<RefralProgram> {
                       width: double.infinity,
                       height: AppSizer.deviceHeight7,
                       child: ElevatedButton(
-                        onPressed: _submitForm,
+                        onPressed: _isLoading ? null : _submitForm,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryColor,
                           foregroundColor: Colors.white,
@@ -815,20 +848,22 @@ class _RefralProgramState extends State<RefralProgram> {
                           elevation: 3,
                           shadowColor: AppColors.primaryColor.withOpacity(0.4),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.rocket_launch_rounded, size: AppSizer.deviceSp18),
-                            SizedBox(width: AppSizer.deviceWidth2),
-                            Text(
-                              'Become Ambassador',
-                              style: TextStyle(
-                                fontSize: AppSizer.deviceSp16,
-                                fontWeight: FontWeight.bold,
+                        child: _isLoading
+                            ? CircularProgressIndicator(color: Colors.white)
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.rocket_launch_rounded, size: AppSizer.deviceSp18),
+                                  SizedBox(width: AppSizer.deviceWidth2),
+                                  Text(
+                                    'Become Ambassador',
+                                    style: TextStyle(
+                                      fontSize: AppSizer.deviceSp16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ],
@@ -951,12 +986,12 @@ class _RefralProgramState extends State<RefralProgram> {
                     ),
                     child: Center(
                       child: Text(
-                        _referralCode,
+                        _referralCode.isNotEmpty ? _referralCode : "PENDING...",
                         style: TextStyle(
-                          fontSize: AppSizer.deviceSp22,
+                          fontSize: _referralCode.isNotEmpty ? AppSizer.deviceSp22 : AppSizer.deviceSp16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primaryColor,
-                          letterSpacing: 1.5,
+                          color: _referralCode.isNotEmpty ? AppColors.primaryColor : Colors.grey,
+                          letterSpacing: _referralCode.isNotEmpty ? 1.5 : 1.0,
                         ),
                       ),
                     ),
@@ -1027,10 +1062,10 @@ class _RefralProgramState extends State<RefralProgram> {
             mainAxisSpacing: AppSizer.deviceHeight3,
             padding: EdgeInsets.only(bottom: AppSizer.deviceHeight4),
             children: [
-              _buildStatCard('Total Earned', '₹$_totalEarned', '💰', Colors.green),
-              _buildStatCard('Successful Referrals', '$_successfulReferrals', '👥', Colors.blue),
-              _buildStatCard('Pending Rewards', '₹${_successfulReferrals * 200}', '⏳', Colors.orange),
-              _buildStatCard('Ambassador Level', 'Bronze', '🏆', Colors.purple),
+              _buildStatCard('Status', _status.toUpperCase(), '⏳', Colors.orange),
+              _buildStatCard('Is Ambassador', _isAmbassadorReal ? 'Yes' : 'No', '🏆', Colors.purple),
+              _buildStatCard('Wallet Balance', '₹${_totalEarned.toStringAsFixed(0)}', '💰', Colors.green),
+              _buildStatCard('Referrals', '$_successfulReferrals', '👥', Colors.blue),
             ],
           ),
 
@@ -1226,76 +1261,130 @@ class _RefralProgramState extends State<RefralProgram> {
     );
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      // Form is valid, show success and navigate to dashboard
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.celebration_rounded, color: AppColors.primaryColor),
-              SizedBox(width: AppSizer.deviceWidth2),
-              Text('Application Submitted!'),
-            ],
-          ),
-          content: Text(
-            'Welcome to CodersAdda Campus Ambassador Program! Your referral code is $_referralCode',
-            style: TextStyle(fontSize: AppSizer.deviceSp14),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                setState(() {
-                  _isRegistered = true;
-                });
-              },
-              child: Text(
-                'Get Started',
-                style: TextStyle(
-                  color: AppColors.primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        final Map<String, dynamic> data = {
+          "fullName": _nameController.text.trim(),
+          "email": _emailController.text.trim(),
+          "phoneNumber": _phoneController.text.trim(),
+          "collegeName": _collegeController.text.trim(),
+          "courseStream": _courseController.text.trim()
+        };
+
+        final response = await _apiClient.post(ApiUrls.applyAmbassador, data);
+        
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (response != null && response['success'] == true) {
+          // You might get the referral code from response here if backend returns it
+          // _referralCode = response['referralCode'] ?? "CAD2024AMB9876";
+          
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
+              title: Row(
+                children: [
+                  Icon(Icons.celebration_rounded, color: AppColors.primaryColor),
+                  SizedBox(width: AppSizer.deviceWidth2),
+                  Text('Application Submitted!'),
+                ],
+              ),
+              content: Text(
+                'Welcome to CodersAdda Campus Ambassador Program! Your request has been received.',
+                style: TextStyle(fontSize: AppSizer.deviceSp14),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() {
+                      _isRegistered = true;
+                    });
+                  },
+                  child: Text(
+                    'Get Started',
+                    style: TextStyle(
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      );
+          );
+        } else {
+          // Failure response handling
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response['message'] ?? 'Failed to apply.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        setState(() {
+          _isLoading = false;
+        });
+        String errorMsg = e.toString().replaceAll('Exception: ', '').replaceAll('Error: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   void _shareReferralCode() {
-    // Implement share functionality
-    print('Sharing referral code: $_referralCode');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Referral code shared successfully!'),
-        backgroundColor: AppColors.primaryColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+    if (_referralCode.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Wait for code to be generated!'),
+          backgroundColor: Colors.orange,
         ),
-      ),
+      );
+      return;
+    }
+    Share.share(
+      'Hey, checkout CodersAdda App! Use my referral code: $_referralCode and earn awesome rewards. Try it out now!',
+      subject: 'CodersAdda Referral Code',
     );
   }
 
   void _copyReferralCode() {
-    // Implement copy to clipboard
-    print('Copied referral code: $_referralCode');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Referral code copied to clipboard!'),
-        backgroundColor: AppColors.primaryColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
+    if (_referralCode.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('No referral code to copy!'),
+          backgroundColor: Colors.orange,
         ),
-      ),
-    );
+      );
+      return;
+    }
+    Clipboard.setData(ClipboardData(text: _referralCode)).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Referral code copied to clipboard!'),
+          backgroundColor: AppColors.primaryColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    });
   }
 
   @override
