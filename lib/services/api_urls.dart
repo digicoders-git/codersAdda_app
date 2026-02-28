@@ -8,6 +8,7 @@ class ApiUrls {
   // Profile Endpoints
   static const String getProfile = '$baseUrl/users/profile';
   static const String updateProfile = '$baseUrl/users/update-profile';
+  static const String getWallet = '$baseUrl/users/my-wallet';
 
   // Courses Endpoints
   static const String getAllCourses = '$baseUrl/courses';

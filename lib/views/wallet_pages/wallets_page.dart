@@ -1,10 +1,51 @@
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:flutter/material.dart';
+import 'package:coders_adda_app/services/api_client.dart';
+import 'package:coders_adda_app/services/api_urls.dart';
+import 'package:intl/intl.dart';
 
-
-class WalletsPage extends StatelessWidget {
+class WalletsPage extends StatefulWidget {
   const WalletsPage({super.key});
+
+  @override
+  State<WalletsPage> createState() => _WalletsPageState();
+}
+
+class _WalletsPageState extends State<WalletsPage> {
+  bool _isLoading = true;
+  double _totalBalance = 0.0;
+  double _totalEarnings = 0.0;
+  double _withdrawn = 0.0;
+  List<dynamic> _transactions = [];
+  bool _showAllTransactions = false;
+  final ApiClient _apiClient = ApiClient();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchWalletData();
+  }
+
+  Future<void> _fetchWalletData() async {
+    try {
+      final response = await _apiClient.get(ApiUrls.getWallet);
+      if (response != null && response['success'] == true) {
+        final data = response['data'] ?? {};
+        setState(() {
+          _totalBalance = (data['totalBalance'] ?? 0).toDouble();
+          _totalEarnings = (data['totalEarnings'] ?? 0).toDouble();
+          _withdrawn = (data['withdrawn'] ?? 0).toDouble();
+          _transactions = (data['transactions'] as List?) ?? [];
+          _isLoading = false;
+        });
+      } else {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,23 +65,30 @@ class WalletsPage extends StatelessWidget {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          children: [
-            // Balance Card
-            _buildBalanceCard(),
-            SizedBox(height: AppSizer.deviceHeight3),
-            
-            // Quick Actions
-            _buildQuickActions(),
-            SizedBox(height: AppSizer.deviceHeight3),
-            
-            // Transaction History
-            _buildTransactionHistory(),
-          ],
-        ),
-      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator(color: AppColors.primaryColor))
+          : RefreshIndicator(
+              onRefresh: _fetchWalletData,
+              color: AppColors.primaryColor,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.all(AppSizer.deviceWidth4),
+                child: Column(
+                  children: [
+                    // Balance Card
+                    _buildBalanceCard(),
+                    SizedBox(height: AppSizer.deviceHeight3),
+                    
+                    // Quick Actions
+                    _buildQuickActions(),
+                    SizedBox(height: AppSizer.deviceHeight3),
+                    
+                    // Transaction History
+                    _buildTransactionHistory(),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
@@ -79,7 +127,7 @@ class WalletsPage extends StatelessWidget {
           ),
           SizedBox(height: AppSizer.deviceHeight1),
           Text(
-            "₹12,450.00",
+            "₹${_totalBalance.toStringAsFixed(2)}",
             style: TextStyle(
               fontSize: AppSizer.deviceSp20,
               color: Colors.white,
@@ -89,9 +137,9 @@ class WalletsPage extends StatelessWidget {
           SizedBox(height: AppSizer.deviceHeight3),
           Row(
             children: [
-              _buildBalanceItem("Earnings", "₹8,250.00"),
+              _buildBalanceItem("Earnings", "₹${_totalEarnings.toStringAsFixed(2)}"),
               SizedBox(width: AppSizer.deviceWidth8),
-              _buildBalanceItem("Withdrawn", "₹4,200.00"),
+              _buildBalanceItem("Withdrawn", "₹${_withdrawn.toStringAsFixed(2)}"),
             ],
           ),
         ],
@@ -213,53 +261,24 @@ class WalletsPage extends StatelessWidget {
   }
 
   Widget _buildTransactionHistory() {
-    final List<Transaction> transactions = [
-      Transaction(
-        id: "1",
-        title: "Course Purchase",
-        description: "Advanced Flutter Development",
-        amount: -1299.00,
-        date: "2024-01-15",
-        type: TransactionType.debit,
-        icon: Icons.shopping_cart,
-      ),
-      Transaction(
-        id: "2",
-        title: "Referral Bonus",
-        description: "From John Doe",
-        amount: 500.00,
-        date: "2024-01-14",
-        type: TransactionType.credit,
-        icon: Icons.people,
-      ),
-      Transaction(
-        id: "3",
-        title: "Withdrawal",
-        description: "Bank Transfer",
-        amount: -2000.00,
-        date: "2024-01-12",
-        type: TransactionType.debit,
-        icon: Icons.account_balance,
-      ),
-      Transaction(
-        id: "4",
-        title: "Course Earnings",
-        description: "Flutter Basics Course",
-        amount: 850.00,
-        date: "2024-01-10",
-        type: TransactionType.credit,
-        icon: Icons.school,
-      ),
-      Transaction(
-        id: "5",
-        title: "Course Purchase",
-        description: "UI/UX Design Masterclass",
-        amount: -999.00,
-        date: "2024-01-08",
-        type: TransactionType.debit,
-        icon: Icons.shopping_cart,
-      ),
-    ];
+    if (_transactions.isEmpty) {
+      return Container(
+        padding: EdgeInsets.all(AppSizer.deviceWidth6),
+        decoration: BoxDecoration(
+          color: AppColors.cardColor,
+          borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
+        ),
+        child: Center(
+          child: Text(
+            "No transactions found.",
+            style: TextStyle(
+              color: AppColors.onSurfaceVariant,
+              fontSize: AppSizer.deviceSp14,
+            ),
+          ),
+        ),
+      );
+    }
 
     return Container(
       padding: EdgeInsets.all(AppSizer.deviceWidth4),
@@ -288,31 +307,38 @@ class WalletsPage extends StatelessWidget {
                   color: AppColors.textColor,
                 ),
               ),
-              TextButton(
-                onPressed: () {},
-                child: Text(
-                  "View All",
-                  style: TextStyle(
-                    fontSize: AppSizer.deviceSp14,
-                    color: AppColors.primaryColor,
-                    fontWeight: FontWeight.w600,
+              if (_transactions.length > 5)
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _showAllTransactions = !_showAllTransactions;
+                    });
+                  },
+                  child: Text(
+                    _showAllTransactions ? "View Less" : "View All",
+                    style: TextStyle(
+                      fontSize: AppSizer.deviceSp14,
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           SizedBox(height: AppSizer.deviceHeight2),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: transactions.length,
+            itemCount: _showAllTransactions 
+                ? _transactions.length 
+                : (_transactions.length > 5 ? 5 : _transactions.length),
             separatorBuilder: (context, index) => Divider(
               color: AppColors.outline,
               height: AppSizer.deviceHeight2,
             ),
             itemBuilder: (context, index) {
-              final transaction = transactions[index];
-              return _buildTransactionItem(transaction);
+              final tx = _transactions[index];
+              return _buildTransactionItem(tx);
             },
           ),
         ],
@@ -320,32 +346,54 @@ class WalletsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTransactionItem(Transaction transaction) {
+  Widget _buildTransactionItem(dynamic tx) {
+    final String title = tx['itemName'] ?? 'Unknown Item';
+    final String desc = tx['itemType'] != null ? '${tx['itemType']}'.toUpperCase() : 'TRANSACTION';
+    final double amount = (tx['amount'] ?? 0).toDouble();
+    
+    // Attempt parse date
+    String dateStr = 'Unknown Date';
+    if (tx['createdAt'] != null) {
+      try {
+        DateTime parsedDate = DateTime.parse(tx['createdAt']).toLocal();
+        dateStr = DateFormat('MMM dd, yyyy  hh:mm a').format(parsedDate);
+      } catch (_) {}
+    }
+
+    final String status = (tx['status'] ?? '').toString().toUpperCase();
+    
+    // For visual only - assume negative if itemType isn't 'referral' or something. 
+    // We'll treat purchases as debit. We can adjust based on itemType.
+    final bool isCredit = (tx['itemType']?.toLowerCase() == 'referral' || tx['itemType']?.toLowerCase() == 'reward');
+    
+    final IconData icon = isCredit ? Icons.account_balance_wallet : Icons.shopping_cart_checkout;
+
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Container(
         width: AppSizer.deviceWidth12,
         height: AppSizer.deviceWidth12,
         decoration: BoxDecoration(
-          color: transaction.type == TransactionType.credit
+          color: isCredit
               ? AppColors.successColor.withOpacity(0.1)
               : AppColors.errorColor.withOpacity(0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(
-          transaction.icon,
-          color: transaction.type == TransactionType.credit
+          icon,
+          color: isCredit
               ? AppColors.successColor
               : AppColors.errorColor,
           size: AppSizer.deviceSp18,
         ),
       ),
       title: Text(
-        transaction.title,
+        title,
         style: TextStyle(
           fontSize: AppSizer.deviceSp16,
           fontWeight: FontWeight.w600,
           color: AppColors.textColor,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
       subtitle: Column(
@@ -353,7 +401,7 @@ class WalletsPage extends StatelessWidget {
         children: [
           SizedBox(height: AppSizer.deviceHeight0_5),
           Text(
-            transaction.description,
+            desc,
             style: TextStyle(
               fontSize: AppSizer.deviceSp12,
               color: AppColors.onSurfaceVariant,
@@ -361,7 +409,7 @@ class WalletsPage extends StatelessWidget {
           ),
           SizedBox(height: AppSizer.deviceHeight0_5),
           Text(
-            transaction.date,
+            dateStr,
             style: TextStyle(
               fontSize: AppSizer.deviceSp11,
               color: AppColors.onSurfaceVariant.withOpacity(0.7),
@@ -374,11 +422,11 @@ class WalletsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            "₹${transaction.amount.abs().toStringAsFixed(2)}",
+            "₹${amount.toStringAsFixed(2)}",
             style: TextStyle(
               fontSize: AppSizer.deviceSp16,
               fontWeight: FontWeight.bold,
-              color: transaction.type == TransactionType.credit
+              color: isCredit
                   ? AppColors.successColor
                   : AppColors.errorColor,
             ),
@@ -390,18 +438,22 @@ class WalletsPage extends StatelessWidget {
               vertical: AppSizer.deviceHeight0_5,
             ),
             decoration: BoxDecoration(
-              color: transaction.type == TransactionType.credit
+              color: status == 'SUCCESS' 
                   ? AppColors.successColor.withOpacity(0.1)
-                  : AppColors.errorColor.withOpacity(0.1),
+                  : (status == 'CREATED' || status == 'PENDING') 
+                      ? Colors.orange.withOpacity(0.1)
+                      : AppColors.errorColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(AppSizer.deviceWidth1),
             ),
             child: Text(
-              transaction.type == TransactionType.credit ? "Credit" : "Debit",
+              status,
               style: TextStyle(
                 fontSize: AppSizer.deviceSp10,
-                color: transaction.type == TransactionType.credit
+                color: status == 'SUCCESS' 
                     ? AppColors.successColor
-                    : AppColors.errorColor,
+                    : (status == 'CREATED' || status == 'PENDING') 
+                        ? Colors.orange
+                        : AppColors.errorColor,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -410,26 +462,4 @@ class WalletsPage extends StatelessWidget {
       ),
     );
   }
-}
-
-enum TransactionType { credit, debit }
-
-class Transaction {
-  final String id;
-  final String title;
-  final String description;
-  final double amount;
-  final String date;
-  final TransactionType type;
-  final IconData icon;
-
-  Transaction({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.amount,
-    required this.date,
-    required this.type,
-    required this.icon,
-  });
 }
