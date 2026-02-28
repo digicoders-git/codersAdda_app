@@ -1,6 +1,8 @@
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:flutter/material.dart';
+import 'package:coders_adda_app/services/api_client.dart';
+import 'package:coders_adda_app/services/api_urls.dart';
 
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
@@ -11,11 +13,40 @@ class QuizPage extends StatefulWidget {
 
 class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  List<Map<String, dynamic>> _availableQuizzes = [];
+  bool _isLoadingQuizzes = true;
+  final ApiClient _apiClient = ApiClient();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _fetchQuizzes();
+  }
+
+  Future<void> _fetchQuizzes() async {
+    try {
+      final response = await _apiClient.get(ApiUrls.getQuizzes);
+      if (response != null && response['success'] == true) {
+        final List<dynamic> data = response['data'] ?? [];
+        setState(() {
+          _availableQuizzes = data.map((q) => {
+            'id': q['_id'],
+            'title': q['title'] ?? 'Unknown Quiz',
+            'description': q['description'] ?? '',
+            'questions': q['totalQuestions'] ?? 0,
+            'time': '${q['duration'] ?? 0} mins',
+            'difficulty': q['level'] ?? 'Beginner',
+            'points': q['points'] ?? 0,
+          }).toList();
+          _isLoadingQuizzes = false;
+        });
+      } else {
+        setState(() => _isLoadingQuizzes = false);
+      }
+    } catch (e) {
+      setState(() => _isLoadingQuizzes = false);
+    }
   }
 
   @override
@@ -281,46 +312,41 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
   }
 
   Widget _buildAvailableQuizzesTab() {
-    final List<Map<String, dynamic>> availableQuizzes = [
-      {
-        'title': 'Flutter Basics',
-        'description': 'Test your Flutter fundamentals',
-        'questions': 20,
-        'time': '30 mins',
-        'difficulty': 'Beginner',
-        'points': 100,
-      },
-      {
-        'title': 'Dart Programming',
-        'description': 'Advanced Dart concepts and features',
-        'questions': 25,
-        'time': '45 mins',
-        'difficulty': 'Intermediate',
-        'points': 150,
-      },
-      {
-        'title': 'API Integration',
-        'description': 'REST APIs and HTTP in Flutter',
-        'questions': 15,
-        'time': '25 mins',
-        'difficulty': 'Intermediate',
-        'points': 120,
-      },
-      {
-        'title': 'State Management',
-        'description': 'Bloc, Provider, and Riverpod',
-        'questions': 30,
-        'time': '60 mins',
-        'difficulty': 'Advanced',
-        'points': 200,
-      },
-    ];
+    if (_isLoadingQuizzes) {
+      return Center(
+        child: CircularProgressIndicator(color: AppColors.primaryColor),
+      );
+    }
+
+    if (_availableQuizzes.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.quiz_outlined,
+              size: AppSizer.deviceSp60,
+              color: AppColors.outline,
+            ),
+            SizedBox(height: AppSizer.deviceHeight3),
+            Text(
+              'No Quizzes Available',
+              style: TextStyle(
+                fontSize: AppSizer.deviceSp18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth5),
-      itemCount: availableQuizzes.length,
+      itemCount: _availableQuizzes.length,
       itemBuilder: (context, index) {
-        final quiz = availableQuizzes[index];
+        final quiz = _availableQuizzes[index];
         return Container(
           margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
           decoration: BoxDecoration(

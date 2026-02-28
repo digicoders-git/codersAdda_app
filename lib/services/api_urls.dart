@@ -57,4 +57,7 @@ class ApiUrls {
   // Ambassador Endpoints
   static const String applyAmbassador = '$baseUrl/ambassador/apply';
   static const String getAmbassadorStatus = '$baseUrl/ambassador/status';
+
+  // Quiz Endpoints
+  static const String getQuizzes = '$baseUrl/quiz/get';
 }
