@@ -47,33 +47,6 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
                       SizedBox(height: AppSizer.deviceHeight2),
 
-                      // Skip Button at top right
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: TextButton(
-                          onPressed: () {
-                            FocusScope.of(context).unfocus(); // Keyboard band karein
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MainNavigation(),
-                              ),
-                              (route) => false,
-                            );
-                          },
-                          child: Text(
-                            'Skip',
-                            style: TextStyle(
-                              color: AppColors.onSurfaceVariant,
-                              fontSize: AppSizer.deviceSp16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: AppSizer.deviceHeight2),
-
                       // Header with Logo
                       _buildHeader(),
                       SizedBox(height: AppSizer.deviceHeight3),

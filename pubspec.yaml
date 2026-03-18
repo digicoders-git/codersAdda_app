@@ -2,7 +2,7 @@ name: coders_adda_app
 description: "CodersAdda - Learn, Grow, Succeed. A comprehensive learning platform for coding courses, e-books, jobs, and training programs."
 publish_to: "none"
 
-version: 1.0.0+2
+version: 1.1.0+3
 
 environment:
   sdk: ^3.9.2
@@ -43,9 +43,15 @@ dependencies:
   dio: ^5.9.1
   share_plus: ^12.0.1
 
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/codersaddalogo.png"
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.3
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

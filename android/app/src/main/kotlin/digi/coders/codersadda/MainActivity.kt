@@ -1,4 +1,4 @@
-package com.example.coders_adda_app
+package digi.coders.codersadda
 
 import io.flutter.embedding.android.FlutterActivity
 
