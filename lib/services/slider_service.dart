@@ -11,13 +11,11 @@ class SliderService {
       // Check cache first
       final cached = HomeCacheService.getCachedBanners();
       if (cached != null && cached.isNotEmpty) {
-        print('Loading banners from cache');
         return cached.map((json) => BannerItem.fromJson(json)).toList();
       }
 
       // Fetch from API
       final response = await _apiClient.get(ApiUrls.getSliders);
-      print('Sliders API Response: $response');
       
       List<BannerItem> banners = [];
       List<Map<String, dynamic>> rawData = [];
@@ -39,13 +37,11 @@ class SliderService {
       // Save to cache if new data
       if (rawData.isNotEmpty && HomeCacheService.hasNewBanners(rawData)) {
         await HomeCacheService.saveBanners(rawData);
-        print('Banners cached');
       }
       
       return banners;
     } catch (e) {
-      print('Error fetching sliders: $e');
-      // Return cached data on error
+      debugPrint('Error fetching sliders: $e');
       final cached = HomeCacheService.getCachedBanners();
       if (cached != null) {
         return cached.map((json) => BannerItem.fromJson(json)).toList();

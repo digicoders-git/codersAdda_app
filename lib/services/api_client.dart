@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 class ApiClient {
   final _storage = const FlutterSecureStorage();
+  final _client = http.Client();
 
   // Helper function to get headers with Token
   Future<Map<String, String>> _getHeaders() async {
@@ -20,7 +21,7 @@ class ApiClient {
   Future<dynamic> get(String url) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.get(Uri.parse(url), headers: headers);
+      final response = await _client.get(Uri.parse(url), headers: headers);
       return _processResponse(response);
     } on SocketException {
       throw Exception('No Internet Connection');
@@ -33,7 +34,7 @@ class ApiClient {
   Future<dynamic> post(String url, dynamic body) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.post(
+      final response = await _client.post(
         Uri.parse(url),
         headers: headers,
         body: jsonEncode(body),
@@ -50,7 +51,7 @@ class ApiClient {
   Future<dynamic> put(String url, dynamic body) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.put(
+      final response = await _client.put(
         Uri.parse(url),
         headers: headers,
         body: jsonEncode(body),
@@ -100,7 +101,7 @@ class ApiClient {
   Future<dynamic> delete(String url) async {
     try {
       final headers = await _getHeaders();
-      final response = await http.delete(Uri.parse(url), headers: headers);
+      final response = await _client.delete(Uri.parse(url), headers: headers);
       return _processResponse(response);
     } on SocketException {
       throw Exception('No Internet Connection');

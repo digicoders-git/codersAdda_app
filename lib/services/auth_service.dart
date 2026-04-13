@@ -15,7 +15,6 @@ class AuthService {
       }
 
       final response = await _apiClient.post(ApiUrls.requestOtp, body);
-      print(response);
       return response;
     } catch (e) {
       rethrow;

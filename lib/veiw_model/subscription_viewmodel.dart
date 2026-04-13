@@ -25,8 +25,7 @@ class SubscriptionViewModel with ChangeNotifier {
     try {
       _plans = await _subscriptionService.getSubscriptions();
     } catch (e) {
-      _errorMessage = e.toString();
-      print('Error in SubscriptionViewModel: $e');
+      debugPrint('Error in SubscriptionViewModel: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -37,7 +36,7 @@ class SubscriptionViewModel with ChangeNotifier {
     try {
       return await _subscriptionService.getSubscriptionDetails(subscriptionId);
     } catch (e) {
-      print('Error fetching subscription details: $e');
+      debugPrint('Error fetching subscription details: $e');
       return null;
     }
   }

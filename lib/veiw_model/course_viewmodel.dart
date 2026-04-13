@@ -61,7 +61,7 @@ class CourseViewModel with ChangeNotifier {
       // Update 'All' category count and sync any discrepancies if necessary
       _updateCategoryCounts();
     } catch (e) {
-      print('Error in CourseViewModel fetchCourses: $e');
+      debugPrint('Error in CourseViewModel fetchCourses: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -98,7 +98,7 @@ class CourseViewModel with ChangeNotifier {
 
   @override
   void dispose() {
-    if (_tabController != null) _tabController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 

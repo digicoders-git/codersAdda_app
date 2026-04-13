@@ -21,19 +21,10 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _navigateToNext() async {
-    await Future.delayed(Duration(seconds: 2));
-
     final apiClient = ApiClient();
     final token = await apiClient.getToken();
-
-    if (token != null && token.isNotEmpty) {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
-    } else {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/login');
-      }
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, token != null && token.isNotEmpty ? '/home' : '/login');
     }
   }
 

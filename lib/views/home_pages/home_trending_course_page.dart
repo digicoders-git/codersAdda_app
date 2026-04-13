@@ -368,6 +368,5 @@ class _MyCourseDetailPageState extends State<TrendingCourseDetailPage> {
 
   void _playLesson(String lessonTitle) {
     // Implement lesson playback
-    print('Playing lesson: $lessonTitle');
   }
 }

@@ -28,7 +28,7 @@ class CourseService {
       }
       return [];
     } catch (e) {
-      print('Error fetching categories: $e');
+      debugPrint('Error fetching categories: $e');
       return [];
     }
   }
@@ -43,7 +43,7 @@ class CourseService {
       }
       return [];
     } catch (e) {
-      print('Error fetching courses by category: $e');
+      debugPrint('Error fetching courses by category: $e');
       return [];
     }
   }
@@ -59,7 +59,7 @@ class CourseService {
       }
       return [];
     } catch (e) {
-      print('Error fetching $priceType courses: $e');
+      debugPrint('Error fetching $priceType courses: $e');
       return [];
     }
   }
@@ -74,7 +74,7 @@ class CourseService {
       }
       return null;
     } catch (e) {
-      print('Error fetching course details: $e');
+      debugPrint('Error fetching course details: $e');
       return null;
     }
   }
@@ -127,7 +127,7 @@ class CourseService {
       }
       return [];
     } catch (e) {
-      print('Error fetching curriculum: $e');
+      debugPrint('Error fetching curriculum: $e');
       return [];
     }
   }
@@ -142,7 +142,7 @@ class CourseService {
       }
       return [];
     } catch (e) {
-      print('Error fetching lectures: $e');
+      debugPrint('Error fetching lectures: $e');
       return [];
     }
   }

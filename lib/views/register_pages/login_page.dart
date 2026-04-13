@@ -28,14 +28,12 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AuthViewModel(),
-      child: Scaffold(
-        backgroundColor: AppColors.backgroundColor,
-        body: SafeArea(
-          child: Consumer<AuthViewModel>(
-            builder: (context, viewModel, child) {
-              return GestureDetector(
+    return Scaffold(
+      backgroundColor: AppColors.backgroundColor,
+      body: SafeArea(
+        child: Consumer<AuthViewModel>(
+          builder: (context, viewModel, child) {
+            return GestureDetector(
                 // Screen pe tap karte hi keyboard band karein
                 onTap: () {
                   FocusScope.of(context).unfocus();

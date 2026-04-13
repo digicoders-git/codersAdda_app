@@ -14,7 +14,7 @@ class SubscriptionService {
       }
       return [];
     } catch (e) {
-      print('Error fetching subscriptions: $e');
+      debugPrint('Error fetching subscriptions: $e');
       return [];
     }
   }
@@ -27,7 +27,7 @@ class SubscriptionService {
       }
       return null;
     } catch (e) {
-      print('Error fetching subscription details: $e');
+      debugPrint('Error fetching subscription details: $e');
       return null;
     }
   }

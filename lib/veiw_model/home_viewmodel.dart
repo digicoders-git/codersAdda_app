@@ -70,7 +70,7 @@ class HomeViewModel with ChangeNotifier {
     try {
       _banners = await _sliderService.getSliders();
     } catch (e) {
-      print('Error fetching sliders: $e');
+      debugPrint('Error fetching sliders: $e');
     }
   }
 
@@ -78,7 +78,7 @@ class HomeViewModel with ChangeNotifier {
     try {
       _coursesOnSale = await _courseService.getCoursesByFilter(priceType: 'paid');
     } catch (e) {
-      print('Error fetching trending courses: $e');
+      debugPrint('Error fetching trending courses: $e');
     }
   }
 
@@ -86,7 +86,7 @@ class HomeViewModel with ChangeNotifier {
     try {
       _freeCourses = await _courseService.getCoursesByFilter(priceType: 'free');
     } catch (e) {
-      print('Error fetching free courses: $e');
+      debugPrint('Error fetching free courses: $e');
     }
   }
 

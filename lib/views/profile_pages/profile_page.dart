@@ -680,7 +680,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   void _launchUrl(String url) {
     // Implement URL launching
-    print('Launching: $url');
   }
 
   void _showComingSoon(BuildContext context) {

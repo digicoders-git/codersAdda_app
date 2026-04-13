@@ -2,7 +2,7 @@ name: coders_adda_app
 description: "CodersAdda - Learn, Grow, Succeed. A comprehensive learning platform for coding courses, e-books, jobs, and training programs."
 publish_to: "none"
 
-version: 1.1.0+3
+version: 1.1.0+4
 
 environment:
   sdk: ^3.9.2
