@@ -4,6 +4,7 @@ import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PlayQuizPage extends StatefulWidget {
   final String quizId;
@@ -155,8 +156,13 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
         final attemptData = response['data'] ?? {};
         final int marksObtained = attemptData['marks'] ?? 0;
         final int totalMarks = attemptData['totalMarks'] ?? 0;
+        
+        final bool certIssued = attemptData['certificateIssued'] ?? false;
+        final String? certUrl = certIssued && attemptData['certificateDetails'] != null
+            ? attemptData['certificateDetails']['certificateUrl']
+            : null;
 
-        _showResultDialog(marksObtained, totalMarks);
+        _showResultDialog(marksObtained, totalMarks, certificateUrl: certUrl);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -176,7 +182,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
     }
   }
 
-  void _showResultDialog(int score, int totalScore) {
+  void _showResultDialog(int score, int totalScore, {String? certificateUrl}) {
     final double percentage = totalScore > 0 ? (score / totalScore) * 100 : 0.0;
     final bool isPassed = percentage >= 50.0; // Assume 50% pass threshold
 
@@ -248,29 +254,68 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
             ],
           ),
           actions: [
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Pop Dialog
-                  Navigator.pop(context);
-                  // Return to Quiz Page
-                  Navigator.pop(context, true);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isPassed && certificateUrl != null) ...[
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      _downloadCertificate(certificateUrl);
+                    },
+                    icon: const Icon(Icons.workspace_premium, color: Colors.white),
+                    label: const Text("Download Certificate"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size(double.infinity, 45),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                  const SizedBox(height: 10),
+                ],
+                ElevatedButton(
+                  onPressed: () {
+                    // Pop Dialog
+                    Navigator.pop(context);
+                    // Return to Quiz Page
+                    Navigator.pop(context, true);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 45),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text("Go Back"),
                 ),
-                child: const Text("Go Back"),
-              ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _downloadCertificate(String urlString) async {
+    try {
+      final Uri url = Uri.parse(urlString);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Could not open certificate download link")),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error launching url: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
   }
 
   void _onOptionSelected(String optionKey) {

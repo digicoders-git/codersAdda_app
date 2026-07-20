@@ -449,7 +449,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            job.companyIsHide ? _hideMiddleCharacters(job.companyName) : job.companyName,
+            job.locked ? _hideMiddleCharacters(job.companyName) : job.companyName,
             style: TextStyle(
               fontSize: AppSizer.deviceSp16,
               fontWeight: FontWeight.bold,
@@ -470,7 +470,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
             InkWell(
               onTap: () => _launchURL(job.companyWebsite!, context),
               child: Text(
-                job.companyIsHide ? _hideMiddleCharacters(job.companyWebsite!.replaceAll('https://', '').replaceAll('http://', '')) : job.companyWebsite!,
+                job.locked ? _hideMiddleCharacters(job.companyWebsite!.replaceAll('https://', '').replaceAll('http://', '')) : job.companyWebsite!,
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp14,
                   color: AppColors.primaryColor,
@@ -493,13 +493,13 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
       child: Column(
         children: [
           if (job.contactEmail != null)
-            _buildContactItem(Icons.email, job.companyIsHide ? _hideMiddleCharacters(job.contactEmail!) : job.contactEmail!, () => _launchURL('mailto:${job.contactEmail}', context)),
+            _buildContactItem(Icons.email, job.locked ? _hideMiddleCharacters(job.contactEmail!) : job.contactEmail!, () => _launchURL('mailto:${job.contactEmail}', context)),
           SizedBox(height: AppSizer.deviceHeight2),
           if (job.companyMobile != null)
-            _buildContactItem(Icons.phone, job.companyIsHide ? _hideMiddleCharacters(job.companyMobile!) : job.companyMobile!, () => _launchURL('tel:${job.companyMobile}', context)),
+            _buildContactItem(Icons.phone, job.locked ? _hideMiddleCharacters(job.companyMobile!) : job.companyMobile!, () => _launchURL('tel:${job.companyMobile}', context)),
           SizedBox(height: AppSizer.deviceHeight2),
           if (job.companyWebsite != null)
-            _buildContactItem(Icons.language, job.companyIsHide ? _hideMiddleCharacters(job.companyWebsite!.replaceAll('https://', '').replaceAll('http://', '')) : job.companyWebsite!, () => _launchURL(job.companyWebsite!, context)),
+            _buildContactItem(Icons.language, job.locked ? _hideMiddleCharacters(job.companyWebsite!.replaceAll('https://', '').replaceAll('http://', '')) : job.companyWebsite!, () => _launchURL(job.companyWebsite!, context)),
         ],
       ),
     );

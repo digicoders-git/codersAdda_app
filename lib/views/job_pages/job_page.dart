@@ -1,6 +1,8 @@
 import 'package:coders_adda_app/models/job_model.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:coders_adda_app/veiw_model/job_viewmodel.dart';
 import 'package:coders_adda_app/views/job_pages/single_job_detailed_page.dart';
 import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
@@ -19,6 +21,8 @@ class JobsPage extends StatefulWidget {
 class _JobsPageState extends State<JobsPage> {
   final JobsViewModel viewModel = JobsViewModel();
   late Razorpay _razorpay;
+  final _storage = const FlutterSecureStorage();
+  List<String> _savedJobIds = [];
 
   @override
   void initState() {
@@ -27,6 +31,58 @@ class _JobsPageState extends State<JobsPage> {
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+    _loadSavedJobIds();
+  }
+
+  Future<void> _loadSavedJobIds() async {
+    try {
+      final savedData = await _storage.read(key: 'saved_job_ids');
+      if (savedData != null) {
+        setState(() {
+          _savedJobIds = List<String>.from(jsonDecode(savedData));
+        });
+      }
+    } catch (e) {
+      debugPrint("Error loading saved job ids: $e");
+    }
+  }
+
+  Future<void> _toggleSaveJob(JobDetail job) async {
+    final isSaved = _savedJobIds.contains(job.id);
+    
+    // Load full saved jobs list
+    final savedJobsData = await _storage.read(key: 'saved_jobs_list');
+    List<dynamic> savedList = [];
+    if (savedJobsData != null) {
+      savedList = jsonDecode(savedJobsData);
+    }
+
+    if (isSaved) {
+      // Remove
+      setState(() {
+        _savedJobIds.remove(job.id);
+      });
+      savedList.removeWhere((item) => item['id'] == job.id);
+      _showSnackBar('${job.jobTitle} removed from saved list', Colors.grey);
+    } else {
+      // Add
+      setState(() {
+        _savedJobIds.add(job.id);
+      });
+      savedList.add({
+        'id': job.id,
+        'title': job.jobTitle,
+        'company': job.companyName,
+        'location': job.location,
+        'savedDate': 'Today',
+        'salary': job.salaryPackage,
+        'experience': job.requiredExperience,
+      });
+      _showSnackBar('${job.jobTitle} saved successfully', Colors.green);
+    }
+
+    await _storage.write(key: 'saved_job_ids', value: jsonEncode(_savedJobIds));
+    await _storage.write(key: 'saved_jobs_list', value: jsonEncode(savedList));
   }
 
   @override
@@ -723,7 +779,7 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                  // Company Name
                 _buildHiddenDetailItem(
                   Icons.business,
-                  'Company: ${job.companyIsHide ? _hideMiddleCharacters(job.companyName) : job.companyName}',
+                  'Company: ${job.locked ? _hideMiddleCharacters(job.companyName) : job.companyName}',
                 ),
                 SizedBox(height: AppSizer.deviceHeight1),
                 
@@ -731,7 +787,7 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                 if (job.contactEmail != null) ...[
                   _buildHiddenDetailItem(
                     Icons.email,
-                    'Email: ${job.companyIsHide ? _hideMiddleCharacters(job.contactEmail!) : job.contactEmail!}',
+                    'Email: ${job.locked ? _hideMiddleCharacters(job.contactEmail!) : job.contactEmail!}',
                   ),
                   SizedBox(height: AppSizer.deviceHeight1),
                 ],
@@ -740,7 +796,7 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                 if (job.companyMobile != null) ...[
                   _buildHiddenDetailItem(
                     Icons.phone,
-                    'Mobile: ${job.companyIsHide ? _hideMiddleCharacters(job.companyMobile!) : job.companyMobile!}',
+                    'Mobile: ${job.locked ? _hideMiddleCharacters(job.companyMobile!) : job.companyMobile!}',
                   ),
                   SizedBox(height: AppSizer.deviceHeight1),
                 ],
@@ -749,7 +805,7 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                 if (job.companyWebsite != null) ...[
                   _buildHiddenDetailItem(
                     Icons.language,
-                    'Website: ${job.companyIsHide ? _hideMiddleCharacters(job.companyWebsite!.replaceAll('https://', '').replaceAll('http://', '')) : job.companyWebsite!}',
+                    'Website: ${job.locked ? _hideMiddleCharacters(job.companyWebsite!.replaceAll('https://', '').replaceAll('http://', '')) : job.companyWebsite!}',
                   ),
                 ],
               ],
@@ -760,14 +816,14 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
           
            Row(
             children: [
-              Expanded(
+               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    _showSaveConfirmation(context, job.jobTitle);
+                    _toggleSaveJob(job);
                   },
-                  icon: Icon(Icons.bookmark_border, size: AppSizer.deviceSp16),
+                  icon: Icon(_savedJobIds.contains(job.id) ? Icons.bookmark : Icons.bookmark_border, size: AppSizer.deviceSp16),
                   label: Text(
-                    'Save',
+                    _savedJobIds.contains(job.id) ? 'Saved' : 'Save',
                     style: TextStyle(fontSize: AppSizer.deviceSp16),
                   ),
                   style: OutlinedButton.styleFrom(

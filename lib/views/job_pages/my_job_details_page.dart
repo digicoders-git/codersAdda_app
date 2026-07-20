@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
+import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class MyJobDetailsPage extends StatefulWidget {
   const MyJobDetailsPage({super.key});
@@ -43,41 +45,56 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
     ),
   ];
 
-  // Demo data for saved jobs
-  final List<SavedJob> _savedJobs = [
-    SavedJob(
-      id: '1',
-      title: 'Flutter Team Lead',
-      company: 'Enterprise Tech',
-      location: 'Delhi',
-      savedDate: '20 Dec 2023',
-      salary: '₹20-25 LPA',
-      experience: '5-8 years',
-    ),
-    SavedJob(
-      id: '2',
-      title: 'iOS Developer',
-      company: 'Apple Solutions',
-      location: 'Remote',
-      savedDate: '18 Dec 2023',
-      salary: '₹18-22 LPA',
-      experience: '3-6 years',
-    ),
-    SavedJob(
-      id: '3',
-      title: 'Full Stack Developer',
-      company: 'WebTech Solutions',
-      location: 'Lucknow',
-      savedDate: '15 Dec 2023',
-      salary: '₹10-15 LPA',
-      experience: '2-4 years',
-    ),
-  ];
+  final _storage = const FlutterSecureStorage();
+  List<SavedJob> _savedJobs = [];
+  bool _isLoadingSaved = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _loadSavedJobs();
+  }
+
+  Future<void> _loadSavedJobs() async {
+    try {
+      final data = await _storage.read(key: 'saved_jobs_list');
+      if (data != null) {
+        final List<dynamic> decoded = jsonDecode(data);
+        setState(() {
+          _savedJobs = decoded.map((item) => SavedJob(
+            id: item['id'] ?? '',
+            title: item['title'] ?? '',
+            company: item['company'] ?? '',
+            location: item['location'] ?? '',
+            savedDate: item['savedDate'] ?? 'Today',
+            salary: item['salary'] ?? '',
+            experience: item['experience'] ?? '',
+          )).toList();
+        });
+      } else {
+        // Fallback demo data
+        setState(() {
+          _savedJobs = [
+            SavedJob(
+              id: 'demo_1',
+              title: 'Flutter Team Lead',
+              company: 'Enterprise Tech',
+              location: 'Delhi',
+              savedDate: '20 Dec 2023',
+              salary: '₹20-25 LPA',
+              experience: '5-8 years',
+            ),
+          ];
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading saved jobs: $e');
+    } finally {
+      setState(() {
+        _isLoadingSaved = false;
+      });
+    }
   }
 
   @override
@@ -627,12 +644,28 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
     );
   }
 
-  void _removeFromSaved(String jobId) {
+  void _removeFromSaved(String jobId) async {
     setState(() {
       _savedJobs.removeWhere((job) => job.id == jobId);
     });
+
+    final List<Map<String, String>> serializableList = _savedJobs.map((item) => {
+      'id': item.id,
+      'title': item.title,
+      'company': item.company,
+      'location': item.location,
+      'savedDate': item.savedDate,
+      'salary': item.salary,
+      'experience': item.experience,
+    }).toList();
+
+    await _storage.write(key: 'saved_jobs_list', value: jsonEncode(serializableList));
+
+    final List<String> savedIds = _savedJobs.map((item) => item.id).toList();
+    await _storage.write(key: 'saved_job_ids', value: jsonEncode(savedIds));
+
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Job removed from saved')),
+      const SnackBar(content: Text('Job removed from saved')),
     );
   }
 

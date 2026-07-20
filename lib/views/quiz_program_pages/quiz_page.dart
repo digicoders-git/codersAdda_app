@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
 import 'package:coders_adda_app/views/quiz_program_pages/play_quiz_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
@@ -85,6 +86,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
               'timeTaken': _formatDuration(a['duration'] ?? 0),
               'correct': ((a['marks'] ?? 0) ~/ points),
               'totalQuestions': ((a['totalMarks'] ?? 0) ~/ points),
+              'certificateUrl': a['certificateUrl'],
             };
           }).toList();
           _isLoadingAttempts = false;
@@ -203,18 +205,59 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
           ],
         ),
         actions: [
-          Center(
-            child: TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text(
-                "Close",
-                style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (attempt['certificateUrl'] != null) ...[
+                ElevatedButton.icon(
+                  onPressed: () {
+                    _downloadCertificate(attempt['certificateUrl'] as String);
+                  },
+                  icon: const Icon(Icons.workspace_premium, color: Colors.white),
+                  label: const Text("Download Certificate"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "Close",
+                    style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _downloadCertificate(String urlString) async {
+    try {
+      final Uri url = Uri.parse(urlString);
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Could not open certificate download link")),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error launching url: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
   }
 
   Future<void> _fetchQuizzes() async {
