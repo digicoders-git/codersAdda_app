@@ -1297,7 +1297,12 @@ class _RefralProgramState extends State<RefralProgram> {
                 children: [
                   Icon(Icons.celebration_rounded, color: AppColors.primaryColor),
                   SizedBox(width: AppSizer.deviceWidth2),
-                  Text('Application Submitted!'),
+                  const Expanded(
+                    child: Text(
+                      'Application Submitted!',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
               content: Text(

@@ -13,7 +13,8 @@ class CourseViewModel with ChangeNotifier {
 
   final CourseService _courseService = CourseService();
 
-  CourseViewModel() {
+  CourseViewModel({int initialTabIndex = 0}) {
+    _selectedTabIndex = initialTabIndex;
     _init();
   }
 

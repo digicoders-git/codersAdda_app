@@ -60,4 +60,10 @@ class ApiUrls {
 
   // Quiz Endpoints
   static const String getQuizzes = '$baseUrl/quiz/get';
+  static const String submitQuizAttempt = '$baseUrl/quiz/attempt/submit';
+  static const String getMyQuizAttempts = '$baseUrl/quiz/my-quiz';
+
+  // Wallet Endpoints
+  static const String walletTopup = '$baseUrl/payment/topup';
+  static const String walletWithdraw = '$baseUrl/payment/withdraw';
 }

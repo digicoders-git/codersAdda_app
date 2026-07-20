@@ -18,6 +18,8 @@ class UserProfile {
   final int walletBalance;
   final int referralCount;
   final int freeJobUnlocksUsed;
+  final int courseCount;
+  final List<String> purchaseCourseIds;
 
   UserProfile({
     required this.id,
@@ -39,6 +41,8 @@ class UserProfile {
     this.walletBalance = 0,
     this.referralCount = 0,
     this.freeJobUnlocksUsed = 0,
+    this.courseCount = 0,
+    this.purchaseCourseIds = const [],
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -63,6 +67,11 @@ class UserProfile {
       walletBalance: user['walletBalance'] ?? 0,
       referralCount: user['referralCount'] ?? 0,
       freeJobUnlocksUsed: user['freeJobUnlocksUsed'] ?? 0,
+      courseCount: (user['purchaseCourses'] as List?)?.length ?? 0,
+      purchaseCourseIds: (user['purchaseCourses'] as List?)
+          ?.map((c) => (c is Map) ? (c['_id']?.toString() ?? '') : c.toString())
+          .where((id) => id.isNotEmpty)
+          .toList() ?? [],
     );
   }
 }

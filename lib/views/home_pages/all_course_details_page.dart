@@ -5,6 +5,7 @@ import 'package:coders_adda_app/veiw_model/course_detail_viewmodel.dart';
 import 'package:coders_adda_app/views/buy_new_courses_pages/course_purchase_page.dart';
 import 'package:coders_adda_app/views/buy_new_courses_pages/purchase_success_modal.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -456,6 +457,9 @@ class AllCourseDetailPage extends StatelessWidget {
   }
 
   Widget _buildBottomActionButton(BuildContext context, Course course, CourseDetailViewModel viewModel) {
+    final profileVM = Provider.of<ProfileViewModel>(context, listen: false);
+    final isEnrolled = profileVM.user?.purchaseCourseIds.contains(course.id) ?? false;
+
     return Container(
       padding: EdgeInsets.all(AppSizer.deviceWidth4),
       decoration: const BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, -2))]),
@@ -463,54 +467,68 @@ class AllCourseDetailPage extends StatelessWidget {
         child: SizedBox(
           width: double.infinity,
           child: FilledButton(
-            onPressed: viewModel.isLoading 
-              ? null 
-              : () async {
-                if (course.isFree) {
-                  final success = await viewModel.enrollInFreeCourse();
-                  if (context.mounted) {
-                    if (success) {
-                  PurchaseSuccessModal.show(
-                    context,
-                    title: course.title,
-                    itemType: 'course',
-                    onGoToMyLearning: () {
-                      final tabIndex = PurchaseSuccessModal.getTabIndexForItemType('course', true);
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
-                        (route) => route.isFirst,
-                      );
-                    },
-                  );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(viewModel.errorMessage ?? 'Enrollment failed'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  }
-                } else {
+            onPressed: isEnrolled 
+              ? () {
+                  final tabIndex = course.isFree ? 0 : 1;
                   Navigator.push(
-                    context, 
-                    MaterialPageRoute(builder: (context) => CourseCheckoutPage(course: course))
+                    context,
+                    MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
                   );
                 }
-              },
+              : (viewModel.isLoading 
+                  ? null 
+                  : () async {
+                    if (course.isFree) {
+                      final success = await viewModel.enrollInFreeCourse();
+                      if (context.mounted) {
+                        if (success) {
+                          // Refresh profile to update course counts and purchaseCourseIds list
+                          profileVM.fetchUserProfile();
+                          PurchaseSuccessModal.show(
+                            context,
+                            title: course.title,
+                            itemType: 'course',
+                            onGoToMyLearning: () {
+                              final tabIndex = PurchaseSuccessModal.getTabIndexForItemType('course', true);
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
+                                (route) => route.isFirst,
+                              );
+                            },
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(viewModel.errorMessage ?? 'Enrollment failed'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    } else {
+                      Navigator.push(
+                        context, 
+                        MaterialPageRoute(builder: (context) => CourseCheckoutPage(course: course))
+                      );
+                    }
+                  }),
             style: FilledButton.styleFrom(
-              backgroundColor: course.isFree ? AppColors.successColor : AppColors.primaryColor,
+              backgroundColor: isEnrolled 
+                  ? AppColors.primaryColor 
+                  : (course.isFree ? AppColors.successColor : AppColors.primaryColor),
               padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
             ),
-            child: viewModel.isLoading && course.isFree
+            child: viewModel.isLoading && course.isFree && !isEnrolled
               ? const SizedBox(
                   height: 20,
                   width: 20,
                   child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                 )
               : Text(
-                  course.isFree ? 'ENROLL FOR FREE' : 'BUY NOW - ₹${course.price.toStringAsFixed(0)}',
+                  isEnrolled 
+                      ? 'START LEARNING' 
+                      : (course.isFree ? 'ENROLL FOR FREE' : 'BUY NOW - ₹${course.price.toStringAsFixed(0)}'),
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
           ),

@@ -3,6 +3,7 @@ import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:flutter/material.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
+import 'package:coders_adda_app/views/quiz_program_pages/play_quiz_page.dart';
 
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
@@ -14,7 +15,9 @@ class QuizPage extends StatefulWidget {
 class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Map<String, dynamic>> _availableQuizzes = [];
+  List<Map<String, dynamic>> _attemptedQuizzes = [];
   bool _isLoadingQuizzes = true;
+  bool _isLoadingAttempts = true;
   final ApiClient _apiClient = ApiClient();
 
   @override
@@ -22,6 +25,196 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _fetchQuizzes();
+    _fetchAttemptedQuizzes();
+  }
+
+  void _startQuiz(Map<String, dynamic> quiz) async {
+    final bool? completed = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PlayQuizPage(
+          quizId: quiz['id'] as String,
+          quizTitle: quiz['title'] as String,
+          totalDurationMinutes: quiz['duration'] as int,
+        ),
+      ),
+    );
+
+    if (completed == true) {
+      _fetchQuizzes();
+      _fetchAttemptedQuizzes();
+    }
+  }
+
+  void _joinQuizWithCode(String code) {
+    final quiz = _availableQuizzes.firstWhere(
+      (q) => q['quizCode'].toString().trim().toLowerCase() == code.trim().toLowerCase(),
+      orElse: () => {},
+    );
+
+    if (quiz.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Invalid quiz code. Please check and try again."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    _startQuiz(quiz);
+  }
+
+  Future<void> _fetchAttemptedQuizzes() async {
+    try {
+      final response = await _apiClient.get(ApiUrls.getMyQuizAttempts);
+      if (response != null && response['success'] == true) {
+        final List<dynamic> data = response['data'] ?? [];
+        setState(() {
+          _attemptedQuizzes = data.map((a) {
+            final quiz = a['quizId'] ?? {};
+            final points = quiz['points'] ?? 1;
+            return {
+              'id': a['_id'],
+              'quizId': quiz['_id'] ?? '',
+              'duration': quiz['duration'] ?? 0,
+              'title': quiz['title'] ?? 'Unknown Quiz',
+              'score': (a['marks'] ?? 0) as int,
+              'total': (a['totalMarks'] ?? 0) as int,
+              'date': a['createdAt'] != null ? a['createdAt'].toString().substring(0, 10) : '',
+              'timeTaken': _formatDuration(a['duration'] ?? 0),
+              'correct': ((a['marks'] ?? 0) ~/ points),
+              'totalQuestions': ((a['totalMarks'] ?? 0) ~/ points),
+            };
+          }).toList();
+          _isLoadingAttempts = false;
+        });
+      } else {
+        setState(() => _isLoadingAttempts = false);
+      }
+    } catch (e) {
+      setState(() => _isLoadingAttempts = false);
+    }
+  }
+
+  String _formatDuration(dynamic seconds) {
+    if (seconds == null) return '0:00';
+    final int sec = seconds is int ? seconds : int.tryParse(seconds.toString()) ?? 0;
+    final int minutes = sec ~/ 60;
+    final int remainingSec = sec % 60;
+    return '${minutes}:${remainingSec.toString().padLeft(2, '0')}';
+  }
+
+  void _showAttemptDetailsDialog(Map<String, dynamic> attempt) {
+    final score = attempt['score'] as int;
+    final total = attempt['total'] as int;
+    final percentage = total > 0 ? (score / total) * 100 : 0.0;
+    final isPassed = percentage >= 50.0;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF0F0C24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Center(
+          child: Text(
+            attempt['title'] as String,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Divider(color: Colors.white10),
+            const SizedBox(height: 15),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Status:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  isPassed ? "PASSED" : "FAILED",
+                  style: TextStyle(
+                    color: isPassed ? const Color(0xFF00FFCC) : Colors.redAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Score:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  "$score / $total points",
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Percentage:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  "${percentage.toStringAsFixed(1)}%",
+                  style: TextStyle(
+                    color: isPassed ? const Color(0xFF00FFCC) : Colors.redAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Correct Answers:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  "${attempt['correct']} / ${attempt['totalQuestions']}",
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Time Taken:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  attempt['timeTaken'] as String,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Attempt Date:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  attempt['date'] as String,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          Center(
+            child: TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                "Close",
+                style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _fetchQuizzes() async {
@@ -36,8 +229,10 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
             'description': q['description'] ?? '',
             'questions': q['totalQuestions'] ?? 0,
             'time': '${q['duration'] ?? 0} mins',
+            'duration': q['duration'] ?? 0,
             'difficulty': q['level'] ?? 'Beginner',
             'points': q['points'] ?? 0,
+            'quizCode': q['quizCode'] ?? '',
           }).toList();
           _isLoadingQuizzes = false;
         });
@@ -56,6 +251,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
   }
 
   void _showJoinQuizDialog() {
+    final TextEditingController codeController = TextEditingController();
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -85,6 +281,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
               ),
               SizedBox(height: AppSizer.deviceHeight3),
               TextField(
+                controller: codeController,
                 decoration: InputDecoration(
                   hintText: 'Enter quiz code',
                   border: OutlineInputBorder(
@@ -117,8 +314,11 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
             ),
             ElevatedButton(
               onPressed: () {
+                final code = codeController.text.trim();
                 Navigator.pop(context);
-                // Add your join quiz logic here
+                if (code.isNotEmpty) {
+                  _joinQuizWithCode(code);
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,
@@ -365,7 +565,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
             child: InkWell(
               borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
               onTap: () {
-                // Navigate to quiz details or start quiz
+                _startQuiz(quiz);
               },
               child: Padding(
                 padding: EdgeInsets.all(AppSizer.deviceWidth5),
@@ -435,7 +635,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
                     SizedBox(height: AppSizer.deviceHeight2),
                     ElevatedButton(
                       onPressed: () {
-                        // Start quiz
+                        _startQuiz(quiz);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
@@ -464,37 +664,13 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
   }
 
   Widget _buildAttemptedQuizzesTab() {
-    final List<Map<String, dynamic>> attemptedQuizzes = [
-      {
-        'title': 'Flutter Basics',
-        'score': 85,
-        'total': 100,
-        'date': '2024-01-15',
-        'timeTaken': '25:30',
-        'correct': 17,
-        'totalQuestions': 20,
-      },
-      {
-        'title': 'Dart Programming',
-        'score': 72,
-        'total': 100,
-        'date': '2024-01-10',
-        'timeTaken': '38:15',
-        'correct': 18,
-        'totalQuestions': 25,
-      },
-      {
-        'title': 'Widget Mastery',
-        'score': 90,
-        'total': 100,
-        'date': '2024-01-05',
-        'timeTaken': '28:45',
-        'correct': 27,
-        'totalQuestions': 30,
-      },
-    ];
+    if (_isLoadingAttempts) {
+      return Center(
+        child: CircularProgressIndicator(color: AppColors.primaryColor),
+      );
+    }
 
-    if (attemptedQuizzes.isEmpty) {
+    if (_attemptedQuizzes.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -528,9 +704,9 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
 
     return ListView.builder(
       padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth5),
-      itemCount: attemptedQuizzes.length,
+      itemCount: _attemptedQuizzes.length,
       itemBuilder: (context, index) {
-        final quiz = attemptedQuizzes[index];
+        final quiz = _attemptedQuizzes[index];
         final score = quiz['score'] as int;
         final totalQuestions = quiz['totalQuestions'] as int;
         final correctAnswers = quiz['correct'] as int;
@@ -575,7 +751,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
                         borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
                       ),
                       child: Text(
-                        '$score%',
+                        '${percentage.toInt()}%',
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp12,
                           color: Colors.white,
@@ -620,7 +796,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () {
-                          // View detailed results
+                          _showAttemptDetailsDialog(quiz);
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.primaryColor,
@@ -640,7 +816,11 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          // Retake quiz
+                          _startQuiz({
+                            'id': quiz['quizId'],
+                            'title': quiz['title'],
+                            'duration': quiz['duration'],
+                          });
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.surfaceVariant,

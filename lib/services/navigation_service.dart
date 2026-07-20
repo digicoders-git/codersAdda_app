@@ -29,10 +29,10 @@ static Future<void> navigateToPdfPage(BuildContext context) async {
     );
   }
 
-  static Future<void> navigateToCoursePage(BuildContext context) async {
+  static Future<void> navigateToCoursePage(BuildContext context, {int initialIndex = 0}) async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AllCoursePage()),
+      MaterialPageRoute(builder: (context) => AllCoursePage(initialIndex: initialIndex)),
     );
   }
 static Future<void> navigateToSubscriptionPage(BuildContext context) async {

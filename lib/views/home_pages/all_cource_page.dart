@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class AllCoursePage extends StatefulWidget {
-  final CourseViewModel viewModel = CourseViewModel();
-  AllCoursePage({super.key});
+  final CourseViewModel viewModel;
+  final int initialIndex;
+  AllCoursePage({super.key, this.initialIndex = 0})
+      : viewModel = CourseViewModel(initialTabIndex: initialIndex);
 
   @override
   State<AllCoursePage> createState() => _CoursePageState();
@@ -21,7 +23,11 @@ class _CoursePageState extends State<AllCoursePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialIndex,
+    );
     _tabController.addListener(_handleTabSelection);
   }
 
@@ -182,8 +188,8 @@ class _CoursePageState extends State<AllCoursePage>
   Widget _buildCourseCard(BuildContext context, Course course) {
     return GestureDetector(
       onTap: () {
-        // Navigate to Course Detail Page
-        NavigationService.navigateToCourseDetail(context, course);
+          // Navigate to Course Detail Page
+          NavigationService.navigateToCourseDetail(context, course);
       },
       child: Card(
         elevation: 4,

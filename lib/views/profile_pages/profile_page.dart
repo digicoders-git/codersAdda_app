@@ -286,7 +286,7 @@ class _ProfilePageState extends State<ProfilePage> {
               AppColors.primaryColor,
             ),
             _buildStatItem(
-               '0', // Placeholder for now
+               '${user.courseCount}',
               'Courses',
               Icons.play_circle_filled,
               Colors.orange,
