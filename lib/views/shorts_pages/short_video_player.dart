@@ -16,14 +16,35 @@ class ShortVideoPlayer extends StatefulWidget {
   State<ShortVideoPlayer> createState() => _ShortVideoPlayerState();
 }
 
-class _ShortVideoPlayerState extends State<ShortVideoPlayer> with WidgetsBindingObserver {
+class _ShortVideoPlayerState extends State<ShortVideoPlayer> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _opacityAnimation;
+  
+  bool _isPaused = false;
+  bool _showPlayAnimation = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.6, end: 1.3).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutBack),
+    );
+
+    _opacityAnimation = Tween<double>(begin: 0.9, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
+
     _initializeController();
   }
 
@@ -49,8 +70,14 @@ class _ShortVideoPlayerState extends State<ShortVideoPlayer> with WidgetsBinding
       if (widget.isCurrent) {
         _controller.play();
         _controller.setLooping(true);
+        setState(() {
+          _isPaused = false;
+        });
       } else {
         _controller.pause();
+        setState(() {
+          _isPaused = true;
+        });
       }
     }
   }
@@ -62,9 +89,15 @@ class _ShortVideoPlayerState extends State<ShortVideoPlayer> with WidgetsBinding
 
     if (state == AppLifecycleState.paused) {
       _controller.pause();
+      setState(() {
+        _isPaused = true;
+      });
     } else if (state == AppLifecycleState.resumed) {
       if (widget.isCurrent) {
         _controller.play();
+        setState(() {
+          _isPaused = false;
+        });
       }
     }
   }
@@ -72,8 +105,33 @@ class _ShortVideoPlayerState extends State<ShortVideoPlayer> with WidgetsBinding
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _animationController.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _onVideoTap() {
+    if (_controller.value.isPlaying) {
+      _controller.pause();
+      setState(() {
+        _isPaused = true;
+        _showPlayAnimation = false;
+      });
+    } else {
+      _controller.play();
+      setState(() {
+        _isPaused = false;
+        _showPlayAnimation = true;
+      });
+      _animationController.reset();
+      _animationController.forward().then((_) {
+        if (mounted) {
+          setState(() {
+            _showPlayAnimation = false;
+          });
+        }
+      });
+    }
   }
 
   @override
@@ -84,13 +142,7 @@ class _ShortVideoPlayerState extends State<ShortVideoPlayer> with WidgetsBinding
       color: Colors.black,
       child: _isInitialized
           ? GestureDetector(
-              onTap: () {
-                if (_controller.value.isPlaying) {
-                  _controller.pause();
-                } else {
-                  _controller.play();
-                }
-              },
+              onTap: _onVideoTap,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -104,11 +156,46 @@ class _ShortVideoPlayerState extends State<ShortVideoPlayer> with WidgetsBinding
                       ),
                     ),
                   ),
-                  if (!_controller.value.isPlaying)
-                    Icon(
-                      Icons.play_arrow,
-                      color: Colors.white.withOpacity(0.5),
-                      size: 80,
+                  
+                  // Pause Icon (remains visible when paused)
+                  if (_isPaused)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.black38,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.pause_rounded,
+                        color: Colors.white,
+                        size: 55,
+                      ),
+                    ),
+
+                  // Play Animation (pops and fades out when played)
+                  if (_showPlayAnimation)
+                    AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: _scaleAnimation.value,
+                          child: Opacity(
+                            opacity: _opacityAnimation.value,
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.black38,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.play_arrow_rounded,
+                                color: Colors.white,
+                                size: 55,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                 ],
               ),

@@ -1,3 +1,4 @@
+import 'package:share_plus/share_plus.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/veiw_model/shorts_viewmodel.dart';
 import 'package:coders_adda_app/views/shorts_pages/short_video_player.dart';
@@ -50,8 +51,6 @@ class _ShortsFullscreenPageState extends State<ShortsFullscreenPage> {
               children: [
                 _buildVideoPlayer(context, viewModel),
                 _buildBackButton(context),
-                _buildRightSideActions(context, viewModel),
-                _buildBottomInfo(context, viewModel),
               ],
             );
           },
@@ -67,9 +66,15 @@ class _ShortsFullscreenPageState extends State<ShortsFullscreenPage> {
       onPageChanged: viewModel.setCurrentIndex,
       itemBuilder: (context, index) {
         final short = viewModel.shorts[index];
-        return ShortVideoPlayer(
-          short: short,
-          isCurrent: viewModel.currentIndex == index,
+        return Stack(
+          children: [
+            ShortVideoPlayer(
+              short: short,
+              isCurrent: viewModel.currentIndex == index,
+            ),
+            _buildRightSideActions(context, viewModel, short),
+            _buildBottomInfo(context, viewModel, short),
+          ],
         );
       },
     );
@@ -97,11 +102,8 @@ class _ShortsFullscreenPageState extends State<ShortsFullscreenPage> {
     );
   }
 
-  Widget _buildRightSideActions(BuildContext context, ShortsViewModel viewModel) {
-    final currentShort = viewModel.currentShort;
-    if (currentShort == null) return const SizedBox();
-
-    final isLiked = viewModel.isLiked(currentShort.id);
+  Widget _buildRightSideActions(BuildContext context, ShortsViewModel viewModel, ShortVideo short) {
+    final isLiked = viewModel.isLiked(short.id);
 
     return Positioned(
       right: AppSizer.deviceWidth4,
@@ -118,7 +120,7 @@ class _ShortsFullscreenPageState extends State<ShortsFullscreenPage> {
             ),
             child: Center(
               child: Text(
-                currentShort.instructorName.isNotEmpty ? currentShort.instructorName[0] : '?',
+                short.instructorName.isNotEmpty ? short.instructorName[0] : '?',
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
@@ -127,25 +129,27 @@ class _ShortsFullscreenPageState extends State<ShortsFullscreenPage> {
           _buildActionButton(
             context,
             isLiked ? Icons.favorite : Icons.favorite_border,
-            '${currentShort.totalLikes}',
+            '${short.totalLikes}',
             isLiked ? Colors.red : Colors.white,
-            () => viewModel.toggleLike(currentShort.id),
+            () => viewModel.toggleLike(short.id),
           ),
           SizedBox(height: AppSizer.deviceHeight2),
           _buildActionButton(
             context,
             Icons.comment,
-            '${currentShort.totalComments}',
+            '${short.totalComments}',
             Colors.white,
-            () => _showCommentsBottomSheet(context, viewModel, currentShort.id),
+            () => _showCommentsBottomSheet(context, viewModel, short.id),
           ),
           SizedBox(height: AppSizer.deviceHeight2),
           _buildActionButton(
             context,
             Icons.share,
-            '${currentShort.totalShares}',
+            '${short.totalShares}',
             Colors.white,
-            () => {},
+            () {
+              Share.share('Check out this short video on Coders Adda: ${short.caption}\n${short.videoUrl}');
+            },
           ),
           SizedBox(height: AppSizer.deviceHeight2),
           Container(
@@ -202,10 +206,7 @@ class _ShortsFullscreenPageState extends State<ShortsFullscreenPage> {
     );
   }
 
-  Widget _buildBottomInfo(BuildContext context, ShortsViewModel viewModel) {
-    final currentShort = viewModel.currentShort;
-    if (currentShort == null) return const SizedBox();
-
+  Widget _buildBottomInfo(BuildContext context, ShortsViewModel viewModel, ShortVideo short) {
     return Positioned(
       left: AppSizer.deviceWidth4,
       bottom: AppSizer.deviceHeight2,
@@ -216,12 +217,15 @@ class _ShortsFullscreenPageState extends State<ShortsFullscreenPage> {
           children: [
             Row(
               children: [
-                Text(
-                  '@${currentShort.instructorName}',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: AppSizer.deviceSp16,
-                    fontWeight: FontWeight.bold,
+                Flexible(
+                  child: Text(
+                    '@${short.instructorName}',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: AppSizer.deviceSp16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 SizedBox(width: AppSizer.deviceWidth2),
@@ -247,7 +251,7 @@ class _ShortsFullscreenPageState extends State<ShortsFullscreenPage> {
             ),
             SizedBox(height: AppSizer.deviceHeight1),
             Text(
-              currentShort.caption,
+              short.caption,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: AppSizer.deviceSp14,

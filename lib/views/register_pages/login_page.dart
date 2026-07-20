@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:coders_adda_app/veiw_model/auth_viewmodel.dart';
 import 'package:coders_adda_app/views/navigation_class.dart';
 import 'package:coders_adda_app/views/register_pages/register_page.dart';
@@ -25,6 +26,61 @@ class _LoginPageState extends State<LoginPage> {
   final FocusNode _otpFocusNode = FocusNode();
 
   bool _isOtpSent = false;
+  Timer? _resendTimer;
+  int _resendCountdown = 30;
+
+  void _startResendTimer() {
+    _resendTimer?.cancel();
+    setState(() {
+      _resendCountdown = 30;
+    });
+    _resendTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_resendCountdown == 0) {
+        timer.cancel();
+      } else {
+        setState(() {
+          _resendCountdown--;
+        });
+      }
+    });
+  }
+
+  void _resendOtp(AuthViewModel viewModel) async {
+    viewModel.clearError();
+    final response = await viewModel.requestOtp(
+      _phoneController.text.trim(),
+      referralCode: _referralController.text.trim(),
+    );
+
+    if (response.success && response.verificationId != null) {
+      _startResendTimer();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response.message ?? 'OTP resent successfully'),
+          backgroundColor: AppColors.successColor,
+          duration: const Duration(seconds: 5),
+          dismissDirection: DismissDirection.horizontal,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    } else if (response.message != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response.message!),
+          backgroundColor: AppColors.errorColor,
+          duration: const Duration(seconds: 5),
+          dismissDirection: DismissDirection.horizontal,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +117,6 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               );
             },
-          ),
         ),
       ),
     );
@@ -389,6 +444,62 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
+              SizedBox(height: AppSizer.deviceHeight1),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _isOtpSent = false;
+                        _otpController.clear();
+                        _resendTimer?.cancel();
+                      });
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size(50, 30),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      'Change Number',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: AppSizer.deviceSp13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  _resendCountdown > 0
+                      ? Padding(
+                          padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth3),
+                          child: Text(
+                            'Resend in ${_resendCountdown}s',
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: AppSizer.deviceSp13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        )
+                      : TextButton(
+                          onPressed: () => _resendOtp(viewModel),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size(50, 30),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            'Resend OTP',
+                            style: TextStyle(
+                              color: AppColors.primaryColor,
+                              fontSize: AppSizer.deviceSp13,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                ],
+              ),
             ],
 
             SizedBox(height: AppSizer.deviceHeight4),
@@ -625,6 +736,7 @@ SizedBox(height: AppSizer.deviceHeight2),
         setState(() {
           _isOtpSent = true;
         });
+        _startResendTimer();
         
         // OTP field pe automatically focus karein
         Future.delayed(Duration(milliseconds: 500), () {
@@ -633,8 +745,10 @@ SizedBox(height: AppSizer.deviceHeight2),
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('OTP sent successfully'),
+            content: Text(response.message ?? 'OTP sent successfully'),
             backgroundColor: AppColors.successColor,
+            duration: const Duration(seconds: 5),
+            dismissDirection: DismissDirection.horizontal,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -646,6 +760,8 @@ SizedBox(height: AppSizer.deviceHeight2),
           SnackBar(
             content: Text(response.message!),
             backgroundColor: AppColors.errorColor,
+            duration: const Duration(seconds: 5),
+            dismissDirection: DismissDirection.horizontal,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -679,6 +795,8 @@ SizedBox(height: AppSizer.deviceHeight2),
           SnackBar(
             content: Text(response.message!),
             backgroundColor: AppColors.errorColor,
+            duration: const Duration(seconds: 5),
+            dismissDirection: DismissDirection.horizontal,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -691,6 +809,7 @@ SizedBox(height: AppSizer.deviceHeight2),
 
   @override
   void dispose() {
+    _resendTimer?.cancel();
     // FocusNode dispose karein
     _phoneFocusNode.dispose();
     _otpFocusNode.dispose();
