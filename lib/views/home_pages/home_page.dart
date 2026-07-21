@@ -17,6 +17,7 @@ import 'package:coders_adda_app/views/search_page.dart/search_page.dart';
 import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
 import 'package:coders_adda_app/views/training_pages/training_courses.dart';
 import 'package:coders_adda_app/views/wallet_pages/wallets_page.dart';
+import 'package:coders_adda_app/views/common/help_support_page.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -290,7 +291,7 @@ class HomePage extends StatelessWidget {
                     }),
                     _drawerItem(Icons.help, 'Help & Support', Colors.blue, () {
                       Navigator.pop(context);
-                      _showComingSoon(context);
+                      NavigationService.navigateTo(context, const HelpSupportPage());
                     }),
                     Divider(
                       height: AppSizer.deviceHeight2,

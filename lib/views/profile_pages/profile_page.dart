@@ -7,6 +7,7 @@ import 'package:coders_adda_app/veiw_model/auth_viewmodel.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 import 'package:coders_adda_app/views/profile_pages/edite_profile.dart';
 import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
+import 'package:coders_adda_app/views/common/help_support_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -606,7 +607,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'title': 'Help & Support',
         'color': Colors.blue,
         'onTap': () {
-          _showComingSoon(context);
+          NavigationService.navigateTo(context, const HelpSupportPage());
         },
       },
       {

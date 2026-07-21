@@ -66,4 +66,8 @@ class ApiUrls {
   // Wallet Endpoints
   static const String walletTopup = '$baseUrl/payment/topup';
   static const String walletWithdraw = '$baseUrl/payment/withdraw';
+
+  // Support Ticket Endpoint
+  static const String createSupportTicket = '$baseUrl/support-ticket/create';
+  static const String getMySupportTickets = '$baseUrl/support-ticket/my-tickets';
 }

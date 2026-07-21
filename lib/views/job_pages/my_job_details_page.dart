@@ -3,6 +3,10 @@ import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:coders_adda_app/models/job_model.dart';
+import 'package:coders_adda_app/services/api_client.dart';
+import 'package:coders_adda_app/services/api_urls.dart';
+import 'package:coders_adda_app/views/job_pages/single_job_detailed_page.dart';
 
 class MyJobDetailsPage extends StatefulWidget {
   const MyJobDetailsPage({super.key});
@@ -370,7 +374,7 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      _viewJobDetails(job.id);
+                      _viewJobDetails(job);
                     },
                     child: Text('View Details'),
                   ),
@@ -451,7 +455,7 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      _viewJobDetails(job.id);
+                      _viewJobDetails(job);
                     },
                     child: Text('View Details'),
                   ),
@@ -460,7 +464,7 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
                 Expanded(
                   child: FilledButton(
                     onPressed: () {
-                      _applyToJob(job.id);
+                      _viewJobDetails(job);
                     },
                     child: Text('Apply Now'),
                   ),
@@ -612,12 +616,88 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
   //   }
   // }
 
-  void _viewJobDetails(String jobId) {
-    // Navigate to job details page
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Opening job details...')),
+  void _viewJobDetails(dynamic jobData) async {
+    String jobId = '';
+    String title = 'Job Details';
+    String company = '';
+    String location = '';
+    String salary = '';
+    String experience = '';
+
+    if (jobData is AppliedJob) {
+      jobId = jobData.id;
+      title = jobData.title;
+      company = jobData.company;
+      location = jobData.location;
+      salary = jobData.salary;
+    } else if (jobData is SavedJob) {
+      jobId = jobData.id;
+      title = jobData.title;
+      company = jobData.company;
+      location = jobData.location;
+      salary = jobData.salary;
+      experience = jobData.experience;
+    } else if (jobData is String) {
+      jobId = jobData;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
-  }
+
+    JobDetail? jobDetail;
+
+    try {
+      if (jobId.isNotEmpty && !jobId.startsWith('demo') && jobId.length > 5) {
+        final response = await ApiClient().get('${ApiUrls.getJobsV3}/$jobId');
+        if (response != null && response['success'] == true && response['data'] != null) {
+          jobDetail = JobDetail.fromJson(response['data']);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching job details: $e');
+    }
+
+    if (mounted) {
+      Navigator.pop(context); // Close loading indicator
+    }
+
+    jobDetail ??= JobDetail(
+      id: jobId,
+      jobTitle: title.isNotEmpty ? title : 'Software Developer',
+      jobCategory: 'Development',
+      location: location.isNotEmpty ? location : 'Remote',
+      salaryPackage: salary.isNotEmpty ? salary : 'Disclosed on Application',
+      requiredExperience: experience.isNotEmpty ? experience : '0-2 Years',
+      workType: 'Full-Time',
+      numberOfOpenings: 1,
+      requiredSkills: ['Flutter', 'Dart'],
+      jobDescription: 'Job details for $title at $company.\n\nKey Responsibilities:\n- Work with modern mobile technology stack.\n- Design and build responsive Flutter applications.\n- Collaborate with team members to deliver features.',
+      companyName: company.isNotEmpty ? company : 'Tech Solutions',
+      companyMobile: null,
+      companyWebsite: null,
+      contactEmail: null,
+      fullAddress: location,
+      jobStatus: 'Active',
+      price: 0,
+      priceType: 'free',
+      createdAt: '',
+      updatedAt: '',
+      companyIsHide: false,
+      locked: false,
+    );
+
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => JobDetailsPage(job: jobDetail!),
+        ),
+      );
+    }
+   }
 
   void _withdrawApplication(String jobId) {
     showDialog(
