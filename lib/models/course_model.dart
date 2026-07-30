@@ -46,9 +46,16 @@ class Course {
     String _safeString(dynamic value) {
       if (value == null) return '';
       if (value is String) return value;
-      if (value is Map && value.containsKey('url')) return value['url']?.toString() ?? '';
-      if (value is Map && value.containsKey('name')) return value['name']?.toString() ?? '';
-      if (value is Map && value.containsKey('fullName')) return value['fullName']?.toString() ?? '';
+      if (value is Map) {
+        if (value.containsKey('url') && value['url'] != null && value['url'].toString().isNotEmpty) {
+          return value['url']?.toString() ?? '';
+        }
+        if (value.containsKey('localUrl') && value['localUrl'] != null && value['localUrl'].toString().isNotEmpty) {
+          return value['localUrl']?.toString() ?? '';
+        }
+        if (value.containsKey('name')) return value['name']?.toString() ?? '';
+        if (value.containsKey('fullName')) return value['fullName']?.toString() ?? '';
+      }
       return value.toString();
     }
 
@@ -232,7 +239,14 @@ class CourseLesson {
     String extractUrl(dynamic value) {
       if (value == null) return '';
       if (value is String) return value;
-      if (value is Map && value.containsKey('url')) return value['url']?.toString() ?? '';
+      if (value is Map) {
+        if (value.containsKey('url') && value['url'] != null && value['url'].toString().isNotEmpty) {
+          return value['url']?.toString() ?? '';
+        }
+        if (value.containsKey('localUrl') && value['localUrl'] != null && value['localUrl'].toString().isNotEmpty) {
+          return value['localUrl']?.toString() ?? '';
+        }
+      }
       return value.toString();
     }
 
@@ -283,7 +297,7 @@ class LectureVideo {
   final String publicId;
   LectureVideo({required this.url, required this.publicId});
   factory LectureVideo.fromJson(Map<String, dynamic> json) =>
-      LectureVideo(url: json['url'] ?? '', publicId: json['public_id'] ?? '');
+      LectureVideo(url: json['url'] ?? json['localUrl'] ?? '', publicId: json['public_id'] ?? '');
 }
 
 class CourseLecture {

@@ -30,7 +30,13 @@ class CoursePlayerViewModel extends ChangeNotifier {
 
   String? get currentVideoUrl {
     if (_isPlayingPromo) return _course?.promoVideoUrl;
-    return _selectedLesson?.videoUrl;
+    if (_selectedLesson != null && _selectedLesson!.videoUrl.isNotEmpty) {
+      return _selectedLesson!.videoUrl;
+    }
+    if (_course?.promoVideoUrl != null && _course!.promoVideoUrl.isNotEmpty) {
+      return _course!.promoVideoUrl;
+    }
+    return null;
   }
 
   void playPromoVideo() {
@@ -67,6 +73,11 @@ class CoursePlayerViewModel extends ChangeNotifier {
             break;
           }
         }
+      }
+
+      if ((_selectedLesson == null || _selectedLesson!.videoUrl.isEmpty) && 
+          _course?.promoVideoUrl != null && _course!.promoVideoUrl.isNotEmpty) {
+        _isPlayingPromo = true;
       }
     } catch (e) {
       _errorMessage = 'Failed to load course details: $e';
