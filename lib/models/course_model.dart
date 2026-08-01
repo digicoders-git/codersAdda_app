@@ -319,6 +319,7 @@ class CourseLecture {
   final LectureVideo resource;
   final String courseName;
   final String topicName;
+  final bool isCompleted;
 
   CourseLecture({
     required this.id,
@@ -333,6 +334,7 @@ class CourseLecture {
     required this.resource,
     required this.courseName,
     required this.topicName,
+    this.isCompleted = false,
   });
 
   bool get isLocked => privacy == 'locked';
@@ -357,6 +359,7 @@ class CourseLecture {
           : LectureVideo(url: '', publicId: ''),
       courseName: (json['course'] is Map) ? (json['course']['title'] ?? '') : '',
       topicName: (json['topic'] is Map) ? (json['topic']['topic'] ?? '') : '',
+      isCompleted: json['isCompleted'] ?? false,
     );
   }
 }

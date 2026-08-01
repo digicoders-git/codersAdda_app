@@ -299,13 +299,33 @@ class _LectureCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  lecture.title,
-                  style: TextStyle(
-                    fontSize: AppSizer.deviceSp16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        lecture.title,
+                        style: TextStyle(
+                          fontSize: AppSizer.deviceSp16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor,
+                        ),
+                      ),
+                    ),
+                    if (lecture.isCompleted)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(color: Colors.green),
+                        ),
+                        child: const Text(
+                          'Completed',
+                          style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                  ],
                 ),
                 if (lecture.description.isNotEmpty) ...[
                   SizedBox(height: AppSizer.deviceHeight1),
@@ -329,10 +349,10 @@ class _LectureCard extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: onPlay,
-                          icon: const Icon(Icons.play_circle_fill, size: 20),
-                          label: const Text('Play Lecture'),
+                          icon: Icon(lecture.isCompleted ? Icons.replay : Icons.play_circle_fill, size: 20),
+                          label: Text(lecture.isCompleted ? 'Replay' : 'Play Lecture'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryColor,
+                            backgroundColor: lecture.isCompleted ? Colors.blue : AppColors.primaryColor,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             padding: const EdgeInsets.symmetric(vertical: 12),
