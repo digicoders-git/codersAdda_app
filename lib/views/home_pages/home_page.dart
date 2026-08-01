@@ -388,8 +388,11 @@ class HomePage extends StatelessWidget {
   // }
   // ===================== Body =====================
   Widget _buildBody(BuildContext context, HomeViewModel viewModel) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(AppSizer.deviceWidth4),
+    return RefreshIndicator(
+      onRefresh: () => viewModel.fetchHomeData(forceRefresh: true),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.all(AppSizer.deviceWidth4),
       child: Column(
         children: [
           _buildWelcomeSection(),
@@ -409,6 +412,7 @@ class HomePage extends StatelessWidget {
           _buildQuizzesAmbassadorSection(context),
           SizedBox(height: AppSizer.deviceHeight3),
         ],
+      ),
       ),
     );
   }

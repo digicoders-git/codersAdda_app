@@ -72,26 +72,17 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final validBanners = widget.banners.where((b) => b.imageUrl != null && b.imageUrl!.isNotEmpty).toList();
+
+    if (validBanners.isEmpty && !widget.isLoading) {
+      return const SizedBox.shrink();
+    }
+
     if (widget.isLoading) {
       return Container(
         height: AppSizer.deviceHeight20,
         alignment: Alignment.center,
         child: const CircularProgressIndicator(),
-      );
-    }
-
-    if (widget.banners.isEmpty) {
-      return Container(
-        height: AppSizer.deviceHeight20,
-        width: double.infinity,
-        margin: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth4),
-        decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
-        ),
-        child: const Center(
-          child: Text('Coming Soon...'),
-        ),
       );
     }
 
@@ -106,9 +97,9 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
                 _currentPage = index;
               });
             },
-            itemCount: widget.banners.length,
+            itemCount: validBanners.length,
             itemBuilder: (context, index) {
-              final banner = widget.banners[index];
+              final banner = validBanners[index];
               return GestureDetector(
                 onTap: () {
                   NavigationService.navigateTo(context, SubscriptionPage());
@@ -126,26 +117,16 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
                       ),
                       child: Stack(
                         children: [
-                          // Background Image or Gradient
-                          if (banner.imageUrl != null && banner.imageUrl!.isNotEmpty)
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
-                                image: DecorationImage(
-                                  image: NetworkImage(banner.imageUrl!),
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            )
-                          else
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
-                                gradient: LinearGradient(
-                                  colors: [AppColors.primaryColor, AppColors.accentColor],
-                                ),
+                          // Background Image
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
+                              image: DecorationImage(
+                                image: NetworkImage(banner.imageUrl!),
+                                fit: BoxFit.cover,
                               ),
                             ),
+                          ),
                           
                           // Text Overlay (optional, based on API data)
                           if (banner.title.isNotEmpty || banner.subtitle.isNotEmpty)
@@ -197,24 +178,25 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
         ),
         SizedBox(height: AppSizer.deviceHeight1),
         // Dots Indicator
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            widget.banners.length,
-            (index) => AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              height: 8,
-              width: _currentPage == index ? 24 : 8,
-              decoration: BoxDecoration(
-                color: _currentPage == index
-                    ? AppColors.primaryColor
-                    : Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(4),
+        if (validBanners.length > 1)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              validBanners.length,
+              (index) => AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                height: 8,
+                width: _currentPage == index ? 24 : 8,
+                decoration: BoxDecoration(
+                  color: _currentPage == index
+                      ? AppColors.primaryColor
+                      : Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }

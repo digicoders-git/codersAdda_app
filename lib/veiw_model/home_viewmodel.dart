@@ -47,14 +47,14 @@ class HomeViewModel with ChangeNotifier {
     fetchHomeData();
   }
 
-  Future<void> fetchHomeData() async {
+  Future<void> fetchHomeData({bool forceRefresh = false}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
       // Fetch everything in parallel for better performance
       await Future.wait([
-        _fetchSliders(),
+        _fetchSliders(forceRefresh: forceRefresh),
         _fetchTrendingCourses(),
         _fetchFreeCourses(),
       ]);
@@ -66,9 +66,9 @@ class HomeViewModel with ChangeNotifier {
     }
   }
 
-  Future<void> _fetchSliders() async {
+  Future<void> _fetchSliders({bool forceRefresh = false}) async {
     try {
-      _banners = await _sliderService.getSliders();
+      _banners = await _sliderService.getSliders(forceRefresh: forceRefresh);
     } catch (e) {
       debugPrint('Error fetching sliders: $e');
     }

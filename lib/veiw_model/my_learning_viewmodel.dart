@@ -27,10 +27,18 @@ class MyLearningViewModel with ChangeNotifier {
     fetchMyLibrary();
   }
 
+  bool _isDisposed = false;
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    super.dispose();
+  }
+
   Future<void> fetchMyLibrary() async {
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    if (!_isDisposed) notifyListeners();
 
     try {
       final response = await _libraryService.getMyLibrary();
@@ -43,7 +51,7 @@ class MyLearningViewModel with ChangeNotifier {
       print('Error in MyLearningViewModel: $e');
     } finally {
       _isLoading = false;
-      notifyListeners();
+      if (!_isDisposed) notifyListeners();
     }
   }
 

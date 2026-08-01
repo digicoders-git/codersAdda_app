@@ -31,7 +31,18 @@ class ReviewsTab extends StatelessWidget {
               ),
             ),
             OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(AppSizer.deviceWidth4),
+                    ),
+                  ),
+                  builder: (context) => const WriteReviewSheet(),
+                );
+              },
               icon: Icon(Icons.add, size: AppSizer.deviceSp18),
               label: const Text('Write a review'),
               style: OutlinedButton.styleFrom(
