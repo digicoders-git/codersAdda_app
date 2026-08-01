@@ -189,6 +189,7 @@ class CourseModule {
   final String duration;
   final int lessonCount;
   final bool isLocked;
+  final bool isActive;
   final List<CourseLesson> lessons;
 
   CourseModule({
@@ -197,6 +198,7 @@ class CourseModule {
     required this.duration,
     required this.lessonCount,
     this.isLocked = false,
+    this.isActive = true,
     required this.lessons,
   });
 
@@ -207,6 +209,7 @@ class CourseModule {
     return CourseModule(
       id: json['_id'] ?? '',
       title: json['title'] ?? '',
+      isActive: json['isActive'] ?? true,
       duration: json['duration'] ?? '0 min',
       lessonCount: lessonsList.length,
       isLocked: lessonsList.isNotEmpty ? lessonsList.every((l) => l.isLocked) : false,

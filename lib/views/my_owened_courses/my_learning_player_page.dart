@@ -150,12 +150,20 @@ class _CourseDetailScreenState extends State<MyLearningCoursePlayer>
 
                               // View Syllabus button
                               ElevatedButton.icon(
-                                onPressed: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => CourseSyllabusPage(viewModel: viewModel),
-                                  ),
-                                ),
+                                onPressed: () async {
+                                  _podController?.pause();
+                                  // Extra pause in case it's still initializing
+                                  Future.delayed(const Duration(milliseconds: 500), () {
+                                    if (mounted) _podController?.pause();
+                                  });
+                                  
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => CourseSyllabusPage(viewModel: viewModel),
+                                    ),
+                                  );
+                                },
                                 icon: const Icon(Icons.list_alt, color: Colors.white),
                                 label: const Text('View Course Curriculum / Syllabus',
                                     style: TextStyle(color: Colors.white)),

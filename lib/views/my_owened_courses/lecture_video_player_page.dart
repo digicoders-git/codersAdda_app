@@ -34,6 +34,14 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
 
   void _openPdf(String url) {
     if (url.isEmpty) return;
+    
+    // Prefix relative URL with baseUrl
+    if (url.startsWith('/')) {
+      url = '${ApiUrls.baseUrl}$url';
+    } else if (!url.startsWith('http')) {
+      url = '${ApiUrls.baseUrl}/$url';
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -122,8 +130,23 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
       final apiClient = ApiClient();
       debugPrint('Sending progress update: $data');
       final response = await apiClient.post(ApiUrls.updateProgress, data);
-      debugPrint('Progress update response: $response');
       
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('API Response (Take Screenshot)'),
+            content: Text(response.toString()),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+
       if (response['success'] == true && response['certificateIssued'] == true) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -133,9 +156,19 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
             ),
           );
         }
+      } else if (response['success'] == false) {
+        debugPrint('Progress update failed: ${response['message']}');
       }
     } catch (e) {
       debugPrint('Progress update error: $e');
+      if (mounted && _hasSentFinalProgress) {
+         ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('API Error: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+      }
     }
   }
 
@@ -237,13 +270,60 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
-                          widget.lecture.title,
-                          style: TextStyle(
-                            fontSize: AppSizer.deviceSp18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.lecture.title,
+                              style: TextStyle(
+                                fontSize: AppSizer.deviceSp18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textColor,
+                              ),
+                            ),
+                            SizedBox(height: AppSizer.deviceSp8),
+                            
+                            // DEBUG BUTTON
+                            ElevatedButton(
+                              onPressed: () {
+                                final data = {
+                                  'courseId': widget.courseId,
+                                  'topicId': widget.topicId,
+                                  'lectureId': widget.lecture.id,
+                                  'watchedSeconds': 200,
+                                  'durationSeconds': 200,
+                                };
+                                
+                                final apiClient = ApiClient();
+                                apiClient.post(ApiUrls.updateProgress, data).then((response) {
+                                  if (mounted) {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => AlertDialog(
+                                        title: const Text('API Response (Take Screenshot)'),
+                                        content: Text(response.toString()),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(context),
+                                            child: const Text('OK'),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                }).catchError((e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                                    );
+                                  }
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                              child: const Text("Test Complete Video (Click Me)", style: TextStyle(color: Colors.white)),
+                            ),
+                            SizedBox(height: AppSizer.deviceSp8),
+                          ],
                         ),
                       ),
                       const SizedBox(width: 12),

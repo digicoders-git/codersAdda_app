@@ -39,7 +39,7 @@ class CourseSyllabusPage extends StatelessWidget {
               );
             }
 
-            final topics = vm.curriculumTopics;
+            final topics = vm.curriculumTopics.where((t) => t.isActive).toList();
 
             if (topics.isEmpty) {
               return Center(

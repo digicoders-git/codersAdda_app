@@ -1,4 +1,5 @@
 import 'package:coders_adda_app/models/course_model.dart';
+import 'package:coders_adda_app/services/api_urls.dart';
 import 'package:coders_adda_app/services/course_service.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
@@ -344,11 +345,17 @@ class _LectureCard extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
+                            String url = lecture.resource.url;
+                            if (url.startsWith('/')) {
+                              url = '${ApiUrls.baseUrl}$url';
+                            } else if (!url.startsWith('http')) {
+                              url = '${ApiUrls.baseUrl}/$url';
+                            }
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => InAppPdfViewerPage(
-                                  pdfUrl: lecture.resource.url,
+                                  pdfUrl: url,
                                   title: lecture.title,
                                 ),
                               ),

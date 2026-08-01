@@ -334,7 +334,10 @@ class AllCourseDetailPage extends StatelessWidget {
           ],
         ),
         SizedBox(height: AppSizer.deviceHeight2),
-        ...course.curriculum.map((module) => _buildCurriculumModule(module)).toList(),
+        ...course.curriculum
+            .where((module) => module.isActive)
+            .map((module) => _buildCurriculumModule(module))
+            .toList(),
       ],
     );
   }
