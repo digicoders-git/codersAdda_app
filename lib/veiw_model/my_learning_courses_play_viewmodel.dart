@@ -104,6 +104,25 @@ class CoursePlayerViewModel extends ChangeNotifier {
       print('Error refreshing curriculum: $e');
     }
   }
+
+  Future<bool> submitReview(int rating, String comment, {String? studentName}) async {
+    if (_course == null) return false;
+    
+    final data = <String, dynamic>{
+      'rating': rating,
+      'comment': comment,
+    };
+    if (studentName != null && studentName.isNotEmpty) {
+      data['studentName'] = studentName;
+    }
+    
+    final success = await _courseService.addCourseReview(_course!.id, data);
+    if (success) {
+      // Refresh course details in the background without blocking the return
+      fetchCourseDetails(_course!.id);
+    }
+    return success;
+  }
 }
 
 

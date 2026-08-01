@@ -8,6 +8,9 @@ class ApiUrls {
   static const String requestOtp = '$baseUrl/users/request-otp';
   static const String verifyOtp = '$baseUrl/users/verify-otp';
 
+  // Progress
+  static const String updateProgress = "$baseUrl/progress/update";
+
   // Profile Endpoints
   static const String getProfile = '$baseUrl/users/profile';
   static const String updateProfile = '$baseUrl/users/update-profile';
@@ -21,6 +24,7 @@ class ApiUrls {
   static const String getCoursesByFilter = '$baseUrl/course/get'; 
   static const String getCurriculumByCourse = '$baseUrl/curriculum/get/by-course';
   static const String getLectureByTopic = '$baseUrl/lecture/get/by-topic'; 
+  static const String addCourseReview = '$baseUrl/course/add-review'; // We'll append /id manually
 
   // Sliders Endpoints
   static const String getSliders = '$baseUrl/sliders/get';
@@ -73,4 +77,7 @@ class ApiUrls {
   // Support Ticket Endpoint
   static const String createSupportTicket = '$baseUrl/support-ticket/create';
   static const String getMySupportTickets = '$baseUrl/support-ticket/my-tickets';
+
+  // Certificates API
+  static String myCertificates = "$baseUrl/certificate/my-certificates";
 }

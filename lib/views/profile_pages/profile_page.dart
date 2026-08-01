@@ -6,6 +6,7 @@ import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/auth_viewmodel.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 import 'package:coders_adda_app/views/profile_pages/edite_profile.dart';
+import 'package:coders_adda_app/views/profile_pages/my_certificates_page.dart';
 import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
 import 'package:coders_adda_app/views/common/help_support_page.dart';
 import 'package:flutter/material.dart';
@@ -577,7 +578,14 @@ class _ProfilePageState extends State<ProfilePage> {
           NavigationService.navigateTo(context, MyLearningPage());
         },
       },
-
+      {
+        'icon': Icons.card_membership,
+        'title': 'My Certificates',
+        'color': Colors.green,
+        'onTap': () {
+          NavigationService.navigateTo(context, const MyCertificatesPage());
+        },
+      },
       {
         'icon': Icons.workspace_premium,
         'title': 'My Subscription',

@@ -150,7 +150,13 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => LectureVideoPlayerPage(lecture: lec),
+                      builder: (_) => LectureVideoPlayerPage(
+                        lecture: lec,
+                        courseId: widget.viewModel.course?.id?.isNotEmpty == true 
+                            ? widget.viewModel.course!.id 
+                            : widget.topic.course,
+                        topicId: widget.topic.id,
+                      ),
                     ),
                   );
                 },

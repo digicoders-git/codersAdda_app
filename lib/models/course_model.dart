@@ -94,7 +94,7 @@ class Course {
           ? (json['faqs'] as List).map((i) => CourseFAQ.fromJson(i)).toList()
           : [],
       reviews: (json['reviews'] is List)
-          ? (json['reviews'] as List).map((i) => CourseReview.fromJson(i)).toList()
+          ? (json['reviews'] as List).map((i) => CourseReview.fromJson(i)).where((r) => r.isApproved).toList()
           : [],
     );
   }
@@ -126,6 +126,7 @@ class CourseReview {
   final String comment;
   final double rating;
   final DateTime createdAt;
+  final bool isApproved;
 
   CourseReview({
     required this.id,
@@ -133,6 +134,7 @@ class CourseReview {
     required this.comment,
     required this.rating,
     required this.createdAt,
+    this.isApproved = true,
   });
 
   factory CourseReview.fromJson(Map<String, dynamic> json) {
@@ -144,6 +146,7 @@ class CourseReview {
       createdAt: json['createdAt'] != null 
           ? DateTime.parse(json['createdAt']) 
           : DateTime.now(),
+      isApproved: json['isApproved'] ?? true,
     );
   }
 }

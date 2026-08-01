@@ -2,6 +2,7 @@ import 'package:coders_adda_app/models/course_model.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/veiw_model/my_learning_courses_play_viewmodel.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -32,6 +33,9 @@ class ReviewsTab extends StatelessWidget {
             ),
             OutlinedButton.icon(
               onPressed: () {
+                final profileVM = Provider.of<ProfileViewModel>(context, listen: false);
+                final courseVM = Provider.of<CoursePlayerViewModel>(context, listen: false);
+                
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
@@ -40,7 +44,13 @@ class ReviewsTab extends StatelessWidget {
                       top: Radius.circular(AppSizer.deviceWidth4),
                     ),
                   ),
-                  builder: (context) => const WriteReviewSheet(),
+                  builder: (bottomSheetContext) => MultiProvider(
+                    providers: [
+                      ChangeNotifierProvider.value(value: profileVM),
+                      ChangeNotifierProvider.value(value: courseVM),
+                    ],
+                    child: const WriteReviewSheet(),
+                  ),
                 );
               },
               icon: Icon(Icons.add, size: AppSizer.deviceSp18),
@@ -176,6 +186,140 @@ class ReviewCard extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class WriteReviewSheet extends StatefulWidget {
+  const WriteReviewSheet({Key? key}) : super(key: key);
+
+  @override
+  _WriteReviewSheetState createState() => _WriteReviewSheetState();
+}
+
+class _WriteReviewSheetState extends State<WriteReviewSheet> {
+  int _rating = 0;
+  final TextEditingController _commentController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: AppSizer.deviceWidth4,
+        right: AppSizer.deviceWidth4,
+        top: AppSizer.deviceHeight3,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Write a Review',
+            style: TextStyle(
+              fontSize: AppSizer.deviceSp20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textColor,
+            ),
+          ),
+          SizedBox(height: AppSizer.deviceHeight2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (index) => 
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _rating = index + 1;
+                  });
+                },
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth1),
+                  child: Icon(
+                    index < _rating ? Icons.star : Icons.star_border,
+                    color: AppColors.buttonColor,
+                    size: AppSizer.deviceSp32,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: AppSizer.deviceHeight2),
+          TextField(
+            controller: _commentController,
+            maxLines: 4,
+            decoration: InputDecoration(
+              hintText: 'Share your experience with this course...',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
+              ),
+            ),
+          ),
+          SizedBox(height: AppSizer.deviceHeight3),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isSubmitting ? null : () async {
+                if (_rating == 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please select a rating')),
+                  );
+                  return;
+                }
+                
+                setState(() => _isSubmitting = true);
+                
+                final profileVM = Provider.of<ProfileViewModel>(context, listen: false);
+                final studentName = profileVM.user?.name ?? '';
+                
+                final viewModel = Provider.of<CoursePlayerViewModel>(context, listen: false);
+                final success = await viewModel.submitReview(
+                  _rating,
+                  _commentController.text.trim(),
+                  studentName: studentName,
+                );
+                
+                if (mounted) {
+                  setState(() => _isSubmitting = false);
+                  if (success) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Review submitted! It will be visible after admin approval.')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Failed to submit review')),
+                    );
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
+                ),
+              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : Text(
+                      'Submit Review',
+                      style: TextStyle(color: Colors.white, fontSize: AppSizer.deviceSp16),
+                    ),
+            ),
+          ),
+          SizedBox(height: AppSizer.deviceHeight3),
         ],
       ),
     );

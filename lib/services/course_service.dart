@@ -147,4 +147,15 @@ class CourseService {
       return [];
     }
   }
+
+  Future<bool> addCourseReview(String courseId, Map<String, dynamic> reviewData) async {
+    try {
+      final String url = '${ApiUrls.addCourseReview}/$courseId';
+      final response = await _apiClient.post(url, reviewData);
+      return response['success'] == true;
+    } catch (e) {
+      debugPrint('Error adding course review: $e');
+      return false;
+    }
+  }
 }

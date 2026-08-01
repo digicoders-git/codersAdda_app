@@ -2,14 +2,19 @@ import 'package:coders_adda_app/models/course_model.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/views/common/in_app_pdf_viewer_page.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pod_player/pod_player.dart';
+import 'package:coders_adda_app/services/api_client.dart';
+import 'package:coders_adda_app/services/api_urls.dart';
 
 class LectureVideoPlayerPage extends StatefulWidget {
   final CourseLecture lecture;
+  final String courseId;
+  final String topicId;
 
-  const LectureVideoPlayerPage({Key? key, required this.lecture}) : super(key: key);
+  const LectureVideoPlayerPage({Key? key, required this.lecture, required this.courseId, required this.topicId}) : super(key: key);
 
   @override
   State<LectureVideoPlayerPage> createState() => _LectureVideoPlayerPageState();
@@ -19,6 +24,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
   PodPlayerController? _controller;
   bool _isLoading = true;
   String? _error;
+  Timer? _progressTimer;
 
   @override
   void initState() {
@@ -64,14 +70,79 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
       ),
     )..initialise().then((_) {
         _controller?.play();
+        _controller?.addListener(_onVideoStateChanged);
+        _startProgressTimer();
         if (mounted) setState(() { _isLoading = false; });
       }).catchError((e) {
         if (mounted) setState(() { _error = 'Failed to load video: $e'; _isLoading = false; });
       });
   }
 
+  bool _hasSentFinalProgress = false;
+
+  void _onVideoStateChanged() {
+    if (_controller == null || !_controller!.isInitialised) return;
+    final position = _controller!.currentVideoPosition;
+    final duration = _controller!.videoPlayerValue?.duration ?? Duration.zero;
+
+    // Check if video is at the end or almost at the end (within 1 second)
+    if (duration > Duration.zero && position >= duration - const Duration(seconds: 1)) {
+      if (!_hasSentFinalProgress) {
+        _hasSentFinalProgress = true;
+        _sendProgressUpdate();
+      }
+    } else {
+      _hasSentFinalProgress = false; // Reset if they scrub backwards
+    }
+  }
+
+  void _startProgressTimer() {
+    _progressTimer?.cancel();
+    _progressTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (_controller != null && _controller!.isVideoPlaying) {
+        _sendProgressUpdate();
+      }
+    });
+  }
+
+  Future<void> _sendProgressUpdate() async {
+    if (_controller == null || !_controller!.isInitialised) return;
+    try {
+      final position = _controller!.currentVideoPosition;
+      final duration = _controller!.videoPlayerValue?.duration ?? Duration.zero;
+      
+      final data = {
+        'courseId': widget.courseId,
+        'topicId': widget.topicId,
+        'lectureId': widget.lecture.id,
+        'watchedSeconds': position.inSeconds,
+        'durationSeconds': duration.inSeconds,
+      };
+
+      final apiClient = ApiClient();
+      debugPrint('Sending progress update: $data');
+      final response = await apiClient.post(ApiUrls.updateProgress, data);
+      debugPrint('Progress update response: $response');
+      
+      if (response['success'] == true && response['certificateIssued'] == true) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🎉 Congratulations! Certificate Generated!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Progress update error: $e');
+    }
+  }
+
   @override
   void dispose() {
+    _controller?.removeListener(_onVideoStateChanged);
+    _progressTimer?.cancel();
     _controller?.dispose();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();

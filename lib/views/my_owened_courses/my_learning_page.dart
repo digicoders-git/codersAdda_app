@@ -8,14 +8,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class MyLearningPage extends StatelessWidget {
-  final MyLearningViewModel viewModel = MyLearningViewModel();
   final int initialTabIndex;
 
-  MyLearningPage({this.initialTabIndex = 0});
+  const MyLearningPage({super.key, this.initialTabIndex = 0});
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => viewModel..selectCategory(initialTabIndex),
+      create: (context) => MyLearningViewModel()..selectCategory(initialTabIndex),
       child: Consumer<MyLearningViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
