@@ -144,7 +144,7 @@ class CourseService {
       return [];
     } catch (e) {
       debugPrint('Error fetching lectures: $e');
-      return [];
+      throw Exception('Parse error: $e');
     }
   }
 

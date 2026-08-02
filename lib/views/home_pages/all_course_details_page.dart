@@ -5,6 +5,7 @@ import 'package:coders_adda_app/veiw_model/course_detail_viewmodel.dart';
 import 'package:coders_adda_app/views/buy_new_courses_pages/course_purchase_page.dart';
 import 'package:coders_adda_app/views/buy_new_courses_pages/purchase_success_modal.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
+import 'package:coders_adda_app/views/my_owened_courses/lecture_video_player_page.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -74,7 +75,7 @@ class AllCourseDetailPage extends StatelessWidget {
                                   
                                   // Course Curriculum
                                   if (currentCourse.curriculum.isNotEmpty)
-                                    _buildCourseCurriculum(currentCourse),
+                                    _buildCourseCurriculum(context, currentCourse),
                                   
                                   SizedBox(height: AppSizer.deviceHeight3),
                                   
@@ -322,7 +323,7 @@ class AllCourseDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCourseCurriculum(Course course) {
+  Widget _buildCourseCurriculum(BuildContext context, Course course) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -336,13 +337,13 @@ class AllCourseDetailPage extends StatelessWidget {
         SizedBox(height: AppSizer.deviceHeight2),
         ...course.curriculum
             .where((module) => module.isActive)
-            .map((module) => _buildCurriculumModule(module))
+            .map((module) => _buildCurriculumModule(context, course, module))
             .toList(),
       ],
     );
   }
 
-  Widget _buildCurriculumModule(CourseModule module) {
+  Widget _buildCurriculumModule(BuildContext context, Course course, CourseModule module) {
     return Container(
       margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
       decoration: BoxDecoration(border: Border.all(color: AppColors.outline), borderRadius: BorderRadius.circular(AppSizer.deviceWidth3)),
@@ -351,19 +352,53 @@ class AllCourseDetailPage extends StatelessWidget {
         subtitle: Text('${module.lessonCount} lessons • ${module.duration}', style: TextStyle(fontSize: AppSizer.deviceSp12)),
         children: [
           const Divider(height: 1),
-          ...module.lessons.map((lesson) => _buildLessonItem(lesson)).toList(),
+          ...module.lessons.map((lesson) => _buildLessonItem(context, course, module, lesson)).toList(),
         ],
       ),
     );
   }
 
-  Widget _buildLessonItem(CourseLesson lesson) {
+  Widget _buildLessonItem(BuildContext context, Course course, CourseModule module, CourseLesson lesson) {
     return ListTile(
       leading: Icon(lesson.isFree ? Icons.play_circle_outline : Icons.lock_outline, color: lesson.isFree ? AppColors.primaryColor : Colors.grey),
       title: Text(lesson.title, style: TextStyle(fontSize: AppSizer.deviceSp13)),
       subtitle: Text(lesson.duration, style: TextStyle(fontSize: AppSizer.deviceSp11)),
       trailing: lesson.isFree ? const Icon(Icons.play_circle_filled, color: AppColors.primaryColor) : const Icon(Icons.lock, size: 16),
-      onTap: lesson.isFree ? () { /* Play lesson */ } : null,
+      onTap: () {
+        if (lesson.isFree) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => LectureVideoPlayerPage(
+                lecture: CourseLecture(
+                  id: lesson.id,
+                  title: lesson.title,
+                  description: '',
+                  duration: lesson.duration,
+                  srNo: 0,
+                  privacy: 'public',
+                  isActive: true,
+                  video: LectureVideo(url: lesson.videoUrl, publicId: ''),
+                  thumbnail: LectureVideo(url: lesson.thumbnailUrl ?? '', publicId: ''),
+                  resource: LectureVideo(url: lesson.pdfUrl ?? '', publicId: ''),
+                  courseName: course.title,
+                  topicName: module.title,
+                  isCompleted: false,
+                ),
+                courseId: course.id,
+                topicId: module.id,
+              ),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('This lecture is locked. Please purchase the course to view it.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      },
     );
   }
 
