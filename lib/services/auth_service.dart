@@ -43,6 +43,30 @@ class AuthService {
     }
   }
 
+  // Google Login API
+  Future<dynamic> googleLogin(String? mobile, Map<String, dynamic> googleData, {String? referralCode}) async {
+    try {
+      final Map<String, dynamic> body = {
+        'googleData': googleData,
+      };
+      if (mobile != null && mobile.isNotEmpty) {
+        body['mobile'] = mobile;
+      }
+      if (referralCode != null && referralCode.isNotEmpty) {
+        body['referralCode'] = referralCode;
+      }
+
+      final response = await _apiClient.post(ApiUrls.googleLogin, body);
+      
+      if (response['token'] != null) {
+        await _apiClient.saveToken(response['token']);
+      }
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // Logout
   Future<void> logout() async {
     await _apiClient.deleteToken();

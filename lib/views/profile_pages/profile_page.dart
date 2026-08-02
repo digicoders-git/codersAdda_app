@@ -126,23 +126,27 @@ class _ProfilePageState extends State<ProfilePage> {
             // Profile Image and Basic Info
             Row(
               children: [
-                // Profile Image
-                Container(
-                  width: AppSizer.deviceWidth20,
-                  height: AppSizer.deviceWidth20,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.primaryColor, width: 3),
-                    image: DecorationImage(
-                      image: NetworkImage(
+                  // Profile Image
+                  Container(
+                    width: AppSizer.deviceWidth20,
+                    height: AppSizer.deviceWidth20,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.primaryColor, width: 3),
+                      color: Colors.grey.shade200, // Background color for fallback
+                    ),
+                    child: ClipOval(
+                      child: Image.network(
                         user.profilePicture.isNotEmpty 
-                        ? user.profilePicture 
-                        : "https://via.placeholder.com/150"
+                            ? user.profilePicture 
+                            : "https://via.placeholder.com/150",
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Icons.person, size: AppSizer.deviceWidth10, color: Colors.grey);
+                        },
                       ),
-                      fit: BoxFit.cover,
                     ),
                   ),
-                ),
 
                 SizedBox(width: AppSizer.deviceWidth4),
 

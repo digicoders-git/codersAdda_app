@@ -647,12 +647,7 @@ SizedBox(height: AppSizer.deviceHeight2),
                 ],
               ),
               child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => RegisterPage()),
-                  );
-                },
+                onPressed: () => _handleGoogleLogin(viewModel),
                 style: OutlinedButton.styleFrom(
                   side: BorderSide.none,
                   shape: RoundedRectangleBorder(
@@ -805,6 +800,147 @@ SizedBox(height: AppSizer.deviceHeight2),
         );
       }
     }
+  }
+
+  void _handleGoogleLogin(AuthViewModel viewModel) async {
+    final googleData = await viewModel.signInWithGoogle();
+    if (googleData != null) {
+      if (!mounted) return;
+      // Try to login directly if email exists in backend
+      final response = await viewModel.submitGoogleLogin(null, googleData);
+      
+      if (!mounted) return;
+
+      if (response.success) {
+        context.read<ProfileViewModel>().fetchUserProfile();
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => MainNavigation()),
+          (route) => false,
+        );
+      } else if (response.requireMobile) {
+        // Requires mobile number to complete registration
+        _showMobileNumberBottomSheet(viewModel, googleData);
+      } else if (response.message != null) {
+        // Some other error occurred
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response.message!),
+            backgroundColor: AppColors.errorColor,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showMobileNumberBottomSheet(AuthViewModel viewModel, Map<String, dynamic> googleData) {
+    final TextEditingController googlePhoneController = TextEditingController();
+    final TextEditingController googleReferralController = TextEditingController();
+    final GlobalKey<FormState> googleFormKey = GlobalKey<FormState>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+            left: AppSizer.deviceWidth4,
+            right: AppSizer.deviceWidth4,
+            top: AppSizer.deviceHeight3,
+          ),
+          child: Form(
+            key: googleFormKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Complete your Profile',
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: AppSizer.deviceHeight1),
+                Text(
+                  'Please enter your mobile number to continue.',
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp14,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                SizedBox(height: AppSizer.deviceHeight3),
+                TextFormField(
+                  controller: googlePhoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: 'Phone Number',
+                    prefixText: '+91 ',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) return 'Please enter your phone number';
+                    if (value.length != 10) return 'Please enter a valid 10-digit number';
+                    return null;
+                  },
+                ),
+                SizedBox(height: AppSizer.deviceHeight2),
+                TextFormField(
+                  controller: googleReferralController,
+                  decoration: InputDecoration(
+                    labelText: 'Referral Code (Optional)',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                SizedBox(height: AppSizer.deviceHeight3),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (googleFormKey.currentState!.validate()) {
+                        Navigator.pop(sheetContext);
+                        final response = await viewModel.submitGoogleLogin(
+                          googlePhoneController.text.trim(),
+                          googleData,
+                          referralCode: googleReferralController.text.trim(),
+                        );
+                        if (!mounted) return;
+                        if (response.success) {
+                          context.read<ProfileViewModel>().fetchUserProfile();
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (context) => MainNavigation()),
+                            (route) => false,
+                          );
+                        } else if (response.message != null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(response.message!),
+                              backgroundColor: AppColors.errorColor,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      backgroundColor: AppColors.primaryColor,
+                    ),
+                    child: Text('Submit & Login', style: TextStyle(color: Colors.white, fontSize: AppSizer.deviceSp16)),
+                  ),
+                ),
+                SizedBox(height: AppSizer.deviceHeight3),
+              ],
+            ),
+          ),
+        );
+      }
+    );
   }
 
   @override

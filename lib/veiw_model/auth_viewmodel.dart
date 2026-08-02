@@ -1,6 +1,7 @@
 import 'package:coders_adda_app/models/login_model.dart';
 import 'package:coders_adda_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthViewModel with ChangeNotifier {
   bool _isLoading = false;
@@ -85,6 +86,79 @@ class AuthViewModel with ChangeNotifier {
     }
   }
 
+  // Google Sign In Authentication
+  Future<Map<String, dynamic>?> signInWithGoogle() async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      // Initialize GoogleSignIn
+      await GoogleSignIn.instance.initialize();
+      
+      // Perform authentication
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
+      
+      final Map<String, dynamic> googleData = {
+        'id': googleUser.id,
+        'email': googleUser.email,
+        'name': googleUser.displayName ?? '',
+        'picture': googleUser.photoUrl ?? '',
+      };
+
+      _isLoading = false;
+      notifyListeners();
+      return googleData;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return null;
+    }
+  }
+
+  // Submit Google Login to backend
+  Future<LoginResponse> submitGoogleLogin(String? mobile, Map<String, dynamic> googleData, {String? referralCode}) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      final response = await _authService.googleLogin(mobile, googleData, referralCode: referralCode);
+      
+      if (response['success'] == true) {
+        final userData = response['user'];
+        _currentUser = AppUser(
+          id: userData?['id'] ?? userData?['_id'] ?? 'user_id',
+          phone: mobile,
+        );
+        
+        _isLoading = false;
+        notifyListeners();
+
+        return LoginResponse(
+          success: true,
+          user: _currentUser,
+          message: response['message'],
+        );
+      } else {
+        _isLoading = false;
+        _errorMessage = response['message'] ?? 'Google login failed';
+        notifyListeners();
+        return LoginResponse(
+          success: false, 
+          requireMobile: response['requireMobile'] == true,
+          message: _errorMessage
+        );
+      }
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return LoginResponse(success: false, message: e.toString());
+    }
+  }
+
   String _getMockPhone() {
 
     return '98765${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
@@ -102,6 +176,9 @@ class AuthViewModel with ChangeNotifier {
 
 
   Future<void> signOut() async {
+    try {
+      await GoogleSignIn.instance.signOut();
+    } catch (_) {}
     await _authService.logout();
     _currentUser = null;
     _verificationId = null;

@@ -11,9 +11,11 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:coders_adda_app/veiw_model/auth_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   await HomeCacheService.init();
   runApp(
     MultiProvider(

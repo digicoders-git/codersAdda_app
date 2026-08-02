@@ -47,12 +47,23 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     final user = json['user'];
+    
+    String extractedPic = '';
+    if (user['profilePicture'] is Map && user['profilePicture']['url'] != null) {
+      extractedPic = user['profilePicture']['url'];
+    } else if (user['profilePicture'] is String) {
+      extractedPic = user['profilePicture'];
+    }
+    if (extractedPic.isEmpty && user['picture'] is String) {
+      extractedPic = user['picture'];
+    }
+
     return UserProfile(
       id: user['_id'] ?? '',
       name: user['name'] ?? '',
       email: user['email'] ?? '',
       mobile: user['mobile'] ?? '',
-      profilePicture: user['profilePicture']?['url'] ?? '',
+      profilePicture: extractedPic,
       college: user['college'] ?? '',
       course: user['course'] ?? '',
       branch: user['branch'] ?? 'Computer Science',

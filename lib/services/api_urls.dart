@@ -7,6 +7,7 @@ class ApiUrls {
   // Auth Endpoints
   static const String requestOtp = '$baseUrl/users/request-otp';
   static const String verifyOtp = '$baseUrl/users/verify-otp';
+  static const String googleLogin = '$baseUrl/users/google-login';
 
   // Progress
   static const String updateProgress = "$baseUrl/progress/update";

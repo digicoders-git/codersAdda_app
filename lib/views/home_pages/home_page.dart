@@ -145,11 +145,15 @@ class HomePage extends StatelessWidget {
                                       color: Colors.white,
                                       width: 2,
                                     ),
-                                    image: DecorationImage(
-                                      image: NetworkImage(
-                                        user?.profilePicture ?? 'https://via.placeholder.com/150',
-                                      ),
+                                    color: Colors.grey.shade300,
+                                  ),
+                                  child: ClipOval(
+                                    child: Image.network(
+                                      user?.profilePicture ?? 'https://via.placeholder.com/150',
                                       fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Icon(Icons.person, size: AppSizer.deviceWidth6, color: Colors.grey);
+                                      },
                                     ),
                                   ),
                                 ),
