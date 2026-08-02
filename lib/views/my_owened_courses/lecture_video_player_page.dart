@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:pod_player/pod_player.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LectureVideoPlayerPage extends StatefulWidget {
   final CourseLecture lecture;
@@ -25,6 +26,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
   bool _isLoading = true;
   String? _error;
   Timer? _progressTimer;
+  String? _certificateUrl;
 
   @override
   void initState() {
@@ -131,30 +133,14 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
       debugPrint('Sending progress update: $data');
       final response = await apiClient.post(ApiUrls.updateProgress, data);
       
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('API Response (Take Screenshot)'),
-            content: Text(response.toString()),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      }
+      // Removed debug popup as per user request
 
       if (response['success'] == true && response['certificateIssued'] == true) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('🎉 Congratulations! Certificate Generated!'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          setState(() {
+            _certificateUrl = response['certificateUrl'];
+          });
+          // Removed SnackBar popup as per user request
         }
       } else if (response['success'] == false) {
         debugPrint('Progress update failed: ${response['message']}');
@@ -283,7 +269,8 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                             ),
                             SizedBox(height: AppSizer.deviceSp8),
                             
-                            // DEBUG BUTTON
+                            // DEBUG BUTTON - Commented out as per request
+                            /*
                             ElevatedButton(
                               onPressed: () {
                                 final data = {
@@ -323,6 +310,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                               child: const Text("Test Complete Video (Click Me)", style: TextStyle(color: Colors.white)),
                             ),
                             SizedBox(height: AppSizer.deviceSp8),
+                            */
                           ],
                         ),
                       ),
@@ -443,6 +431,97 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                             ),
                             const Icon(Icons.open_in_new, color: Colors.deepOrange, size: 20),
                           ],
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  // Certificate section
+                  if (_certificateUrl != null && _certificateUrl!.isNotEmpty) ...[
+                    SizedBox(height: AppSizer.deviceHeight2),
+                    const Divider(),
+                    SizedBox(height: AppSizer.deviceHeight1),
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.primaryColor, AppColors.primaryColor.withOpacity(0.8)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryColor.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () async {
+                            final Uri url = Uri.parse(_certificateUrl!);
+                            try {
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url, mode: LaunchMode.externalApplication);
+                              } else {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("Could not open certificate link")),
+                                  );
+                                }
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Error opening link: $e")),
+                                );
+                              }
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.emoji_events, color: Colors.white, size: 28),
+                                ),
+                                const SizedBox(width: 16),
+                                const Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Course Completed!',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      SizedBox(height: 2),
+                                      Text(
+                                        'Download your Certificate',
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(Icons.download_rounded, color: Colors.white),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
