@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:coders_adda_app/veiw_model/job_viewmodel.dart';
 import 'package:coders_adda_app/views/job_pages/single_job_detailed_page.dart';
+import 'package:coders_adda_app/views/job_pages/my_applications_page.dart';
 import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -168,6 +169,18 @@ class _JobsPageState extends State<JobsPage> {
                     onPressed: () => Navigator.pop(context),
                   ),
                   actions: [
+                    IconButton(
+                      icon: Icon(Icons.assignment_ind_outlined, color: Colors.white),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MyApplicationsPage(),
+                          ),
+                        );
+                      },
+                      tooltip: 'My Applications',
+                    ),
                     IconButton(
                       icon: Icon(Icons.refresh, color: Colors.white),
                       onPressed: () => viewModel.fetchJobs(refresh: true),
@@ -612,9 +625,12 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(12),
     ),
-    child: Padding(
-      padding: EdgeInsets.all(AppSizer.deviceWidth4),
-      child: Column(
+    child: InkWell(
+      onTap: () => _navigateToJobDetails(context, job),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: EdgeInsets.all(AppSizer.deviceWidth4),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header Section with Title and Premium Badge
@@ -928,6 +944,7 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
         ],
       ),
     ),
+    ),
   );
 }
 
@@ -1100,7 +1117,7 @@ void _navigateToJobDetails(BuildContext context, JobDetail job) {
           Text('Upgrade to Premium'),
         ],
       ),
-      content: Text('You have used all your 3 free job applications. Subscribe to our premium plan to apply for unlimited jobs.'),
+      content: Text('You have used all your free job applications. Subscribe to our premium plan to apply for unlimited jobs.'),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),

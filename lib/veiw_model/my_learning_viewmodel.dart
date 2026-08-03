@@ -13,6 +13,7 @@ class MyLearningViewModel with ChangeNotifier {
   List<MyLearningCourse> _premiumCourses = [];
   List<MyLearningPdf> _freePdfs = [];
   List<MyLearningPdf> _premiumPdfs = [];
+  List<MyLearningJob> _unlockedJobs = [];
 
   // Getters
   int get selectedCategoryIndex => _selectedCategoryIndex;
@@ -22,6 +23,7 @@ class MyLearningViewModel with ChangeNotifier {
   List<MyLearningCourse> get premiumCourses => _premiumCourses;
   List<MyLearningPdf> get freePdfs => _freePdfs;
   List<MyLearningPdf> get premiumPdfs => _premiumPdfs;
+  List<MyLearningJob> get unlockedJobs => _unlockedJobs;
 
   MyLearningViewModel() {
     fetchMyLibrary();
@@ -46,6 +48,7 @@ class MyLearningViewModel with ChangeNotifier {
       _premiumCourses = response.paidCourses;
       _freePdfs = response.freePdfs;
       _premiumPdfs = response.paidPdfs;
+      _unlockedJobs = response.jobs;
     } catch (e) {
       _errorMessage = e.toString();
       print('Error in MyLearningViewModel: $e');

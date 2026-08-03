@@ -1,3 +1,5 @@
+import 'package:coders_adda_app/services/api_urls.dart';
+
 class PdfItem {
   final String id;
   final String title;
@@ -44,8 +46,8 @@ class PdfItem {
       priceType: json['priceType'] ?? 'free',
       isFree: (json['priceType'] ?? 'free').toString().toLowerCase() == 'free',
       price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
-      downloadUrl: json['pdf']?['url'] ?? '',
-      thumbnail: json['image']?['url'] ?? '',
+      downloadUrl: ApiUrls.resolveMediaUrl(json['pdf']),
+      thumbnail: ApiUrls.resolveMediaUrl(json['image']),
       viewCount: json['__v'] ?? 0, // Using __v as a placeholder for viewCount if not present
       uploadedAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       author: json['authorName'] ?? '',

@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/services/api_client.dart';
+import 'package:coders_adda_app/services/notification_service.dart';
+import 'package:coders_adda_app/services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -23,6 +25,18 @@ class _SplashScreenState extends State<SplashScreen> {
   void _navigateToNext() async {
     final apiClient = ApiClient();
     final token = await apiClient.getToken();
+    
+    if (token != null && token.isNotEmpty) {
+      try {
+        final fcmToken = await NotificationService().getToken();
+        if (fcmToken != null) {
+          await AuthService().updateFcmToken(fcmToken);
+        }
+      } catch (e) {
+        print("FCM Token init error: $e");
+      }
+    }
+
     if (mounted) {
       Navigator.pushReplacementNamed(context, token != null && token.isNotEmpty ? '/home' : '/login');
     }

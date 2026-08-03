@@ -122,7 +122,9 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
                               image: DecorationImage(
-                                image: NetworkImage(banner.imageUrl!),
+                                image: banner.imageUrl!.startsWith('assets/') 
+                                    ? AssetImage(banner.imageUrl!) as ImageProvider
+                                    : NetworkImage(banner.imageUrl!),
                                 fit: BoxFit.cover,
                               ),
                             ),

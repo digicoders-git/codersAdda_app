@@ -156,7 +156,8 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
         final attemptData = response['data'] ?? {};
         final int marksObtained = attemptData['marks'] ?? 0;
         final int totalMarks = attemptData['totalMarks'] ?? 0;
-        
+
+        // certificateUrl from backend (may be null if Render storage issue)
         final bool certIssued = attemptData['certificateIssued'] ?? false;
         final String? certUrl = certIssued && attemptData['certificateDetails'] != null
             ? attemptData['certificateDetails']['certificateUrl']
@@ -184,120 +185,170 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
 
   void _showResultDialog(int score, int totalScore, {String? certificateUrl}) {
     final double percentage = totalScore > 0 ? (score / totalScore) * 100 : 0.0;
-    final bool isPassed = percentage >= 50.0; // Assume 50% pass threshold
+    final bool isPassed = score > 0; // Any score > 0 earns a certificate
+    bool certLoading = false;
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => WillPopScope(
-        onWillPop: () async => false, // Prevent dismissing with back button
-        child: AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          backgroundColor: const Color(0xFF0F0C24),
-          title: Center(
-            child: Icon(
-              isPassed ? Icons.emoji_events : Icons.sentiment_dissatisfied,
-              color: isPassed ? const Color(0xFFFFD700) : Colors.redAccent,
-              size: AppSizer.deviceSp48,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) => PopScope(
+          canPop: false,
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                isPassed ? "Congratulations!" : "Keep Practicing!",
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+            backgroundColor: const Color(0xFF0F0C24),
+            title: Center(
+              child: Icon(
+                isPassed ? Icons.emoji_events : Icons.sentiment_dissatisfied,
+                color: isPassed ? const Color(0xFFFFD700) : Colors.redAccent,
+                size: AppSizer.deviceSp48,
               ),
-              const SizedBox(height: 10),
-              Text(
-                "You scored",
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp14,
-                  color: Colors.white70,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "$score / $totalScore",
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp28,
-                  fontWeight: FontWeight.w900,
-                  color: const Color(0xFFFFD700),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "${percentage.toStringAsFixed(1)}% Score",
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp14,
-                  fontWeight: FontWeight.bold,
-                  color: isPassed ? const Color(0xFF00FFCC) : Colors.redAccent,
-                ),
-              ),
-              const SizedBox(height: 15),
-              Text(
-                isPassed
-                    ? "Great job! You have successfully cleared this quiz."
-                    : "Try again to score higher next time.",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp12,
-                  color: Colors.white60,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            Column(
+            ),
+            content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (isPassed && certificateUrl != null) ...[
-                  ElevatedButton.icon(
+                Text(
+                  isPassed ? "Congratulations!" : "Keep Practicing!",
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "You scored",
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp14,
+                    color: Colors.white70,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "$score / $totalScore",
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp28,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFFFFD700),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "${percentage.toStringAsFixed(1)}% Score",
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp14,
+                    fontWeight: FontWeight.bold,
+                    color: isPassed ? const Color(0xFF00FFCC) : Colors.redAccent,
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  isPassed
+                      ? "Great job! You have successfully completed this quiz."
+                      : "Try again to score higher next time.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp12,
+                    color: Colors.white60,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Certificate Button - show if user scored any marks
+                  if (isPassed) ...[                    
+                    ElevatedButton.icon(
+                      onPressed: certLoading
+                          ? null
+                          : () async {
+                              if (certificateUrl != null && certificateUrl.isNotEmpty) {
+                                // Direct download if we already have URL
+                                _downloadCertificate(certificateUrl);
+                              } else {
+                                // Issue and download from backend
+                                setDialogState(() => certLoading = true);
+                                final url = await _issueCertificate(score, totalScore);
+                                setDialogState(() => certLoading = false);
+                                 if (url != null) {
+                                  _downloadCertificate(url);
+                                } else {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(this.context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Certificate not available for this quiz yet. Please contact admin."),
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                      icon: certLoading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.workspace_premium, color: Colors.white),
+                      label: Text(certLoading ? "Generating..." : "Download Certificate"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00B87C),
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                  ElevatedButton(
                     onPressed: () {
-                      _downloadCertificate(certificateUrl);
+                      Navigator.pop(dialogContext); // Pop Dialog
+                      Navigator.pop(this.context, true); // Return to Quiz Page
                     },
-                    icon: const Icon(Icons.workspace_premium, color: Colors.white),
-                    label: const Text("Download Certificate"),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: AppColors.primaryColor,
                       foregroundColor: Colors.white,
                       minimumSize: const Size(double.infinity, 45),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
+                    child: const Text("Go Back"),
                   ),
-                  const SizedBox(height: 10),
                 ],
-                ElevatedButton(
-                  onPressed: () {
-                    // Pop Dialog
-                    Navigator.pop(context);
-                    // Return to Quiz Page
-                    Navigator.pop(context, true);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 45),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text("Go Back"),
-                ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  /// Issue certificate from backend and return the download URL
+  Future<String?> _issueCertificate(int score, int totalScore) async {
+    try {
+      final response = await _apiClient.post(ApiUrls.issueQuizCertificate, {
+        'quizId': widget.quizId,
+        'totalScore': '$score / $totalScore',
+      });
+      if (response != null && response['success'] == true) {
+        return response['certificate']?['certificateUrl'] as String?;
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Certificate issue error: $e');
+      return null;
+    }
   }
 
   Future<void> _downloadCertificate(String urlString) async {

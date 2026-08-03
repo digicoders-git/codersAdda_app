@@ -21,6 +21,7 @@ class JobDetail {
   final String updatedAt;
   final bool companyIsHide;
   final bool locked;
+  final bool hasApplied;
 
   JobDetail({
     required this.id,
@@ -45,6 +46,7 @@ class JobDetail {
     required this.updatedAt,
     required this.companyIsHide,
     required this.locked,
+    this.hasApplied = false,
   });
 
   factory JobDetail.fromJson(Map<String, dynamic> json) {
@@ -53,7 +55,7 @@ class JobDetail {
       jobTitle: json['jobTitle'] ?? '',
       jobCategory: json['jobCategory'] ?? '',
       location: json['location'] ?? '',
-      salaryPackage: json['salaryPackage'] ?? '',
+      salaryPackage: json['salaryPackage']?.toString() ?? '',
       requiredExperience: json['requiredExperience'] ?? '',
       workType: json['workType'] ?? '',
       numberOfOpenings: (json['numberOfOpenings'] ?? 0).toInt(),
@@ -66,11 +68,12 @@ class JobDetail {
       fullAddress: json['fullAddress'],
       jobStatus: json['jobStatus'] ?? '',
       price: (json['price'] ?? 0).toInt(),
-      priceType: json['priceType'] ?? '',
+      priceType: json['priceType'] ?? 'free',
       createdAt: json['createdAt'] ?? '',
       updatedAt: json['updatedAt'] ?? '',
-      companyIsHide: json['CompanyIsHide'] ?? false,
+      companyIsHide: json['companyIsHide'] ?? false,
       locked: json['locked'] ?? false,
+      hasApplied: json['hasApplied'] ?? false,
     );
   }
 
@@ -80,6 +83,7 @@ class JobDetail {
     String? jobStatus,
     int? price,
     String? priceType,
+    bool? hasApplied,
   }) {
     return JobDetail(
       id: id,
@@ -104,6 +108,7 @@ class JobDetail {
       updatedAt: updatedAt,
       companyIsHide: companyIsHide ?? this.companyIsHide,
       locked: locked ?? this.locked,
+      hasApplied: hasApplied ?? this.hasApplied,
     );
   }
 }

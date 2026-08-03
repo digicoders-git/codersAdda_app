@@ -13,16 +13,25 @@ class MyCertificatesPage extends StatefulWidget {
   State<MyCertificatesPage> createState() => _MyCertificatesPageState();
 }
 
-class _MyCertificatesPageState extends State<MyCertificatesPage> {
+class _MyCertificatesPageState extends State<MyCertificatesPage> with SingleTickerProviderStateMixin {
   bool isLoading = true;
   String? errorMessage;
-  List<CertificateModel> certificates = [];
+  List<CertificateModel> courseCertificates = [];
+  List<CertificateModel> quizCertificates = [];
   final ApiClient _apiClient = ApiClient();
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _fetchCertificates();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchCertificates() async {
@@ -32,17 +41,24 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> {
     });
 
     try {
-      final response = await _apiClient.get(ApiUrls.myCertificates);
+      final courseResponse = await _apiClient.get(ApiUrls.myCertificates);
+      final quizResponse = await _apiClient.get(ApiUrls.getMyQuizCertificates);
 
-      if (response['success'] == true) {
-        final List<dynamic> certList = response['certificates'] ?? [];
+      bool hasCourseSuccess = courseResponse['success'] == true;
+      bool hasQuizSuccess = quizResponse['success'] == true;
+
+      if (hasCourseSuccess || hasQuizSuccess) {
+        final List<dynamic> courseList = courseResponse['certificates'] ?? [];
+        final List<dynamic> quizList = quizResponse['data'] ?? [];
+
         setState(() {
-          certificates = certList.map((c) => CertificateModel.fromJson(c)).toList();
+          courseCertificates = courseList.map((c) => CertificateModel.fromJson(c)).toList();
+          quizCertificates = quizList.map((c) => CertificateModel.fromJson(c)).toList();
           isLoading = false;
         });
       } else {
         setState(() {
-          errorMessage = response['message'] ?? 'Failed to load certificates.';
+          errorMessage = 'Failed to load certificates.';
           isLoading = false;
         });
       }
@@ -55,6 +71,19 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> {
   }
 
   Future<void> _downloadCertificate(String urlString) async {
+    if (urlString.isEmpty) return;
+    
+    // Resolve localhost to API base URL if needed
+    if (urlString.contains('localhost')) {
+      try {
+        final uri = Uri.parse(urlString);
+        final baseUri = Uri.parse(ApiUrls.baseUrl);
+        urlString = urlString.replaceFirst('${uri.scheme}://${uri.host}:${uri.port}', '${baseUri.scheme}://${baseUri.host}:${baseUri.port}');
+      } catch (e) {
+        // Ignore
+      }
+    }
+    
     final Uri url = Uri.parse(urlString);
     try {
       if (await canLaunchUrl(url)) {
@@ -87,6 +116,16 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: AppColors.primaryColor,
+          unselectedLabelColor: AppColors.onSurfaceVariant,
+          indicatorColor: AppColors.primaryColor,
+          tabs: const [
+            Tab(text: 'Courses'),
+            Tab(text: 'Quizzes'),
+          ],
+        ),
       ),
       body: _buildBody(),
     );
@@ -115,7 +154,17 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> {
       );
     }
 
-    if (certificates.isEmpty) {
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        _buildList(courseCertificates, 'Course'),
+        _buildList(quizCertificates, 'Quiz'),
+      ],
+    );
+  }
+
+  Widget _buildList(List<CertificateModel> list, String type) {
+    if (list.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -123,7 +172,7 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> {
             Icon(Icons.card_membership, size: 64, color: AppColors.onSurfaceVariant),
             const SizedBox(height: 16),
             Text(
-              'No certificates found',
+              'No $type certificates found',
               style: TextStyle(
                 fontSize: AppSizer.deviceSp18,
                 color: AppColors.textColor,
@@ -132,7 +181,7 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Complete courses to earn certificates!',
+              'Complete ${type.toLowerCase()}s to earn certificates!',
               style: TextStyle(color: AppColors.onSurfaceVariant),
             ),
           ],
@@ -144,16 +193,24 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> {
       onRefresh: _fetchCertificates,
       child: ListView.builder(
         padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        itemCount: certificates.length,
+        itemCount: list.length,
         itemBuilder: (context, index) {
-          final cert = certificates[index];
-          return _buildCertificateCard(cert);
+          final cert = list[index];
+          return _buildCertificateCard(cert, type);
         },
       ),
     );
   }
 
-  Widget _buildCertificateCard(CertificateModel cert) {
+  Widget _buildCertificateCard(CertificateModel cert, String type) {
+    final String title = type == 'Course' 
+        ? (cert.course?.title ?? 'Unknown Course')
+        : (cert.quiz?.title ?? 'Unknown Quiz');
+        
+    final String thumbnail = type == 'Course'
+        ? (cert.course?.thumbnail ?? '')
+        : ''; // Quizzes don't have thumbnails in the model currently
+
     return Card(
       elevation: 3,
       margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
@@ -167,11 +224,11 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> {
           children: [
             Row(
               children: [
-                if (cert.course?.thumbnail != null && cert.course!.thumbnail.isNotEmpty)
+                if (thumbnail.isNotEmpty)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: Image.network(
-                      cert.course!.thumbnail,
+                      thumbnail,
                       width: AppSizer.deviceWidth20,
                       height: AppSizer.deviceWidth15,
                       fit: BoxFit.cover,
@@ -191,7 +248,10 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> {
                       color: AppColors.primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.menu_book, color: AppColors.primaryColor),
+                    child: Icon(
+                      type == 'Course' ? Icons.menu_book : Icons.quiz, 
+                      color: AppColors.primaryColor
+                    ),
                   ),
                 SizedBox(width: AppSizer.deviceWidth4),
                 Expanded(
@@ -199,7 +259,7 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        cert.course?.title ?? 'Unknown Course',
+                        title,
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp16,
                           fontWeight: FontWeight.bold,

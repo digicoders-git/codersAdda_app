@@ -1,3 +1,5 @@
+import 'package:coders_adda_app/services/api_urls.dart';
+
 class MyLearningCourse {
   final String id;
   final String title;
@@ -117,9 +119,44 @@ class MyLearningPdf {
       title: json['title'] ?? '',
       size: json['pdf']?['fileSize'] ?? '0 MB',
       isFree: json['priceType'] == 'free',
-      downloadUrl: json['pdf']?['url'] ?? '',
+      downloadUrl: ApiUrls.resolveMediaUrl(json['pdf']),
       authorName: json['authorName'] ?? '',
       source: json['source'] ?? '',
+    );
+  }
+}
+
+class MyLearningJob {
+  final String id;
+  final String jobTitle;
+  final String companyName;
+  final String location;
+  final String salaryPackage;
+  final String requiredExperience;
+  final String workType;
+  final bool isActive;
+
+  MyLearningJob({
+    required this.id,
+    required this.jobTitle,
+    required this.companyName,
+    required this.location,
+    required this.salaryPackage,
+    required this.requiredExperience,
+    required this.workType,
+    required this.isActive,
+  });
+
+  factory MyLearningJob.fromJson(Map<String, dynamic> json) {
+    return MyLearningJob(
+      id: json['_id'] ?? '',
+      jobTitle: json['jobTitle'] ?? '',
+      companyName: json['companyName'] ?? '',
+      location: json['location'] ?? '',
+      salaryPackage: json['salaryPackage']?.toString() ?? '',
+      requiredExperience: json['requiredExperience'] ?? '',
+      workType: json['workType'] ?? '',
+      isActive: json['isActive'] ?? true,
     );
   }
 }
@@ -129,17 +166,20 @@ class MyLibraryResponse {
   final List<MyLearningCourse> paidCourses;
   final List<MyLearningPdf> freePdfs;
   final List<MyLearningPdf> paidPdfs;
+  final List<MyLearningJob> jobs;
 
   MyLibraryResponse({
     required this.freeCourses,
     required this.paidCourses,
     required this.freePdfs,
     required this.paidPdfs,
+    required this.jobs,
   });
 
   factory MyLibraryResponse.fromJson(Map<String, dynamic> json) {
     final courses = json['courses'] ?? {};
     final ebooks = json['ebooks'] ?? {};
+    final jobsList = json['jobs'] ?? [];
 
     return MyLibraryResponse(
       freeCourses: (courses['free'] as List<dynamic>?)
@@ -154,6 +194,9 @@ class MyLibraryResponse {
       paidPdfs: (ebooks['paid'] as List<dynamic>?)
           ?.map((e) => MyLearningPdf.fromJson(e))
           .toList() ?? [],
+      jobs: (jobsList as List<dynamic>)
+          .map((e) => MyLearningJob.fromJson(e))
+          .toList(),
     );
   }
 
@@ -163,6 +206,7 @@ class MyLibraryResponse {
       paidCourses: [],
       freePdfs: [],
       paidPdfs: [],
+      jobs: [],
     );
   }
 }

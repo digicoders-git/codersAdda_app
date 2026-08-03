@@ -9,14 +9,6 @@ class SliderService {
 
   Future<List<BannerItem>> getSliders({bool forceRefresh = false}) async {
     try {
-      if (!forceRefresh) {
-        // Check cache first
-        final cached = HomeCacheService.getCachedBanners();
-        if (cached != null && cached.isNotEmpty) {
-          return cached.map((json) => BannerItem.fromJson(json)).toList();
-        }
-      }
-
       // Fetch from API
       final response = await _apiClient.get('${ApiUrls.getSliders}?isActive=true');
       
@@ -42,6 +34,15 @@ class SliderService {
         await HomeCacheService.saveBanners(rawData);
       }
       
+      // Add default sliders if none exist from backend
+      if (banners.isEmpty) {
+        banners = [
+          BannerItem(id: 'default1', title: '', subtitle: '', route: '', imageUrl: 'assets/images/default_slider_1.png'),
+          BannerItem(id: 'default2', title: '', subtitle: '', route: '', imageUrl: 'assets/images/default_slider_2.jpg'),
+          BannerItem(id: 'default3', title: '', subtitle: '', route: '', imageUrl: 'assets/images/default_slider_3.png'),
+        ];
+      }
+
       return banners;
     } catch (e) {
       debugPrint('Error fetching sliders: $e');

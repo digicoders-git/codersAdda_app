@@ -2,6 +2,7 @@ import 'package:coders_adda_app/models/login_model.dart';
 import 'package:coders_adda_app/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:coders_adda_app/services/notification_service.dart';
 
 class AuthViewModel with ChangeNotifier {
   bool _isLoading = false;
@@ -66,6 +67,9 @@ class AuthViewModel with ChangeNotifier {
         
         _isLoading = false;
         notifyListeners();
+
+        // Send FCM token
+        _updateFCMToken();
 
         return LoginResponse(
           success: true,
@@ -136,6 +140,9 @@ class AuthViewModel with ChangeNotifier {
         _isLoading = false;
         notifyListeners();
 
+        // Send FCM token
+        _updateFCMToken();
+
         return LoginResponse(
           success: true,
           user: _currentUser,
@@ -184,5 +191,20 @@ class AuthViewModel with ChangeNotifier {
     _verificationId = null;
     _errorMessage = null;
     notifyListeners();
+  }
+
+  Future<void> _updateFCMToken() async {
+    try {
+      final token = await NotificationService().getToken();
+      if (token != null) {
+        await _authService.updateFcmToken(token);
+        // Listen to token refresh
+        NotificationService().listenToTokenRefresh((newToken) async {
+          await _authService.updateFcmToken(newToken);
+        });
+      }
+    } catch (e) {
+      print("Failed to update FCM token: $e");
+    }
   }
 }

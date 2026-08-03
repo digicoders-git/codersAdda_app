@@ -67,6 +67,19 @@ class AuthService {
     }
   }
 
+  // Update FCM Token
+  Future<dynamic> updateFcmToken(String token) async {
+    try {
+      final response = await _apiClient.post(ApiUrls.updateFcmToken, {
+        'fcmToken': token
+      });
+      return response;
+    } catch (e) {
+      print("Error updating FCM token: $e");
+      rethrow;
+    }
+  }
+
   // Logout
   Future<void> logout() async {
     await _apiClient.deleteToken();

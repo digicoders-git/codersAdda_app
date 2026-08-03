@@ -7,6 +7,9 @@ import 'package:coders_adda_app/models/job_model.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
 import 'package:coders_adda_app/views/job_pages/single_job_detailed_page.dart';
+import 'package:provider/provider.dart';
+import 'package:coders_adda_app/veiw_model/job_application_viewmodel.dart';
+import 'package:coders_adda_app/veiw_model/my_learning_viewmodel.dart';
 
 class MyJobDetailsPage extends StatefulWidget {
   const MyJobDetailsPage({super.key});
@@ -18,36 +21,7 @@ class MyJobDetailsPage extends StatefulWidget {
 class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Demo data for applied jobs
-  final List<AppliedJob> _appliedJobs = [
-    AppliedJob(
-      id: '1',
-      title: 'Senior Flutter Developer',
-      company: 'TechCorp Inc.',
-      location: 'Remote',
-      appliedDate: '15 Dec 2023',
-      status: ApplicationStatus.underReview,
-      salary: '₹12-18 LPA',
-    ),
-    AppliedJob(
-      id: '2',
-      title: 'Junior Flutter Developer',
-      company: 'StartUp Solutions',
-      location: 'Noida',
-      appliedDate: '12 Dec 2023',
-      status: ApplicationStatus.shortlisted,
-      salary: '₹6-8 LPA',
-    ),
-    AppliedJob(
-      id: '3',
-      title: 'Android Engineer',
-      company: 'MobileFirst',
-      location: 'Bangalore',
-      appliedDate: '10 Dec 2023',
-      status: ApplicationStatus.rejected,
-      salary: '₹15-20 LPA',
-    ),
-  ];
+
 
   final _storage = const FlutterSecureStorage();
   List<SavedJob> _savedJobs = [];
@@ -123,6 +97,8 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
           labelColor: AppColors.primaryColor,
           unselectedLabelColor: AppColors.onSurfaceVariant,
           indicatorColor: AppColors.primaryColor,
@@ -172,71 +148,136 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
     );
   }
 
+
   Widget _buildAppliedJobsTab() {
-    if (_appliedJobs.isEmpty) {
-      return _buildEmptyState(
-        icon: Icons.send,
-        title: 'No Applications Yet',
-        description: 'You haven\'t applied to any jobs yet. Start applying to see your applications here.',
-      );
-    }
+    return Consumer<JobApplicationViewModel>(
+      builder: (context, viewModel, child) {
+        if (viewModel.isLoading) {
+          return Center(child: CircularProgressIndicator());
+        }
+        
+        final applications = viewModel.myApplications;
+        
+        if (applications.isEmpty) {
+          return _buildEmptyState(
+            icon: Icons.send,
+            title: 'No Applications Yet',
+            description: 'You haven\'t applied to any jobs yet.',
+          );
+        }
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(AppSizer.deviceWidth4),
-      child: Column(
-        children: [
-          // Statistics Card
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(AppSizer.deviceWidth1),
-            margin: EdgeInsets.only(bottom: AppSizer.deviceHeight1),
-            decoration: BoxDecoration(
-              // gradient: LinearGradient(
-              //   colors: [
-              //     AppColors.primaryColor.withOpacity(0.1),
-              //     AppColors.primaryColor.withOpacity(0.05),
-              //   ],
-              //   begin: Alignment.topLeft,
-              //   end: Alignment.bottomRight,
-              // ),
-              //borderRadius: BorderRadius.circular(12),
-              //border: Border.all(color: AppColors.primaryColor.withOpacity(0.2)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatItem(
-                  'Total Applied',
-                  _appliedJobs.length.toString(),
-                  //Icons.send,
-                ),
-                _buildStatItem(
-                  'Under Review',
-                  _appliedJobs.where((job) => job.status == ApplicationStatus.underReview).length.toString(),
-                  //Icons.schedule,
-                ),
-                _buildStatItem(
-                  'Shortlisted',
-                  _appliedJobs.where((job) => job.status == ApplicationStatus.shortlisted).length.toString(),
-                  //Icons.thumb_up,
-                ),
-              ],
-            ),
-          ),
+        return ListView.separated(
+          padding: EdgeInsets.all(AppSizer.deviceWidth4),
+          itemCount: applications.length,
+          separatorBuilder: (context, index) => SizedBox(height: AppSizer.deviceHeight2),
+          itemBuilder: (context, index) {
+            final app = applications[index];
+            final job = app['jobId'];
+            final statusStr = app['status'] ?? 'Unknown';
+            
+            ApplicationStatus mappedStatus;
+            switch(statusStr) {
+              case 'Shortlisted': mappedStatus = ApplicationStatus.shortlisted; break;
+              case 'Under Review': mappedStatus = ApplicationStatus.underReview; break;
+              case 'Rejected': mappedStatus = ApplicationStatus.rejected; break;
+              case 'Selected': mappedStatus = ApplicationStatus.shortlisted; break;
+              default: mappedStatus = ApplicationStatus.applied; break;
+            }
+            
+            Color statusColor = _getStatusColor(mappedStatus);
+            IconData statusIcon = _getStatusIcon(mappedStatus);
+            String statusText = statusStr;
 
-          // Applied Jobs List
-          ListView.separated(
-            physics: NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: _appliedJobs.length,
-            separatorBuilder: (context, index) => SizedBox(height: AppSizer.deviceHeight2),
-            itemBuilder: (context, index) {
-              final job = _appliedJobs[index];
-              return _buildAppliedJobCard(job);
-            },
-          ),
-        ],
-      ),
+            return Card(
+              elevation: 2,
+              child: Padding(
+                padding: EdgeInsets.all(AppSizer.deviceWidth4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                job != null ? (job['jobTitle'] ?? 'Unknown Job') : 'Unknown Job',
+                                style: TextStyle(
+                                  fontSize: AppSizer.deviceSp16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: AppSizer.deviceHeight1),
+                              Text(
+                                job != null ? '${job['companyName'] ?? ''} • ${job['location'] ?? ''}' : '',
+                                style: TextStyle(
+                                  color: AppColors.onSurfaceVariant,
+                                  fontSize: AppSizer.deviceSp14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSizer.deviceWidth3,
+                            vertical: AppSizer.deviceHeight1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: statusColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: statusColor.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(statusIcon, color: statusColor, size: AppSizer.deviceSp14),
+                              SizedBox(width: AppSizer.deviceWidth1),
+                              Text(
+                                statusText,
+                                style: TextStyle(
+                                  color: statusColor,
+                                  fontSize: AppSizer.deviceSp12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight2),
+                    Row(
+                      children: [
+                        _buildJobDetailItem(Icons.currency_rupee, job != null ? (job['salaryPackage']?.toString() ?? '') : ''),
+                        SizedBox(width: AppSizer.deviceWidth4),
+                        _buildJobDetailItem(Icons.work, job != null ? (job['requiredExperience'] ?? '') : ''),
+                      ],
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight2),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              if (job != null) {
+                                final detail = JobDetail.fromJson(job).copyWith(hasApplied: true);
+                                Navigator.push(context, MaterialPageRoute(builder: (context) => JobDetailsPage(job: detail)));
+                              }
+                            },
+                            child: Text('View Details'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      }
     );
   }
 
@@ -292,109 +333,6 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
             },
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildAppliedJobCard(AppliedJob job) {
-    Color statusColor = _getStatusColor(job.status);
-    IconData statusIcon = _getStatusIcon(job.status);
-    //String statusText = _getStatusText(job.status);
-
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        job.title,
-                        style: TextStyle(
-                          fontSize: AppSizer.deviceSp16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: AppSizer.deviceHeight1),
-                      Text(
-                        '${job.company} • ${job.location}',
-                        style: TextStyle(
-                          color: AppColors.onSurfaceVariant,
-                          fontSize: AppSizer.deviceSp14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Container(
-                //   padding: EdgeInsets.symmetric(
-                //     horizontal: AppSizer.deviceWidth3,
-                //     vertical: AppSizer.deviceHeight1,
-                //   ),
-                //   decoration: BoxDecoration(
-                //     color: statusColor.withOpacity(0.1),
-                //     borderRadius: BorderRadius.circular(20),
-                //     border: Border.all(color: statusColor.withOpacity(0.3)),
-                //   ),
-                //   child: Row(
-                //     mainAxisSize: MainAxisSize.min,
-                //     children: [
-                //       Icon(statusIcon, color: statusColor, size: AppSizer.deviceSp14),
-                //       SizedBox(width: AppSizer.deviceWidth1),
-                //       Text(
-                //         statusText,
-                //         style: TextStyle(
-                //           color: statusColor,
-                //           fontSize: AppSizer.deviceSp12,
-                //           fontWeight: FontWeight.bold,
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-              ],
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            Row(
-              children: [
-                _buildJobDetailItem(Icons.currency_rupee, job.salary),
-                SizedBox(width: AppSizer.deviceWidth4),
-                _buildJobDetailItem(Icons.calendar_today, 'Unlocked: ${job.appliedDate}'),
-              ],
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      _viewJobDetails(job);
-                    },
-                    child: Text('View Details'),
-                  ),
-                ),
-                SizedBox(width: AppSizer.deviceWidth2),
-                // Expanded(
-                //   child: FilledButton(
-                //     onPressed: () {
-                //       _withdrawApplication(job.id);
-                //     },
-                //     style: FilledButton.styleFrom(
-                //       backgroundColor: Colors.grey,
-                //     ),
-                //     child: Text('Withdraw'),
-                //   ),
-                // ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -757,6 +695,8 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
 }
 
 enum ApplicationStatus {
+  applied,
+  pending,
   underReview,
   shortlisted,
   rejected,

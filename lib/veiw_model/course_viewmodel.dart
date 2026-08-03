@@ -120,9 +120,9 @@ class CourseViewModel with ChangeNotifier {
       return coursesByPrice;
     }
     
-    // Further filter by technology/category
-    return coursesByPrice.where((course) => 
-      course.technology.toLowerCase() == _selectedTechnology.toLowerCase()).toList();
+    // The API getCoursesByCategoryName already returns only the courses for the selected category.
+    // So we just return the courses filtered by price.
+    return coursesByPrice;
   }
 
   void setSelectedTechnology(String technology) {

@@ -1,3 +1,5 @@
+import 'package:coders_adda_app/services/api_urls.dart';
+
 class Course {
   final String id;
   final String title;
@@ -244,14 +246,8 @@ class CourseLesson {
   factory CourseLesson.fromJson(Map<String, dynamic> json) {
     String extractUrl(dynamic value) {
       if (value == null) return '';
-      if (value is String) return value;
-      if (value is Map) {
-        if (value.containsKey('url') && value['url'] != null && value['url'].toString().isNotEmpty) {
-          return value['url']?.toString() ?? '';
-        }
-        if (value.containsKey('localUrl') && value['localUrl'] != null && value['localUrl'].toString().isNotEmpty) {
-          return value['localUrl']?.toString() ?? '';
-        }
+      if (value is Map<String, dynamic>) {
+        return ApiUrls.resolveMediaUrl(value);
       }
       return value.toString();
     }

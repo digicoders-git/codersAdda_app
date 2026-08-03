@@ -430,17 +430,22 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 Row(
                   children: [
-                    Text(
-                      'Hello, $userName!',
-                      style: TextStyle(
-                        fontSize: AppSizer.deviceSp20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                    Flexible(
+                      child: Text(
+                        'Hello, $userName!',
+                        style: TextStyle(
+                          fontSize: AppSizer.deviceSp20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     SizedBox(width: AppSizer.deviceWidth1),
@@ -459,7 +464,8 @@ class HomePage extends StatelessWidget {
                     color: AppColors.onSurfaceVariant,
                   ),
                 ),
-              ],
+                ],
+              ),
             ),
             Builder(
               builder: (buildContext) => InkWell(

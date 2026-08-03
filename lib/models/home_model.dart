@@ -1,4 +1,5 @@
 import 'package:coders_adda_app/models/course_model.dart';
+import 'package:coders_adda_app/services/api_urls.dart';
 
 class HomeModel {
   final List<BannerItem> banners;
@@ -47,7 +48,7 @@ class BannerItem {
       title: _safeString(json['title']) ?? '',
       subtitle: _safeString(json['subtitle']) ?? '',
       route: _safeString(json['route']) ?? '',
-      imageUrl: _safeString(json['image'] ?? json['imageUrl'] ?? json['banner']),
+      imageUrl: _safeString(json['image'] ?? json['imageUrl'] ?? json['banner'])?.replaceAll('http://localhost:3900', ApiUrls.baseUrl),
     );
   }
 }

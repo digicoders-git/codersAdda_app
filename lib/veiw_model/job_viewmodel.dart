@@ -18,6 +18,8 @@ class JobsViewModel with ChangeNotifier {
   int _totalPages = 1;
   int _limit = 10;
   
+  int userTotalFreeJobsAllowed = 0;
+  
   String searchQuery = '';
   String selectedJobCategory = '';
   String selectedLocation = '';
@@ -93,6 +95,7 @@ class JobsViewModel with ChangeNotifier {
         
         _totalPages = response['totalPages'] ?? 1;
         _currentPage = response['page'] ?? 1;
+        userTotalFreeJobsAllowed = response['userTotalFreeJobsAllowed'] ?? 0;
       } else {
         _error = response['message'] ?? 'Failed to load jobs';
       }
@@ -232,8 +235,8 @@ class JobsViewModel with ChangeNotifier {
         // Case 2: Paid or Locked job
         final freeUnlocks = profileViewModel.user?.freeJobUnlocksUsed ?? 0;
 
-        if (freeUnlocks < 3) {
-          // Use one of the 3 free unlocks
+        if (freeUnlocks < userTotalFreeJobsAllowed) {
+          // Use one of the free unlocks
           final response = await _apiClient.post(ApiUrls.enrollFreeItem, {
             'itemType': 'jobV3',
             'itemId': job.id,
