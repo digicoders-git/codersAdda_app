@@ -56,9 +56,12 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
   }
 
   void _initPlayer() {
-    final url = widget.lecture.video.url.trim();
+    final url = (widget.lecture.contentType == 'live' && widget.lecture.liveUrl.isNotEmpty)
+        ? widget.lecture.liveUrl.trim()
+        : widget.lecture.video.url.trim();
+        
     if (url.isEmpty) {
-      setState(() { _error = 'No video URL available'; _isLoading = false; });
+      setState(() { _error = 'No video/stream URL available'; _isLoading = false; });
       return;
     }
 
@@ -259,13 +262,30 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              widget.lecture.title,
-                              style: TextStyle(
-                                fontSize: AppSizer.deviceSp18,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textColor,
-                              ),
+                            Row(
+                              children: [
+                                if (widget.lecture.contentType == 'live') ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text('LIVE 🔴', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                Expanded(
+                                  child: Text(
+                                    widget.lecture.title,
+                                    style: TextStyle(
+                                      fontSize: AppSizer.deviceSp18,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             SizedBox(height: AppSizer.deviceSp8),
                             
