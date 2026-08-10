@@ -150,6 +150,16 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                 lecture: lec,
                 index: index,
                 onPlay: () async {
+                  // Block locked lectures if video URL is empty (not enrolled)
+                  if (lec.isLocked && lec.video.url.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('This lecture is locked. Please purchase the course to access it.'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                    return;
+                  }
                   if (lec.contentType == 'test' && lec.quizId != null && lec.quizId!.isNotEmpty) {
                     showDialog(
                       context: context,
