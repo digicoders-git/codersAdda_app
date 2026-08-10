@@ -230,6 +230,11 @@ class CourseLesson {
   final bool isFree;
   final bool isLocked;
   final bool isCompleted;
+  final String contentType;
+  final String liveUrl;
+  final String liveStatus;
+  final String? scheduledAt;
+  final String? quizId;
 
   CourseLesson({
     required this.id,
@@ -241,6 +246,11 @@ class CourseLesson {
     this.isFree = false,
     this.isLocked = false,
     this.isCompleted = false,
+    this.contentType = 'video',
+    this.liveUrl = '',
+    this.liveStatus = 'scheduled',
+    this.scheduledAt,
+    this.quizId,
   });
 
   factory CourseLesson.fromJson(Map<String, dynamic> json) {
@@ -262,6 +272,11 @@ class CourseLesson {
       isFree: !(json['isLocked'] ?? false),
       isLocked: json['isLocked'] ?? false,
       isCompleted: false,
+      contentType: json['contentType'] ?? 'video',
+      liveUrl: json['liveUrl'] ?? '',
+      liveStatus: json['liveStatus'] ?? 'scheduled',
+      scheduledAt: json['scheduledAt']?.toString(),
+      quizId: json['quizId']?.toString(),
     );
   }
 }
@@ -316,6 +331,11 @@ class CourseLecture {
   final String courseName;
   final String topicName;
   final bool isCompleted;
+  final String contentType;
+  final String liveUrl;
+  final String liveStatus;
+  final String? scheduledAt;
+  final String? quizId;
 
   CourseLecture({
     required this.id,
@@ -331,6 +351,11 @@ class CourseLecture {
     required this.courseName,
     required this.topicName,
     this.isCompleted = false,
+    this.contentType = 'video',
+    this.liveUrl = '',
+    this.liveStatus = 'scheduled',
+    this.scheduledAt,
+    this.quizId,
   });
 
   bool get isLocked => privacy == 'locked';
@@ -356,6 +381,11 @@ class CourseLecture {
       courseName: (json['course'] is Map) ? (json['course']['title'] ?? '') : '',
       topicName: (json['topic'] is Map) ? (json['topic']['topic'] ?? '') : '',
       isCompleted: json['isCompleted'] ?? false,
+      contentType: json['contentType'] ?? 'video',
+      liveUrl: json['liveUrl'] ?? '',
+      liveStatus: json['liveStatus'] ?? 'scheduled',
+      scheduledAt: json['scheduledAt']?.toString(),
+      quizId: json['quizId']?.toString(),
     );
   }
 }
