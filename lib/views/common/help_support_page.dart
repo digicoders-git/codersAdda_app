@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
+import 'package:coders_adda_app/services/faq_service.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 
 class HelpSupportPage extends StatefulWidget {
@@ -38,55 +39,20 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
     'Other Query'
   ];
 
-  final List<Map<String, String>> _allFaqs = [
-    {
-      'category': 'Courses',
-      'question': 'How do I access my enrolled courses?',
-      'answer': 'Once enrolled, go to "My Courses" or "My Learning" tab from the home page or profile menu to stream lectures and access PDF notes anytime.'
-    },
-    {
-      'category': 'Courses',
-      'question': 'Can I download videos or PDF notes for offline view?',
-      'answer': 'Yes, you can view PDF notes directly inside the app. Course videos can be streamed seamlessly with high speed player controls.'
-    },
-    {
-      'category': 'Payments',
-      'question': 'My payment was deducted, but course is not unlocked. What to do?',
-      'answer': 'Don\'t worry! Sometimes bank confirmation takes 5-10 minutes. If it doesn\'t unlock automatically, tap "WhatsApp Support" below with your payment ID and we will activate it instantly.'
-    },
-    {
-      'category': 'Payments',
-      'question': 'What payment options are supported?',
-      'answer': 'We support UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, Net Banking, and Wallet balances via Razorpay secure gateway.'
-    },
-    {
-      'category': 'Jobs',
-      'question': 'How does job unlocking work?',
-      'answer': 'Every registered user gets 3 free job unlocks! After that, you can unlock premium jobs or upgrade to a Subscription plan to apply directly to top employers.'
-    },
-    {
-      'category': 'Account',
-      'question': 'How can I update my profile or mobile number?',
-      'answer': 'Go to Profile -> Edit Profile to update your name, college, email, bio, and social profiles.'
-    },
-    {
-      'category': 'Certificates',
-      'question': 'When will I get my course completion certificate?',
-      'answer': 'After completing 100% of the course lectures and passing the assessment, your certificate will automatically generate under My Certificates.'
-    },
-  ];
-
-  late List<Map<String, String>> _filteredFaqs;
+  List<Map<String, dynamic>> _allFaqs = [];
+  List<Map<String, dynamic>> _filteredFaqs = [];
+  bool _isLoadingFaqs = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    _filteredFaqs = List.from(_allFaqs);
+    _filteredFaqs = [];
     _searchController.addListener(_filterFaqs);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchMyTickets();
+      _fetchFaqs();
     });
   }
 
@@ -126,13 +92,26 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
     }
   }
 
+  Future<void> _fetchFaqs() async {
+    setState(() => _isLoadingFaqs = true);
+    final fetchedFaqs = await FaqService.getFaqs(platform: 'app');
+    if (mounted) {
+      setState(() {
+        _allFaqs = fetchedFaqs;
+        _isLoadingFaqs = false;
+      });
+      _filterFaqs();
+    }
+  }
+
   void _filterFaqs() {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredFaqs = _allFaqs.where((faq) {
-        final matchesCategory = _faqFilterCategory == 'All' || faq['category'] == _faqFilterCategory;
-        final matchesQuery = faq['question']!.toLowerCase().contains(query) ||
-            faq['answer']!.toLowerCase().contains(query);
+        // Assume 'category' might not exist on dynamic FAQs unless added. So checking 'All' or if it matches.
+        final matchesCategory = _faqFilterCategory == 'All' || (faq['category'] != null && faq['category'] == _faqFilterCategory);
+        final matchesQuery = (faq['question']?.toLowerCase() ?? '').contains(query) ||
+            (faq['answer']?.toLowerCase() ?? '').contains(query);
         return matchesCategory && matchesQuery;
       }).toList();
     });
@@ -890,7 +869,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                     child: Icon(Icons.help_outline, color: AppColors.primaryColor, size: AppSizer.deviceSp18),
                   ),
                   title: Text(
-                    faq['question']!,
+                    faq['question']?.toString() ?? '',
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp14,
                       fontWeight: FontWeight.w600,
@@ -906,7 +885,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                         AppSizer.deviceHeight2,
                       ),
                       child: Text(
-                        faq['answer']!,
+                        faq['answer']?.toString() ?? '',
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp13,
                           color: AppColors.onSurfaceVariant,

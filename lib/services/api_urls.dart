@@ -100,6 +100,9 @@ class ApiUrls {
   static const String issueQuizCertificate = '$baseUrl/quiz/certificate/issue';
   static const String getMyQuizCertificates = '$baseUrl/quiz/certificate/my-certificates';
 
+  // FAQs Endpoints
+  static const String getFaqs = '$baseUrl/faq';
+
   // Wallet Endpoints
   static const String walletTopup = '$baseUrl/payment/topup';
   static const String walletWithdraw = '$baseUrl/payment/withdraw';

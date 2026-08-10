@@ -41,14 +41,14 @@ class EditProfilePage extends StatelessWidget {
                   ? SizedBox(
                       height: AppSizer.deviceSp16,
                       width: AppSizer.deviceSp16,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      child: CircularProgressIndicator(color: AppColors.primaryColor, strokeWidth: 2),
                     )
                   : Text(
                       'Save',
                       style: TextStyle(
                         fontSize: AppSizer.deviceSp16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: AppColors.primaryColor,
                       ),
                     ),
               ),

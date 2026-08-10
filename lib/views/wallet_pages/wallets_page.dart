@@ -5,6 +5,9 @@ import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:provider/provider.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class WalletsPage extends StatefulWidget {
   const WalletsPage({super.key});
@@ -429,6 +432,19 @@ class _WalletsPageState extends State<WalletsPage> {
   }
 
   void _showWithdrawDialog() {
+    final profileVm = Provider.of<ProfileViewModel>(context, listen: false);
+    final user = profileVm.user;
+    
+    if (user != null && user.isAmbassador && _totalBalance < 500) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Ambassadors can only withdraw when balance is at least ₹500"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final TextEditingController amountController = TextEditingController();
     final TextEditingController upiController = TextEditingController();
 
@@ -686,12 +702,34 @@ class _WalletsPageState extends State<WalletsPage> {
             ),
           ),
           SizedBox(height: AppSizer.deviceHeight0_5),
-          Text(
-            dateStr,
-            style: TextStyle(
-              fontSize: AppSizer.deviceSp11,
-              color: AppColors.onSurfaceVariant.withOpacity(0.7),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                dateStr,
+                style: TextStyle(
+                  fontSize: AppSizer.deviceSp11,
+                  color: AppColors.onSurfaceVariant.withOpacity(0.7),
+                ),
+              ),
+              if (status == 'SUCCESS')
+                InkWell(
+                  onTap: () async {
+                    final url = Uri.parse('${ApiUrls.baseUrl}/payment/slip/${tx['_id']}');
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.picture_as_pdf, size: 14, color: AppColors.primaryColor),
+                      SizedBox(width: 4),
+                      Text("Slip", style: TextStyle(fontSize: 11, color: AppColors.primaryColor, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+            ],
           ),
         ],
       ),

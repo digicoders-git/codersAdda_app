@@ -20,6 +20,7 @@ class UserProfile {
   final int freeJobUnlocksUsed;
   final int courseCount;
   final List<String> purchaseCourseIds;
+  final bool isAmbassador;
 
   UserProfile({
     required this.id,
@@ -43,6 +44,7 @@ class UserProfile {
     this.freeJobUnlocksUsed = 0,
     this.courseCount = 0,
     this.purchaseCourseIds = const [],
+    this.isAmbassador = false,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -83,6 +85,7 @@ class UserProfile {
           ?.map((c) => (c is Map) ? (c['_id']?.toString() ?? '') : c.toString())
           .where((id) => id.isNotEmpty)
           .toList() ?? [],
+      isAmbassador: user['isAmbassador'] ?? false,
     );
   }
 }

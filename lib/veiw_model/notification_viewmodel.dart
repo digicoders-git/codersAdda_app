@@ -3,7 +3,7 @@ import 'package:coders_adda_app/models/notification_model.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class NotificationViewModel extends ChangeNotifier {
   List<NotificationModel> notifications = [];
@@ -11,9 +11,10 @@ class NotificationViewModel extends ChangeNotifier {
   bool isLoading = false;
   int unreadCount = 0;
 
+  final _storage = const FlutterSecureStorage();
+
   Future<String?> _getToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
+    return await _storage.read(key: 'auth_token');
   }
 
   Future<void> fetchNotifications() async {
@@ -22,20 +23,30 @@ class NotificationViewModel extends ChangeNotifier {
 
     try {
       final token = await _getToken();
-      if (token == null) return;
+      if (token == null) {
+        debugPrint('NotificationViewModel: No token found, skipping fetch');
+        isLoading = false;
+        notifyListeners();
+        return;
+      }
 
       final response = await http.get(
         Uri.parse(ApiUrls.getMyNotifications),
         headers: {'Authorization': 'Bearer $token'},
       );
 
+      debugPrint('fetchNotifications status: ${response.statusCode}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['success']) {
+        if (data['success'] == true) {
           notifications = (data['data'] as List)
               .map((e) => NotificationModel.fromJson(e))
               .toList();
+          debugPrint('Fetched ${notifications.length} notifications');
         }
+      } else {
+        debugPrint('fetchNotifications error body: ${response.body}');
       }
     } catch (e) {
       debugPrint('Error fetching notifications: $e');
@@ -57,8 +68,8 @@ class NotificationViewModel extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['success']) {
-          unreadCount = data['count'];
+        if (data['success'] == true) {
+          unreadCount = data['count'] ?? 0;
           notifyListeners();
         }
       }
@@ -77,15 +88,27 @@ class NotificationViewModel extends ChangeNotifier {
         headers: {'Authorization': 'Bearer $token'},
       );
 
-      final index = notifications.indexWhere((n) => n.id == id);
-      if (index != -1) {
-        // Find how to clone or update isRead depending on implementation
-        // For now, we will re-fetch
-        fetchNotifications();
-        fetchUnreadCount();
-      }
+      fetchNotifications();
+      fetchUnreadCount();
     } catch (e) {
       debugPrint('Error marking as read: $e');
+    }
+  }
+
+  Future<void> markAllAsRead() async {
+    try {
+      final token = await _getToken();
+      if (token == null) return;
+
+      await http.put(
+        Uri.parse(ApiUrls.markAllAsRead),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      fetchNotifications();
+      fetchUnreadCount();
+    } catch (e) {
+      debugPrint('Error marking all as read: $e');
     }
   }
 
@@ -101,7 +124,7 @@ class NotificationViewModel extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data['success']) {
+        if (data['success'] == true) {
           settings = NotificationSettingsModel.fromJson(data['data']);
           notifyListeners();
         }

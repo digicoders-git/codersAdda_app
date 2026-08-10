@@ -20,10 +20,25 @@ import 'package:coders_adda_app/views/wallet_pages/wallets_page.dart';
 import 'package:coders_adda_app/views/common/help_support_page.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/auth_viewmodel.dart';
+import 'package:coders_adda_app/veiw_model/notification_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class HomePage extends StatelessWidget {
+
+class HomePage extends StatefulWidget {
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<NotificationViewModel>().fetchUnreadCount();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -48,10 +63,53 @@ class HomePage extends StatelessWidget {
                     NavigationService.navigateTo(context, SearchPage());
                   },
                 ),
-                IconButton(
-                  icon: Icon(Icons.notifications_outlined),
-                  onPressed: () {
-                    NavigationService.navigateTo(context, NotificationPage());
+                Consumer<NotificationViewModel>(
+                  builder: (ctx, notifVm, _) {
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChangeNotifierProvider.value(
+                              value: notifVm,
+                              child: const NotificationPage(),
+                            ),
+                          ),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            const Icon(Icons.notifications_outlined),
+                            if (notifVm.unreadCount > 0)
+                              Positioned(
+                                top: 4,
+                                right: 0,
+                                child: Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      notifVm.unreadCount > 9 ? '9+' : '${notifVm.unreadCount}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
                   },
                 ),
               ],
