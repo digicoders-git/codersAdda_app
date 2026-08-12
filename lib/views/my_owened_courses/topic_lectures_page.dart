@@ -10,6 +10,7 @@ import 'package:coders_adda_app/views/quiz_program_pages/play_quiz_page.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 class TopicLecturesPage extends StatefulWidget {
   final CurriculumTopic topic;
@@ -27,14 +28,30 @@ class TopicLecturesPage extends StatefulWidget {
 
 class _TopicLecturesPageState extends State<TopicLecturesPage> {
   final CourseService _courseService = CourseService();
+  final ApiClient _apiClient = ApiClient();
   List<CourseLecture> _lectures = [];
   bool _isLoading = true;
   String? _error;
 
+  late Razorpay _razorpay;
+  CourseLecture? _pendingPaymentLecture;
+  String? _pendingOrderId;
+  bool _paymentLoading = false;
+
   @override
   void initState() {
     super.initState();
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
     _fetchLectures();
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear();
+    super.dispose();
   }
 
   Future<void> _fetchLectures() async {
@@ -48,6 +65,79 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
       setState(() { _isLoading = false; });
     }
   }
+
+  /// Called when user taps a paid locked lecture — shows payment bottom sheet
+  Future<void> _purchaseLecture(CourseLecture lecture) async {
+    final confirm = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _PaidLecturePaymentSheet(lecture: lecture),
+    );
+    if (confirm != true) return;
+
+    setState(() { _paymentLoading = true; });
+    try {
+      final orderRes = await _apiClient.post(ApiUrls.createOrder, {
+        'itemType': 'lecture',
+        'itemId': lecture.id,
+      });
+
+      if (orderRes == null || orderRes['orderId'] == null) {
+        _showSnackBar('Failed to create order. Try again.', Colors.red);
+        return;
+      }
+
+      _pendingPaymentLecture = lecture;
+      _pendingOrderId = orderRes['orderId'];
+
+      final options = {
+        'key': orderRes['key'],
+        'amount': orderRes['amount'],
+        'currency': orderRes['currency'] ?? 'INR',
+        'name': 'CodersAdda',
+        'description': lecture.title,
+        'order_id': orderRes['orderId'],
+        'prefill': {'contact': '', 'email': ''},
+        'theme': {'color': '#6C63FF'},
+      };
+      _razorpay.open(options);
+    } catch (e) {
+      _showSnackBar('Payment error: $e', Colors.red);
+    } finally {
+      setState(() { _paymentLoading = false; });
+    }
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    try {
+      await _apiClient.post(ApiUrls.verifyPayment, {
+        'razorpay_order_id': response.orderId,
+        'razorpay_payment_id': response.paymentId,
+        'razorpay_signature': response.signature,
+      });
+      _showSnackBar('Payment successful! Lecture unlocked 🎉', Colors.green);
+      _fetchLectures(); // Reload to get video URL
+    } catch (e) {
+      _showSnackBar('Verification failed: $e', Colors.orange);
+    }
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    _showSnackBar('Payment failed: ${response.message}', Colors.red);
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    _showSnackBar('External wallet selected: ${response.walletName}', Colors.blue);
+  }
+
+  void _showSnackBar(String msg, Color color) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: color),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -150,8 +240,17 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                 lecture: lec,
                 index: index,
                 onPlay: () async {
-                  // Block locked lectures if video URL is empty (not enrolled)
-                  if (lec.isLocked && lec.video.url.isEmpty) {
+                  // 1. Paid lecture guard — check isPaidLecture OR (locked + price > 0 + no video)
+                  //    This is defense-in-depth: even if backend didn't set isPaidLecture correctly
+                  //    (e.g. old lectures before price field was added), we still block here.
+                  final needsPayment = lec.isPaidLecture ||
+                      (lec.isLocked && lec.lecturePrice > 0 && lec.video.url.isEmpty);
+                  if (needsPayment) {
+                    _purchaseLecture(lec);
+                    return;
+                  }
+                  // 2. Locked lecture with no URL — needs course enrollment (free lecture in paid course)
+                  if (lec.isLocked && lec.video.url.isEmpty && lec.resource.url.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('This lecture is locked. Please purchase the course to access it.'),
@@ -218,6 +317,16 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                       }
                     }
                   } else if (lec.contentType == 'pdf') {
+                    // Guard: locked pdf with no resource URL
+                    if (lec.resource.url.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('This resource is locked. Please purchase the course to access it.'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                      return;
+                    }
                     String url = lec.resource.url;
                     if (url.startsWith('/')) {
                       url = '${ApiUrls.baseUrl}$url';
@@ -234,6 +343,16 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                       ),
                     );
                   } else {
+                    // Guard: locked video with no URL
+                    if (lec.video.url.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('This lecture is locked. Please purchase to access it.'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                      return;
+                    }
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -616,6 +735,82 @@ class _PlaceholderThumb extends StatelessWidget {
       ),
       child: const Center(
         child: Icon(Icons.play_circle_outlined, size: 56, color: Colors.white54),
+      ),
+    );
+  }
+}
+
+class _PaidLecturePaymentSheet extends StatelessWidget {
+  final CourseLecture lecture;
+
+  const _PaidLecturePaymentSheet({Key? key, required this.lecture}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Unlock Lecture',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.grey),
+                onPressed: () => Navigator.pop(context, false),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            lecture.title,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            lecture.description.isNotEmpty ? lecture.description : 'This premium video requires a separate one-time purchase to unlock.',
+            style: const TextStyle(fontSize: 13, color: Colors.black54),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Total Amount:',
+                style: TextStyle(fontSize: 14, color: Colors.black54),
+              ),
+              Text(
+                '₹${lecture.lecturePrice.toStringAsFixed(0)}',
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF6C63FF)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF6C63FF),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'PROCEED TO PAY',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.1),
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }

@@ -336,6 +336,8 @@ class CourseLecture {
   final String liveStatus;
   final String? scheduledAt;
   final String? quizId;
+  final bool isPaidLecture;   // true if lecture needs separate payment
+  final double lecturePrice;  // price amount for paid lecture
 
   CourseLecture({
     required this.id,
@@ -356,6 +358,8 @@ class CourseLecture {
     this.liveStatus = 'scheduled',
     this.scheduledAt,
     this.quizId,
+    this.isPaidLecture = false,
+    this.lecturePrice = 0,
   });
 
   bool get isLocked => privacy == 'locked';
@@ -386,6 +390,8 @@ class CourseLecture {
       liveStatus: json['liveStatus'] ?? 'scheduled',
       scheduledAt: json['scheduledAt']?.toString(),
       quizId: json['quizId']?.toString(),
+      isPaidLecture: json['isPaidLecture'] ?? false,
+      lecturePrice: (json['lecturePrice'] ?? 0).toDouble(),
     );
   }
 }

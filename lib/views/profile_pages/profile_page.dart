@@ -9,6 +9,7 @@ import 'package:coders_adda_app/views/profile_pages/edite_profile.dart';
 import 'package:coders_adda_app/views/profile_pages/my_certificates_page.dart';
 import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
 import 'package:coders_adda_app/views/common/help_support_page.dart';
+import 'package:coders_adda_app/views/profile_pages/payment_history_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -580,6 +581,14 @@ class _ProfilePageState extends State<ProfilePage> {
         'color': AppColors.primaryColor,
         'onTap': () {
           NavigationService.navigateTo(context, MyLearningPage());
+        },
+      },
+      {
+        'icon': Icons.history,
+        'title': 'Payment History',
+        'color': Colors.blueAccent,
+        'onTap': () {
+          NavigationService.navigateTo(context, const PaymentHistoryPage());
         },
       },
       {

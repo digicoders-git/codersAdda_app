@@ -21,6 +21,8 @@ class UserProfile {
   final int courseCount;
   final List<String> purchaseCourseIds;
   final bool isAmbassador;
+  final int completedCount;
+  final int progressPercentage;
 
   UserProfile({
     required this.id,
@@ -45,6 +47,8 @@ class UserProfile {
     this.courseCount = 0,
     this.purchaseCourseIds = const [],
     this.isAmbassador = false,
+    this.completedCount = 0,
+    this.progressPercentage = 0,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -86,6 +90,12 @@ class UserProfile {
           .where((id) => id.isNotEmpty)
           .toList() ?? [],
       isAmbassador: user['isAmbassador'] ?? false,
+      completedCount: (json['user']?['quizCertificates'] as List?)?.length ?? 0,
+      progressPercentage: (() {
+        int total = (user['purchaseCourses'] as List?)?.length ?? 0;
+        int completed = (json['user']?['quizCertificates'] as List?)?.length ?? 0;
+        return total > 0 ? ((completed / (total > completed ? total : completed)) * 100).toInt().clamp(0, 100) : 0;
+      })(),
     );
   }
 }

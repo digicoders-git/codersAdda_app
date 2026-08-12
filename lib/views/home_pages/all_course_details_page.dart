@@ -276,11 +276,12 @@ class AllCourseDetailPage extends StatelessWidget {
         Text(course.description, style: TextStyle(fontSize: AppSizer.deviceSp15, color: AppColors.onSurfaceVariant, height: 1.6)),
         SizedBox(height: AppSizer.deviceHeight2),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildStatItem('${course.totalLessons}', 'Lessons'),
+            SizedBox(width: AppSizer.deviceWidth4),
             _buildStatItem(course.duration, 'Duration'),
-            _buildStatItem(course.technology, 'Tech'),
+            SizedBox(width: AppSizer.deviceWidth4),
+            Expanded(child: _buildStatItemLong(course.technology, 'Tech')),
           ],
         ),
       ],
@@ -290,7 +291,29 @@ class AllCourseDetailPage extends StatelessWidget {
   Widget _buildStatItem(String value, String label) {
     return Column(
       children: [
-        Text(value, style: TextStyle(fontSize: AppSizer.deviceSp16, fontWeight: FontWeight.bold, color: AppColors.primaryColor)),
+        Text(
+          value,
+          style: TextStyle(fontSize: AppSizer.deviceSp16, fontWeight: FontWeight.bold, color: AppColors.primaryColor),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+        SizedBox(height: AppSizer.deviceHeight0_5),
+        Text(label, style: TextStyle(fontSize: AppSizer.deviceSp13, color: AppColors.onSurfaceVariant)),
+      ],
+    );
+  }
+
+  // For long technology strings — uses full available width with ellipsis
+  Widget _buildStatItemLong(String value, String label) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value,
+          style: TextStyle(fontSize: AppSizer.deviceSp13, fontWeight: FontWeight.bold, color: AppColors.primaryColor),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
+        ),
         SizedBox(height: AppSizer.deviceHeight0_5),
         Text(label, style: TextStyle(fontSize: AppSizer.deviceSp13, color: AppColors.onSurfaceVariant)),
       ],

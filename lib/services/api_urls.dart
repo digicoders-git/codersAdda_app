@@ -1,8 +1,8 @@
 class ApiUrls {
   // Use http://10.0.2.2:3900 for Android Emulator to connect to localhost
   // Use http://localhost:3900 for Web/Windows testing
-  static const String baseUrl = 'https://coders-adda-backend.onrender.com';
-  // static const String baseUrl = 'http://192.168.29.234:3900';
+  // static const String baseUrl = 'https://coders-adda-backend.onrender.com';
+  static const String baseUrl = 'http://192.168.29.234:3900';
   // static const String baseUrl = 'http://10.0.2.2:3900';
 
   // Auth Endpoints
@@ -103,9 +103,11 @@ class ApiUrls {
   // FAQs Endpoints
   static const String getFaqs = '$baseUrl/faq';
 
-  // Wallet Endpoints
+  // Wallet & Payment Endpoints
   static const String walletTopup = '$baseUrl/payment/topup';
   static const String walletWithdraw = '$baseUrl/payment/withdraw';
+  static const String paymentHistory = '$baseUrl/payment/history';
+  static const String paymentSlipPrefix = '$baseUrl/payment/slip';
 
   // Support Ticket Endpoint
   static const String createSupportTicket = '$baseUrl/support-ticket/create';

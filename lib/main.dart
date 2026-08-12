@@ -5,7 +5,9 @@ import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
 import 'package:coders_adda_app/views/register_pages/splash_screen.dart';
 import 'package:coders_adda_app/views/register_pages/login_page.dart';
 import 'package:coders_adda_app/views/job_pages/job_page.dart';
+import 'package:coders_adda_app/views/quiz_program_pages/quiz_page.dart';
 import 'package:coders_adda_app/services/home_cache_service.dart';
+import 'package:coders_adda_app/views/profile_pages/my_certificates_page.dart';
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
@@ -56,6 +58,8 @@ class LearningApp extends StatelessWidget {
             '/subscription': (context) => SubscriptionPage(),
             '/jobs': (context) => JobsPage(),
             '/job': (context) => JobsPage(),
+            '/quiz': (context) => QuizPage(),
+            '/certificates': (context) => const MyCertificatesPage(),
           },
           debugShowCheckedModeBanner: false,
         );

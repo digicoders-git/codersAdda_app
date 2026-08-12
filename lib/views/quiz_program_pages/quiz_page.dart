@@ -262,7 +262,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
 
   Future<void> _fetchQuizzes() async {
     try {
-      final response = await _apiClient.get(ApiUrls.getQuizzes);
+      final response = await _apiClient.get('${ApiUrls.getQuizzes}?courseId=general');
       if (response != null && response['success'] == true) {
         final List<dynamic> data = response['data'] ?? [];
         setState(() {
@@ -276,6 +276,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
             'difficulty': q['level'] ?? 'Beginner',
             'points': q['points'] ?? 0,
             'quizCode': q['quizCode'] ?? '',
+            'scheduledStartTime': q['scheduledStartTime'],
           }).toList();
           _isLoadingQuizzes = false;
         });
@@ -590,6 +591,18 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
       itemCount: _availableQuizzes.length,
       itemBuilder: (context, index) {
         final quiz = _availableQuizzes[index];
+        DateTime? scheduledTime;
+        if (quiz['scheduledStartTime'] != null) {
+          scheduledTime = DateTime.tryParse(quiz['scheduledStartTime'].toString())?.toLocal();
+        }
+        bool isLocked = false;
+        String lockText = 'Start Quiz';
+        if (scheduledTime != null && scheduledTime.isAfter(DateTime.now())) {
+          isLocked = true;
+          // Format as DD/MM/YYYY HH:mm
+          lockText = 'Starts on: ${scheduledTime.day.toString().padLeft(2, '0')}/${scheduledTime.month.toString().padLeft(2, '0')}/${scheduledTime.year} ${scheduledTime.hour.toString().padLeft(2, '0')}:${scheduledTime.minute.toString().padLeft(2, '0')}';
+        }
+
         return Container(
           margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
           decoration: BoxDecoration(
@@ -607,7 +620,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
-              onTap: () {
+              onTap: isLocked ? null : () {
                 _startQuiz(quiz);
               },
               child: Padding(
@@ -677,23 +690,32 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
                     ),
                     SizedBox(height: AppSizer.deviceHeight2),
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: isLocked ? null : () {
                         _startQuiz(quiz);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryColor,
+                        backgroundColor: isLocked ? Colors.grey[700] : AppColors.primaryColor,
                         foregroundColor: Colors.white,
                         minimumSize: Size(double.infinity, AppSizer.deviceHeight6),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
                         ),
                       ),
-                      child: Text(
-                        'Start Quiz',
-                        style: TextStyle(
-                          fontSize: AppSizer.deviceSp16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (isLocked) ...[
+                            const Icon(Icons.lock_clock, size: 18),
+                            SizedBox(width: AppSizer.deviceWidth2),
+                          ],
+                          Text(
+                            lockText,
+                            style: TextStyle(
+                              fontSize: AppSizer.deviceSp16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -776,12 +798,14 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      quiz['title'] as String,
-                      style: TextStyle(
-                        fontSize: AppSizer.deviceSp18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                    Expanded(
+                      child: Text(
+                        quiz['title'] as String,
+                        style: TextStyle(
+                          fontSize: AppSizer.deviceSp18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor,
+                        ),
                       ),
                     ),
                     Container(

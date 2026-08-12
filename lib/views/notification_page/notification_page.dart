@@ -10,7 +10,9 @@ import 'package:coders_adda_app/views/home_pages/all_course_details_page.dart';
 import 'package:coders_adda_app/views/buy_new_pdf_pages/pdf_detail_page.dart';
 import 'package:coders_adda_app/views/quiz_program_pages/quiz_page.dart';
 import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
+import 'package:coders_adda_app/views/my_owened_courses/my_learning_player_page.dart';
 import 'package:coders_adda_app/views/job_pages/job_page.dart';
+import 'package:coders_adda_app/views/profile_pages/my_certificates_page.dart';
 
 String _timeAgo(DateTime date) {
   final diff = DateTime.now().difference(date);
@@ -56,6 +58,8 @@ class _NotificationPageState extends State<NotificationPage> {
         return Icons.local_offer_rounded;
       case 'Alert':
         return Icons.warning_amber_rounded;
+      case 'System':
+        return Icons.workspace_premium_rounded;
       default:
         return Icons.notifications_rounded;
     }
@@ -77,6 +81,8 @@ class _NotificationPageState extends State<NotificationPage> {
         return Colors.green.shade50;
       case 'Alert':
         return Colors.red.shade50;
+      case 'System':
+        return Colors.amber.shade50;
       default:
         return AppColors.primaryColor.withOpacity(0.08);
     }
@@ -98,6 +104,8 @@ class _NotificationPageState extends State<NotificationPage> {
         return Colors.green;
       case 'Alert':
         return Colors.red;
+      case 'System':
+        return Colors.amber.shade700;
       default:
         return AppColors.primaryColor;
     }
@@ -126,16 +134,20 @@ class _NotificationPageState extends State<NotificationPage> {
     // Navigate based on actionLink
     final link = notif.actionLink ?? '';
     if (link.isEmpty) return;
-    
+
+    _navigateToLink(context, link);
+  }
+
+  static void _navigateToLink(BuildContext context, String link) {
     try {
       if (link.startsWith('/course-detail/')) {
         final courseId = link.replaceFirst('/course-detail/', '');
         final dummyCourse = Course(
-          id: courseId, title: 'Loading...', description: '', instructor: '', 
+          id: courseId, title: 'Loading...', description: '', instructor: '',
           price: 0, thumbnail: '', category: '', technology: '', isFree: false, duration: '', createdAt: DateTime.now()
         );
         Navigator.push(context, MaterialPageRoute(builder: (_) => AllCourseDetailPage(course: dummyCourse)));
-      } 
+      }
       else if (link.startsWith('/ebook-details/')) {
         final ebookId = link.replaceFirst('/ebook-details/', '');
         final dummyPdf = PdfItem(
@@ -143,18 +155,24 @@ class _NotificationPageState extends State<NotificationPage> {
         );
         Navigator.push(context, MaterialPageRoute(builder: (_) => PdfDetailPage(pdf: dummyPdf)));
       }
+      else if (link.startsWith('/course-test/')) {
+        final courseId = link.replaceFirst('/course-test/', '');
+        Navigator.push(context, MaterialPageRoute(builder: (_) => MyLearningCoursePlayer(courseId: courseId)));
+      }
       else if (link == '/quiz') {
         Navigator.push(context, MaterialPageRoute(builder: (_) => QuizPage()));
       }
       else if (link == '/subscription') {
         Navigator.push(context, MaterialPageRoute(builder: (_) => SubscriptionPage()));
       }
-      else if (link == '/jobs') {
+      else if (link == '/jobs' || link == '/job') {
         Navigator.push(context, MaterialPageRoute(builder: (_) => JobsPage()));
       }
+      else if (link == '/certificates' || link == '/my-certificates') {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const MyCertificatesPage()));
+      }
       else {
-        // Fallback for named routes if any
-        Navigator.pushNamed(context, link);
+        debugPrint('Unhandled notification link: $link');
       }
     } catch (e) {
       debugPrint('Navigation error for link $link: $e');

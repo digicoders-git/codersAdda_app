@@ -106,9 +106,42 @@ class NotificationService {
   }
 
   void _handleDeepLink(String actionLink) {
-     if (actionLink.isNotEmpty) {
-        navigatorKey.currentState?.pushNamed(actionLink);
-     }
+    if (actionLink.isEmpty) return;
+    
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) return;
+
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+
+    // Use post-frame callback so app is ready to navigate
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      try {
+        if (actionLink.startsWith('/course-detail/')) {
+          final courseId = actionLink.replaceFirst('/course-detail/', '');
+          // Navigate to My Learning and let user find the course
+          navigator.pushNamedAndRemoveUntil('/home', (route) => false);
+          debugPrint('[DeepLink] Course detail: $courseId - sent to home');
+        }
+        else if (actionLink == '/quiz') {
+          navigator.pushNamed('/quiz');
+        }
+        else if (actionLink == '/subscription') {
+          navigator.pushNamed('/subscription');
+        }
+        else if (actionLink == '/jobs' || actionLink == '/job') {
+          navigator.pushNamed('/job');
+        }
+        else if (actionLink == '/certificates' || actionLink == '/my-certificates') {
+          navigator.pushNamed('/certificates');
+        }
+        else {
+          debugPrint('[DeepLink] Unhandled link: $actionLink');
+        }
+      } catch (e) {
+        debugPrint('[DeepLink] Navigation error: $e');
+      }
+    });
   }
 
   Future<String?> getToken() async {

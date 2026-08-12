@@ -8,6 +8,8 @@ import 'package:coders_adda_app/views/common/in_app_pdf_viewer_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:pod_player/pod_player.dart';
+import 'course_quizzes_tab.dart';
+import 'course_tests_tab.dart';
 
 class MyLearningCoursePlayer extends StatefulWidget {
   final String courseId;
@@ -27,7 +29,7 @@ class _CourseDetailScreenState extends State<MyLearningCoursePlayer>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    _tabController = TabController(length: 4, vsync: this, initialIndex: 0);
   }
 
   @override
@@ -310,6 +312,8 @@ class _CourseDetailScreenState extends State<MyLearningCoursePlayer>
                           tabs: const [
                             Tab(text: 'FAQs'),
                             Tab(text: 'Reviews'),
+                            Tab(text: 'Quizzes'),
+                            Tab(text: 'Tests'),
                           ],
                         ),
                       ),
@@ -318,9 +322,11 @@ class _CourseDetailScreenState extends State<MyLearningCoursePlayer>
                       Expanded(
                         child: TabBarView(
                           controller: _tabController,
-                          children: const [
-                            FAQsTab(),
-                            ReviewsTab(),
+                          children: [
+                            const FAQsTab(),
+                            const ReviewsTab(),
+                            CourseQuizzesTab(courseId: widget.courseId),
+                            CourseTestsTab(courseId: widget.courseId),
                           ],
                         ),
                       ),

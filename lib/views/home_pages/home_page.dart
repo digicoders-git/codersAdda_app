@@ -122,6 +122,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildDrawer(BuildContext context) {
+    final profileViewModel = Provider.of<ProfileViewModel>(context);
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.70,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.only()),
@@ -283,9 +284,9 @@ class _HomePageState extends State<HomePage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildDrawerStat('12', 'Courses'),
-                          _buildDrawerStat('8', 'Completed'),
-                          _buildDrawerStat('95%', 'Progress'),
+                          _buildDrawerStat('${profileViewModel.user?.courseCount ?? 0}', 'Courses'),
+                          _buildDrawerStat('${profileViewModel.user?.completedCount ?? 0}', 'Completed'),
+                          _buildDrawerStat('${profileViewModel.user?.progressPercentage ?? 0}%', 'Progress'),
                         ],
                       ),
                     ),
