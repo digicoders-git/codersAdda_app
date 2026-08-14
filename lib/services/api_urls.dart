@@ -8,6 +8,8 @@ class ApiUrls {
   // Auth Endpoints
   static const String requestOtp = '$baseUrl/users/request-otp';
   static const String verifyOtp = '$baseUrl/users/verify-otp';
+  static const String approveLogin = '$baseUrl/users/approve-login';
+  static const String checkLoginApprovalStatus = '$baseUrl/users/login-approval-status';
   static const String googleLogin = '$baseUrl/users/google-login';
 
   static String resolveMediaUrl(dynamic mediaJson) {
@@ -88,6 +90,7 @@ class ApiUrls {
 
   // Coupon Endpoints
   static const String validateCoupon = '$baseUrl/coupon/validate';
+  static const String getActiveCoupons = '$baseUrl/coupon/get-active';
 
   // Ambassador Endpoints
   static const String applyAmbassador = '$baseUrl/ambassador/apply';

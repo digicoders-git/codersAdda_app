@@ -8,6 +8,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:coders_adda_app/services/offline_pdf_service.dart';
+import 'package:coders_adda_app/services/notification_service.dart';
 
 class MyLearningPdfViewer extends StatefulWidget {
   final MyLearningPdf pdf;
@@ -104,6 +106,76 @@ class _MyLearningPdfViewerState extends State<MyLearningPdfViewer> {
           widget.pdf.title,
           style: TextStyle(fontSize: AppSizer.deviceSp18),
         ),
+        actions: [
+          if (!_isLoading && _errorMessage == null)
+            StatefulBuilder(
+              builder: (context, setState) {
+                final isDownloaded = OfflinePdfService.isPdfDownloaded(widget.pdf.id);
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isDownloaded ? AppColors.successColor : Colors.white,
+                      foregroundColor: isDownloaded ? Colors.white : AppColors.primaryColor,
+                    ),
+                    icon: Icon(
+                      isDownloaded ? Icons.download_done : Icons.download,
+                    ),
+                    label: Text(
+                      isDownloaded ? "Saved" : "Save in App",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  onPressed: isDownloaded
+                      ? () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Already saved for offline access')),
+                          );
+                        }
+                      : () async {
+                          if (_localPath != null) {
+                            try {
+                              final appDir = await getApplicationDocumentsDirectory();
+                              final fileName = "${widget.pdf.id}_${widget.pdf.title.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '_')}.pdf";
+                              final newPath = "${appDir.path}/$fileName";
+                              
+                              final file = File(_localPath!);
+                              await file.copy(newPath);
+                              
+                              await OfflinePdfService.savePdf(
+                                OfflinePdfModel(
+                                  id: widget.pdf.id,
+                                  title: widget.pdf.title,
+                                  localPath: newPath,
+                                  category: widget.pdf.category,
+                                  thumbnail: widget.pdf.thumbnail,
+                                  downloadedAt: DateTime.now(),
+                                )
+                              );
+                              
+                              setState(() {}); // Rebuild button
+                              
+                              // Trigger a local notification
+                              await NotificationService().showLocalNotification(
+                                title: 'eBook Saved Successfully',
+                                body: 'Tap to view your downloaded eBooks.',
+                                payload: '/downloads',
+                              );
+                              
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Saved for offline access in Downloads')),
+                              );
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Failed to save offline: $e')),
+                              );
+                            }
+                          }
+                        },
+                  ),
+                );
+              }
+            ),
+        ],
       ),
       body: _isLoading
           ? Center(

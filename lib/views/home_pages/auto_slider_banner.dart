@@ -125,7 +125,7 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
                                 image: banner.imageUrl!.startsWith('assets/') 
                                     ? AssetImage(banner.imageUrl!) as ImageProvider
                                     : NetworkImage(banner.imageUrl!),
-                                fit: BoxFit.cover,
+                                fit: BoxFit.fill,
                               ),
                             ),
                           ),

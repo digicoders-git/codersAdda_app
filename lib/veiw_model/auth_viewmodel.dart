@@ -55,7 +55,8 @@ class AuthViewModel with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      final response = await _authService.verifyOtp(mobile, otp, referralCode: referralCode);
+      final fcmToken = await NotificationService().getToken();
+      final response = await _authService.verifyOtp(mobile, otp, referralCode: referralCode, fcmToken: fcmToken);
       
       if (response['success'] == true) {
         // Map response to APP user model
@@ -80,7 +81,11 @@ class AuthViewModel with ChangeNotifier {
         _isLoading = false;
         _errorMessage = response['message'] ?? 'Verification failed';
         notifyListeners();
-        return LoginResponse(success: false, message: _errorMessage);
+        return LoginResponse(
+          success: false, 
+          message: _errorMessage, 
+          waitingForApproval: response['waitingForApproval'] == true
+        );
       }
     } catch (e) {
       _isLoading = false;
@@ -169,6 +174,29 @@ class AuthViewModel with ChangeNotifier {
   String _getMockPhone() {
 
     return '98765${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}';
+  }
+
+  Future<bool> checkLoginApprovalStatus(String mobile) async {
+    try {
+      final response = await _authService.checkLoginApprovalStatus(mobile);
+      if (response['success'] == true && response['status'] == 'approved') {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print("Check login approval error: $e");
+      return false;
+    }
+  }
+
+  Future<bool> approveLoginRequest() async {
+    try {
+      final response = await _authService.approveLogin();
+      return response['success'] == true;
+    } catch (e) {
+      print("Approve login error: $e");
+      return false;
+    }
   }
 
   void clearError() {

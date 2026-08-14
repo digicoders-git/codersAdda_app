@@ -785,6 +785,8 @@ SizedBox(height: AppSizer.deviceHeight2),
           MaterialPageRoute(builder: (context) => MainNavigation()),
           (route) => false,
         );
+      } else if (response.waitingForApproval) {
+        _showWaitingForApprovalDialog(context, _phoneController.text.trim());
       } else if (response.message != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -800,6 +802,63 @@ SizedBox(height: AppSizer.deviceHeight2),
         );
       }
     }
+  }
+
+  void _showWaitingForApprovalDialog(BuildContext context, String mobile) {
+    bool isWaiting = true;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return WillPopScope(
+          onWillPop: () async => false,
+          child: AlertDialog(
+            title: Text("Waiting for Approval", style: TextStyle(color: AppColors.primaryColor)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: AppColors.primaryColor),
+                SizedBox(height: 16),
+                Text(
+                  "A request has been sent to your other active device.\nPlease allow the login to continue.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  isWaiting = false;
+                  Navigator.pop(dialogContext);
+                },
+                child: Text("Cancel", style: TextStyle(color: AppColors.primaryColor)),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    // Poll every 3 seconds
+    Future.doWhile(() async {
+      if (!isWaiting) return false;
+      await Future.delayed(Duration(seconds: 3));
+      if (!isWaiting || !mounted) return false;
+      
+      final isApproved = await context.read<AuthViewModel>().checkLoginApprovalStatus(mobile);
+      if (isApproved) {
+        isWaiting = false;
+        if (mounted) {
+          Navigator.pop(context); // Close dialog
+          // Call verify OTP again, this time it will succeed
+          final viewModel = context.read<AuthViewModel>();
+          _handleLogin(viewModel);
+        }
+        return false;
+      }
+      return true; // continue polling
+    });
   }
 
   void _handleGoogleLogin(AuthViewModel viewModel) async {

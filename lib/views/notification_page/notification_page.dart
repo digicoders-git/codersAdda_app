@@ -142,11 +142,7 @@ class _NotificationPageState extends State<NotificationPage> {
     try {
       if (link.startsWith('/course-detail/')) {
         final courseId = link.replaceFirst('/course-detail/', '');
-        final dummyCourse = Course(
-          id: courseId, title: 'Loading...', description: '', instructor: '',
-          price: 0, thumbnail: '', category: '', technology: '', isFree: false, duration: '', createdAt: DateTime.now()
-        );
-        Navigator.push(context, MaterialPageRoute(builder: (_) => AllCourseDetailPage(course: dummyCourse)));
+        Navigator.push(context, MaterialPageRoute(builder: (_) => MyLearningCoursePlayer(courseId: courseId)));
       }
       else if (link.startsWith('/ebook-details/')) {
         final ebookId = link.replaceFirst('/ebook-details/', '');
@@ -159,8 +155,8 @@ class _NotificationPageState extends State<NotificationPage> {
         final courseId = link.replaceFirst('/course-test/', '');
         Navigator.push(context, MaterialPageRoute(builder: (_) => MyLearningCoursePlayer(courseId: courseId)));
       }
-      else if (link == '/quiz') {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => QuizPage()));
+      else if (link.trim().toLowerCase() == '/quiz') {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const QuizPage()));
       }
       else if (link == '/subscription') {
         Navigator.push(context, MaterialPageRoute(builder: (_) => SubscriptionPage()));
@@ -228,7 +224,7 @@ class _NotificationPageState extends State<NotificationPage> {
           }
 
           if (vm.notifications.isEmpty) {
-            return _buildEmptyState();
+            return _buildEmptyState(vm);
           }
 
           // Group notifications by date label
@@ -247,6 +243,7 @@ class _NotificationPageState extends State<NotificationPage> {
             color: AppColors.primaryColor,
             onRefresh: () => vm.fetchNotifications(),
             child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.symmetric(
                 horizontal: AppSizer.deviceWidth4,
                 vertical: AppSizer.deviceHeight2,
@@ -272,44 +269,53 @@ class _NotificationPageState extends State<NotificationPage> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppColors.primaryColor.withOpacity(0.08),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.notifications_off_outlined,
-              size: 40,
-              color: AppColors.primaryColor.withOpacity(0.5),
-            ),
+  Widget _buildEmptyState(NotificationViewModel vm) {
+    return RefreshIndicator(
+      color: AppColors.primaryColor,
+      onRefresh: () => vm.fetchNotifications(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.7,
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.notifications_off_outlined,
+                  size: 40,
+                  color: AppColors.primaryColor.withOpacity(0.5),
+                ),
+              ),
+              SizedBox(height: AppSizer.deviceHeight3),
+              Text(
+                'No Notifications Yet',
+                style: TextStyle(
+                  color: AppColors.textColor,
+                  fontSize: AppSizer.deviceSp17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: AppSizer.deviceHeight1),
+              Text(
+                'You\'re all caught up!\nNew updates will appear here.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.onSurfaceVariant,
+                  fontSize: AppSizer.deviceSp14,
+                  height: 1.5,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: AppSizer.deviceHeight3),
-          Text(
-            'No Notifications Yet',
-            style: TextStyle(
-              color: AppColors.textColor,
-              fontSize: AppSizer.deviceSp17,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: AppSizer.deviceHeight1),
-          Text(
-            'You\'re all caught up!\nNew updates will appear here.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.onSurfaceVariant,
-              fontSize: AppSizer.deviceSp14,
-              height: 1.5,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

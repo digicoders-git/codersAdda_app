@@ -12,10 +12,19 @@ import 'package:url_launcher/url_launcher.dart';
 
 class LectureVideoPlayerPage extends StatefulWidget {
   final CourseLecture lecture;
+  final List<CourseLecture>? lectures;
+  final int? currentIndex;
   final String courseId;
   final String topicId;
 
-  const LectureVideoPlayerPage({Key? key, required this.lecture, required this.courseId, required this.topicId}) : super(key: key);
+  const LectureVideoPlayerPage({
+    Key? key,
+    required this.lecture,
+    this.lectures,
+    this.currentIndex,
+    required this.courseId,
+    required this.topicId,
+  }) : super(key: key);
 
   @override
   State<LectureVideoPlayerPage> createState() => _LectureVideoPlayerPageState();
@@ -27,11 +36,50 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
   String? _error;
   Timer? _progressTimer;
   String? _certificateUrl;
+  
+  late CourseLecture _currentLecture;
+  int _currentIndex = -1;
+  bool _isFinished = false;
+  bool _hasSentFinalProgress = false;
 
   @override
   void initState() {
     super.initState();
+    _currentLecture = widget.lecture;
+    _currentIndex = widget.currentIndex ?? -1;
     _initPlayer();
+  }
+  
+  void _playNextLecture() {
+    if (widget.lectures != null && _currentIndex < widget.lectures!.length - 1) {
+      setState(() {
+        _currentIndex++;
+        _currentLecture = widget.lectures![_currentIndex];
+        _isLoading = true;
+        _error = null;
+        _hasSentFinalProgress = false;
+        _isFinished = false;
+      });
+      _controller?.dispose();
+      _controller = null;
+      _initPlayer();
+    }
+  }
+
+  void _playPreviousLecture() {
+    if (widget.lectures != null && _currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+        _currentLecture = widget.lectures![_currentIndex];
+        _isLoading = true;
+        _error = null;
+        _hasSentFinalProgress = false;
+        _isFinished = false;
+      });
+      _controller?.dispose();
+      _controller = null;
+      _initPlayer();
+    }
   }
 
   void _openPdf(String url) {
@@ -49,16 +97,16 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
       MaterialPageRoute(
         builder: (_) => InAppPdfViewerPage(
           pdfUrl: url,
-          title: widget.lecture.title,
+          title: _currentLecture.title,
         ),
       ),
     );
   }
 
   void _initPlayer() {
-    final url = (widget.lecture.contentType == 'live' && widget.lecture.liveUrl.isNotEmpty)
-        ? widget.lecture.liveUrl.trim()
-        : widget.lecture.video.url.trim();
+    final url = (_currentLecture.contentType == 'live' && _currentLecture.liveUrl.isNotEmpty)
+        ? _currentLecture.liveUrl.trim()
+        : _currentLecture.video.url.trim();
         
     if (url.isEmpty) {
       setState(() { _error = 'No video/stream URL available'; _isLoading = false; });
@@ -71,7 +119,14 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
     } else if (url.contains('vimeo.com')) {
       source = PlayVideoFrom.vimeo(url);
     } else {
-      source = PlayVideoFrom.network(url);
+      source = PlayVideoFrom.networkQualityUrls(
+        videoUrls: [
+          VideoQalityUrls(quality: 1080, url: url),
+          VideoQalityUrls(quality: 720, url: url),
+          VideoQalityUrls(quality: 480, url: url),
+          VideoQalityUrls(quality: 360, url: url),
+        ],
+      );
     }
 
     _controller = PodPlayerController(
@@ -91,21 +146,27 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
       });
   }
 
-  bool _hasSentFinalProgress = false;
-
   void _onVideoStateChanged() {
     if (_controller == null || !_controller!.isInitialised) return;
     final position = _controller!.currentVideoPosition;
     final duration = _controller!.videoPlayerValue?.duration ?? Duration.zero;
 
-    // Check if video is at the end or almost at the end (within 1 second)
-    if (duration > Duration.zero && position >= duration - const Duration(seconds: 1)) {
+    // Check if video is at the end
+    final isEnded = duration > Duration.zero && (position >= duration || position.inMilliseconds >= duration.inMilliseconds - 200);
+    
+    if (isEnded) {
       if (!_hasSentFinalProgress) {
         _hasSentFinalProgress = true;
         _sendProgressUpdate();
       }
+      if (!_isFinished) {
+        setState(() { _isFinished = true; });
+      }
     } else {
-      _hasSentFinalProgress = false; // Reset if they scrub backwards
+      // Removed resetting of _hasSentFinalProgress so it only fires once per video load
+      if (_isFinished && !isEnded) {
+        setState(() { _isFinished = false; });
+      }
     }
   }
 
@@ -123,11 +184,16 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
     try {
       final position = _controller!.currentVideoPosition;
       final duration = _controller!.videoPlayerValue?.duration ?? Duration.zero;
+
+      // Prevent duplicate certificate generation by not sending completion if already completed
+      if (_currentLecture.isCompleted && position.inMilliseconds >= duration.inMilliseconds - 1000) {
+        return; 
+      }
       
       final data = {
         'courseId': widget.courseId,
         'topicId': widget.topicId,
-        'lectureId': widget.lecture.id,
+        'lectureId': _currentLecture.id,
         'watchedSeconds': position.inSeconds,
         'durationSeconds': duration.inSeconds,
       };
@@ -179,7 +245,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
         foregroundColor: AppColors.textColor,
         elevation: 0,
         title: Text(
-          widget.lecture.title,
+          _currentLecture.title,
           style: TextStyle(color: AppColors.textColor, fontSize: 16, fontWeight: FontWeight.bold),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -194,7 +260,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              'Lec ${widget.lecture.srNo}',
+              'Lec ${_currentLecture.srNo}',
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
@@ -244,7 +310,60 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                           ),
                         ),
                       )
-                    : PodVideoPlayer(controller: _controller!),
+                    : Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          PodVideoPlayer(controller: _controller!),
+                          // Previous Button Overlay
+                          if (widget.lectures != null && _currentIndex > 0 && !_isFinished)
+                            Positioned(
+                              left: 16,
+                              child: GestureDetector(
+                                onTap: _playPreviousLecture,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black45,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.skip_previous, color: Colors.white, size: 32),
+                                ),
+                              ),
+                            ),
+                          // Next Button Overlay
+                          if (widget.lectures != null && _currentIndex < widget.lectures!.length - 1 && !_isFinished)
+                            Positioned(
+                              right: 16,
+                              child: GestureDetector(
+                                onTap: _playNextLecture,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black45,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.skip_next, color: Colors.white, size: 32),
+                                ),
+                              ),
+                            ),
+                          if (_isFinished)
+                            Positioned.fill(
+                              child: Container(
+                                color: Colors.black54,
+                                child: Center(
+                                  child: IconButton(
+                                    icon: const Icon(Icons.replay, color: Colors.white, size: 64),
+                                    onPressed: () {
+                                      _controller?.videoSeekTo(Duration.zero);
+                                      _controller?.play();
+                                      setState(() { _isFinished = false; });
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
           ),
 
           // ── Lecture Info ─────────────────────────────────────
@@ -264,7 +383,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                           children: [
                             Row(
                               children: [
-                                if (widget.lecture.contentType == 'live') ...[
+                                if (_currentLecture.contentType == 'live') ...[
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                     decoration: BoxDecoration(
@@ -277,7 +396,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                                 ],
                                 Expanded(
                                   child: Text(
-                                    widget.lecture.title,
+                                    _currentLecture.title,
                                     style: TextStyle(
                                       fontSize: AppSizer.deviceSp18,
                                       fontWeight: FontWeight.bold,
@@ -296,7 +415,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                                 final data = {
                                   'courseId': widget.courseId,
                                   'topicId': widget.topicId,
-                                  'lectureId': widget.lecture.id,
+                                  'lectureId': _currentLecture.id,
                                   'watchedSeconds': 200,
                                   'durationSeconds': 200,
                                 };
@@ -347,7 +466,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                             Icon(Icons.schedule, size: 14, color: AppColors.primaryColor),
                             const SizedBox(width: 4),
                             Text(
-                              widget.lecture.duration,
+                              _currentLecture.duration,
                               style: TextStyle(
                                 fontSize: AppSizer.deviceSp13,
                                 color: AppColors.primaryColor,
@@ -369,7 +488,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          '${widget.lecture.topicName} • ${widget.lecture.courseName}',
+                          '${_currentLecture.topicName} • ${_currentLecture.courseName}',
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp13,
                             color: AppColors.onSurfaceVariant,
@@ -379,7 +498,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                     ],
                   ),
 
-                  if (widget.lecture.description.isNotEmpty) ...[
+                  if (_currentLecture.description.isNotEmpty) ...[
                     SizedBox(height: AppSizer.deviceHeight2),
                     const Divider(),
                     SizedBox(height: AppSizer.deviceHeight1),
@@ -393,7 +512,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                     ),
                     SizedBox(height: AppSizer.deviceHeight1),
                     Text(
-                      widget.lecture.description,
+                      _currentLecture.description,
                       style: TextStyle(
                         fontSize: AppSizer.deviceSp14,
                         color: AppColors.textColor.withOpacity(0.8),
@@ -403,7 +522,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                   ],
 
                   // PDF Resource section
-                  if (widget.lecture.resource.url.isNotEmpty) ...[
+                  if (_currentLecture.resource.url.isNotEmpty) ...[
                     SizedBox(height: AppSizer.deviceHeight2),
                     const Divider(),
                     SizedBox(height: AppSizer.deviceHeight1),
@@ -418,7 +537,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                     SizedBox(height: AppSizer.deviceHeight1),
                     InkWell(
                       borderRadius: BorderRadius.circular(12),
-                      onTap: () => _openPdf(widget.lecture.resource.url),
+                      onTap: () => _openPdf(_currentLecture.resource.url),
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(

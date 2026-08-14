@@ -19,51 +19,55 @@ class ReviewsTab extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.all(AppSizer.deviceWidth4),
       children: [
-        // Header
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "Learner's Review",
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
-              ),
-            ),
-            OutlinedButton.icon(
-              onPressed: () {
-                final profileVM = Provider.of<ProfileViewModel>(context, listen: false);
-                final courseVM = Provider.of<CoursePlayerViewModel>(context, listen: false);
-                
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(AppSizer.deviceWidth4),
-                    ),
-                  ),
-                  builder: (bottomSheetContext) => MultiProvider(
-                    providers: [
-                      ChangeNotifierProvider.value(value: profileVM),
-                      ChangeNotifierProvider.value(value: courseVM),
-                    ],
-                    child: const WriteReviewSheet(),
-                  ),
-                );
-              },
-              icon: Icon(Icons.add, size: AppSizer.deviceSp18),
-              label: const Text('Write a review'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primaryColor,
-                side: BorderSide(color: AppColors.primaryColor),
+        // Write Review Prominent Button
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              final profileVM = Provider.of<ProfileViewModel>(context, listen: false);
+              final courseVM = Provider.of<CoursePlayerViewModel>(context, listen: false);
+              
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(AppSizer.deviceWidth4),
+                  ),
                 ),
+                builder: (bottomSheetContext) => MultiProvider(
+                  providers: [
+                    ChangeNotifierProvider.value(value: profileVM),
+                    ChangeNotifierProvider.value(value: courseVM),
+                  ],
+                  child: const WriteReviewSheet(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.rate_review, color: Colors.white),
+            label: const Text(
+              'Write a Review',
+              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              padding: EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
               ),
             ),
-          ],
+          ),
+        ),
+        SizedBox(height: AppSizer.deviceHeight3),
+        
+        // Header
+        Text(
+          "Learner's Review",
+          style: TextStyle(
+            fontSize: AppSizer.deviceSp20,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textColor,
+          ),
         ),
         SizedBox(height: AppSizer.deviceHeight2),
         

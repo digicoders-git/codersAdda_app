@@ -149,11 +149,15 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                     ),
                                     Text(
-                                      '₹${payment.amount}',
+                                      (payment.itemType == 'wallet_deposit' || payment.itemType == 'referral_reward') 
+                                          ? '+ ₹${payment.amount}' 
+                                          : '- ₹${payment.amount}',
                                       style: TextStyle(
                                         fontSize: AppSizer.deviceSp18,
                                         fontWeight: FontWeight.bold,
-                                        color: AppColors.primaryColor,
+                                        color: (payment.itemType == 'wallet_deposit' || payment.itemType == 'referral_reward')
+                                            ? Colors.green
+                                            : Colors.red,
                                       ),
                                     ),
                                   ],

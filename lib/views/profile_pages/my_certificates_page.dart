@@ -74,18 +74,14 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> with SingleTick
     if (urlString.isEmpty) return;
     
     // Resolve localhost to API base URL if needed
-    if (urlString.contains('localhost')) {
-      try {
-        final uri = Uri.parse(urlString);
-        final baseUri = Uri.parse(ApiUrls.baseUrl);
-        urlString = urlString.replaceFirst('${uri.scheme}://${uri.host}:${uri.port}', '${baseUri.scheme}://${baseUri.host}:${baseUri.port}');
-      } catch (e) {
-        // Ignore
-      }
-    }
-    
-    final Uri url = Uri.parse(urlString);
     try {
+      String resolvedUrl = urlString;
+      if (resolvedUrl.contains('localhost')) {
+        final uri = Uri.parse(resolvedUrl);
+        final baseUri = Uri.parse(ApiUrls.baseUrl);
+        resolvedUrl = resolvedUrl.replaceFirst('${uri.scheme}://${uri.host}:${uri.port}', '${baseUri.scheme}://${baseUri.host}:${baseUri.port}');
+      }
+      final Uri url = Uri.parse(resolvedUrl);
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
@@ -96,9 +92,10 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> with SingleTick
         }
       }
     } catch (e) {
+      debugPrint("Error launching url: $e");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error opening link: $e")),
+          SnackBar(content: Text("Error: $e")),
         );
       }
     }

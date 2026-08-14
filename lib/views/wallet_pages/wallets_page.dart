@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:coders_adda_app/views/profile_pages/payment_history_page.dart';
 
 class WalletsPage extends StatefulWidget {
   const WalletsPage({super.key});
@@ -94,10 +95,6 @@ class _WalletsPageState extends State<WalletsPage> {
                     
                     // Quick Actions
                     _buildQuickActions(),
-                    SizedBox(height: AppSizer.deviceHeight3),
-                    
-                    // Transaction History
-                    _buildTransactionHistory(),
                   ],
                 ),
               ),
@@ -230,13 +227,10 @@ class _WalletsPageState extends State<WalletsPage> {
                 title: "History",
                 color: AppColors.accentColor,
                 onTap: () {
-                  if (_scrollController.hasClients) {
-                    _scrollController.animateTo(
-                      _scrollController.position.maxScrollExtent,
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeInOut,
-                    );
-                  }
+                  Navigator.push(
+                    context, 
+                    MaterialPageRoute(builder: (context) => const PaymentHistoryPage())
+                  );
                 },
               ),
               _buildActionButton(
@@ -326,6 +320,12 @@ class _WalletsPageState extends State<WalletsPage> {
               if (amt == null || amt <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Please enter a valid amount")),
+                );
+                return;
+              }
+              if (amt > 2000) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Maximum top-up limit is ₹2,000")),
                 );
                 return;
               }
@@ -485,9 +485,9 @@ class _WalletsPageState extends State<WalletsPage> {
             onPressed: () {
               final amt = double.tryParse(amountController.text.trim());
               final upi = upiController.text.trim();
-              if (amt == null || amt <= 0) {
+              if (amt == null || amt < 500) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Please enter a valid amount")),
+                  const SnackBar(content: Text("Minimum withdrawal amount is ₹500")),
                 );
                 return;
               }

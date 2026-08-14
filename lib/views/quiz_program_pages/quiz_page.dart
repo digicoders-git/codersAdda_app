@@ -30,11 +30,19 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
   }
 
   void _startQuiz(Map<String, dynamic> quiz) async {
+    final String targetQuizId = quiz['quizId'] ?? quiz['id'];
+    final int attemptedIndex = _attemptedQuizzes.indexWhere((a) => a['quizId'] == targetQuizId);
+    
+    if (attemptedIndex != -1) {
+      _showAttemptDetailsDialog(_attemptedQuizzes[attemptedIndex]);
+      return;
+    }
+
     final bool? completed = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PlayQuizPage(
-          quizId: quiz['id'] as String,
+          quizId: targetQuizId,
           quizTitle: quiz['title'] as String,
           totalDurationMinutes: quiz['duration'] as int,
         ),
@@ -72,7 +80,12 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
       if (response != null && response['success'] == true) {
         final List<dynamic> data = response['data'] ?? [];
         setState(() {
-          _attemptedQuizzes = data.map((a) {
+          _attemptedQuizzes = data.where((a) {
+            final quiz = a['quizId'];
+            if (quiz == null) return false;
+            final type = quiz['type'] ?? 'Quiz';
+            return type == 'Quiz';
+          }).map((a) {
             final quiz = a['quizId'] ?? {};
             final points = quiz['points'] ?? 1;
             return {
@@ -244,7 +257,13 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
 
   Future<void> _downloadCertificate(String urlString) async {
     try {
-      final Uri url = Uri.parse(urlString);
+      String resolvedUrl = urlString;
+      if (resolvedUrl.contains('localhost')) {
+        final uri = Uri.parse(resolvedUrl);
+        final baseUri = Uri.parse(ApiUrls.baseUrl);
+        resolvedUrl = resolvedUrl.replaceFirst('${uri.scheme}://${uri.host}:${uri.port}', '${baseUri.scheme}://${baseUri.host}:${baseUri.port}');
+      }
+      final Uri url = Uri.parse(resolvedUrl);
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
@@ -262,7 +281,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
 
   Future<void> _fetchQuizzes() async {
     try {
-      final response = await _apiClient.get('${ApiUrls.getQuizzes}?courseId=general');
+      final response = await _apiClient.get('${ApiUrls.getQuizzes}?courseId=general&type=Quiz');
       if (response != null && response['success'] == true) {
         final List<dynamic> data = response['data'] ?? [];
         setState(() {
@@ -597,7 +616,11 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
         }
         bool isLocked = false;
         String lockText = 'Start Quiz';
-        if (scheduledTime != null && scheduledTime.isAfter(DateTime.now())) {
+        
+        final bool hasAttempted = _attemptedQuizzes.any((a) => a['quizId'] == quiz['id']);
+        if (hasAttempted) {
+          lockText = 'View Attempt';
+        } else if (scheduledTime != null && scheduledTime.isAfter(DateTime.now())) {
           isLocked = true;
           // Format as DD/MM/YYYY HH:mm
           lockText = 'Starts on: ${scheduledTime.day.toString().padLeft(2, '0')}/${scheduledTime.month.toString().padLeft(2, '0')}/${scheduledTime.year} ${scheduledTime.hour.toString().padLeft(2, '0')}:${scheduledTime.minute.toString().padLeft(2, '0')}';
@@ -620,9 +643,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
-              onTap: isLocked ? null : () {
-                _startQuiz(quiz);
-              },
+              onTap: null, // Disabled so it only starts on button click
               child: Padding(
                 padding: EdgeInsets.all(AppSizer.deviceWidth5),
                 child: Column(
@@ -875,30 +896,6 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
                         ),
                         child: Text(
                           'View Details',
-                          style: TextStyle(fontSize: AppSizer.deviceSp14),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: AppSizer.deviceWidth3),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _startQuiz({
-                            'id': quiz['quizId'],
-                            'title': quiz['title'],
-                            'duration': quiz['duration'],
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.surfaceVariant,
-                          foregroundColor: AppColors.primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
-                          ),
-                          padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
-                        ),
-                        child: Text(
-                          'Re-attempt',
                           style: TextStyle(fontSize: AppSizer.deviceSp14),
                         ),
                       ),

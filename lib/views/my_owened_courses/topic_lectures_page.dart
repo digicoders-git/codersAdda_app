@@ -358,13 +358,17 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                       MaterialPageRoute(
                         builder: (_) => LectureVideoPlayerPage(
                           lecture: lec,
+                          lectures: _lectures,
+                          currentIndex: index,
                           courseId: widget.viewModel.course?.id?.isNotEmpty == true 
                               ? widget.viewModel.course!.id 
                               : widget.topic.course,
                           topicId: widget.topic.id,
                         ),
                       ),
-                    );
+                    ).then((_) {
+                      _fetchLectures();
+                    });
                   }
                 },
               );

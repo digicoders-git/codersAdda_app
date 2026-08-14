@@ -3,6 +3,7 @@ import 'package:coders_adda_app/services/navigation_service.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/veiw_model/course_viewmodel.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -142,42 +143,42 @@ class _CoursePageState extends State<AllCoursePage>
     final courses = viewModel.filteredCourses;
 
     if (courses.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search_off,
-              size: AppSizer.deviceSp64,
-              color: Colors.grey,
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            Text(
-              'No Courses Found',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp19,
+      return SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.5,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.search_off,
+                size: AppSizer.deviceSp64,
                 color: Colors.grey,
               ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight1),
-            Text(
-              'Try selecting a different technology',
-              style: TextStyle(color: Colors.grey),
-            ),
-          ],
+              SizedBox(height: AppSizer.deviceHeight2),
+              Text(
+                'No Courses Found',
+                style: TextStyle(
+                  fontSize: AppSizer.deviceSp19,
+                  color: Colors.grey,
+                ),
+              ),
+              SizedBox(height: AppSizer.deviceHeight1),
+              Text(
+                'Try selecting a different technology',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
         ),
       );
     }
 
-    return GridView.builder(
+    return ListView.separated(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.all(AppSizer.deviceWidth2),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 1,
-        crossAxisSpacing: AppSizer.deviceWidth2,
-        mainAxisSpacing: AppSizer.deviceHeight2,
-        childAspectRatio: 1.15,
-      ),
       itemCount: courses.length,
+      separatorBuilder: (context, index) => SizedBox(height: AppSizer.deviceHeight2),
       itemBuilder: (context, index) {
         final course = courses[index];
         return _buildCourseCard(context, course);
@@ -436,31 +437,69 @@ class _CoursePageState extends State<AllCoursePage>
                       ),
                       child: Row(
                         children: [
-                          // Price
+                          // Price or Unlocked Status
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Price',
-                                  style: TextStyle(
-                                    fontSize: AppSizer.deviceSp14,
-                                    color: AppColors.onSurfaceVariant,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                SizedBox(height: AppSizer.deviceHeight0_5),
-                                Text(
-                                  course.isFree ? 'FREE' : '₹${course.price}',
-                                  style: TextStyle(
-                                    fontSize: AppSizer.deviceSp16,
-                                    fontWeight: FontWeight.w700,
-                                    color: course.isFree
-                                        ? AppColors.successColor
-                                        : AppColors.primaryColor,
-                                  ),
-                                ),
-                              ],
+                            child: Consumer<ProfileViewModel>(
+                              builder: (context, profileVM, child) {
+                                final isPurchased = profileVM.user?.purchaseCourseIds.contains(course.id) ?? false;
+                                
+                                if (isPurchased) {
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Status',
+                                        style: TextStyle(
+                                          fontSize: AppSizer.deviceSp14,
+                                          color: AppColors.onSurfaceVariant,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      SizedBox(height: AppSizer.deviceHeight0_5),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.lock_open, size: AppSizer.deviceSp14, color: AppColors.successColor),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'UNLOCKED',
+                                            style: TextStyle(
+                                              fontSize: AppSizer.deviceSp12,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.successColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  );
+                                }
+                                
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Price',
+                                      style: TextStyle(
+                                        fontSize: AppSizer.deviceSp14,
+                                        color: AppColors.onSurfaceVariant,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    SizedBox(height: AppSizer.deviceHeight0_5),
+                                    Text(
+                                      course.isFree ? 'FREE' : '₹${course.price}',
+                                      style: TextStyle(
+                                        fontSize: AppSizer.deviceSp16,
+                                        fontWeight: FontWeight.w700,
+                                        color: course.isFree
+                                            ? AppColors.successColor
+                                            : AppColors.primaryColor,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                           ),
 

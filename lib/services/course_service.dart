@@ -65,6 +65,22 @@ class CourseService {
     }
   }
 
+  Future<List<Course>> getAllCoursesForSearch() async {
+    try {
+      final String url = '${ApiUrls.getCoursesByFilter}?isActive=true';
+      final response = await _apiClient.get(url);
+      
+      if (response['success'] == true) {
+        final List<dynamic> data = response['data'];
+        return data.map((item) => Course.fromJson(item)).toList();
+      }
+      return [];
+    } catch (e) {
+      debugPrint('Error fetching courses for search: $e');
+      return [];
+    }
+  }
+
   Future<Course?> getCourseDetailsById(String courseId) async {
     try {
       final String url = '${ApiUrls.getCourseDetails}/$courseId';
@@ -115,6 +131,20 @@ class CourseService {
       return response;
     } catch (e) {
       rethrow;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getActiveCoupons() async {
+    try {
+      final response = await _apiClient.get(ApiUrls.getActiveCoupons);
+      if (response['success'] == true) {
+        final List<dynamic> data = response['coupons'];
+        return List<Map<String, dynamic>>.from(data);
+      }
+      return [];
+    } catch (e) {
+      debugPrint('Error fetching active coupons: $e');
+      return [];
     }
   }
 

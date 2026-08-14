@@ -520,6 +520,96 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
 
+                                  // Location Filter
+                                  Text(
+                                    'Location:',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: AppSizer.deviceSp14,
+                                    ),
+                                  ),
+                                  SizedBox(height: AppSizer.deviceHeight1),
+                                  Autocomplete<String>(
+                                    optionsBuilder: (TextEditingValue textEditingValue) {
+                                      if (textEditingValue.text == '') {
+                                        return const Iterable<String>.empty();
+                                      }
+                                      final locations = ['Noida', 'Gurugram', 'Delhi', 'Bengaluru', 'Pune', 'Hyderabad', 'Mumbai', 'Chennai', 'Remote'];
+                                      return locations.where((String option) {
+                                        return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                                      });
+                                    },
+                                    onSelected: (String selection) {
+                                      setState(() {
+                                        viewModel.setSelectedLocation(selection);
+                                      });
+                                    },
+                                    fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                                      return TextField(
+                                        controller: controller,
+                                        focusNode: focusNode,
+                                        decoration: InputDecoration(
+                                          hintText: viewModel.selectedLocation.isEmpty ? 'Search Location' : viewModel.selectedLocation,
+                                          border: OutlineInputBorder(),
+                                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  SizedBox(height: AppSizer.deviceHeight2),
+
+                                  // Skills Filter
+                                  Text(
+                                    'Skill:',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: AppSizer.deviceSp14,
+                                    ),
+                                  ),
+                                  SizedBox(height: AppSizer.deviceHeight1),
+                                  Autocomplete<String>(
+                                    optionsBuilder: (TextEditingValue textEditingValue) {
+                                      if (textEditingValue.text == '') {
+                                        return const Iterable<String>.empty();
+                                      }
+                                      final skills = ['Flutter', 'Dart', 'React', 'Node.js', 'Python', 'Java', 'Android', 'iOS', 'UI/UX', 'Figma', 'C++', 'JavaScript', 'SQL'];
+                                      return skills.where((String option) {
+                                        return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+                                      });
+                                    },
+                                    onSelected: (String selection) {
+                                      setState(() {
+                                        viewModel.addSelectedSkill(selection);
+                                      });
+                                    },
+                                    fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
+                                      return TextField(
+                                        controller: controller,
+                                        focusNode: focusNode,
+                                        decoration: InputDecoration(
+                                          hintText: 'Search Skills',
+                                          border: OutlineInputBorder(),
+                                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  SizedBox(height: AppSizer.deviceHeight1),
+                                  Wrap(
+                                    spacing: 8.0,
+                                    children: viewModel.selectedSkills.map((skill) {
+                                      return Chip(
+                                        label: Text(skill),
+                                        onDeleted: () {
+                                          setState(() {
+                                            viewModel.removeSelectedSkill(skill);
+                                          });
+                                        },
+                                      );
+                                    }).toList(),
+                                  ),
+                                  SizedBox(height: AppSizer.deviceHeight2),
+
                                   // Work Type Filter
                                   Text(
                                     'Filter by Work Type:',

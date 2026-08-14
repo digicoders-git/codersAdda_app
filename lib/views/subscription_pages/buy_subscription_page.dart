@@ -29,14 +29,36 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
   late Razorpay _razorpay;
   final CourseService _courseService = CourseService();
   bool _isProcessing = false;
+  
+  List<Map<String, dynamic>> _activeCoupons = [];
+  bool _isLoadingCoupons = true;
 
   @override
   void initState() {
     super.initState();
+    _fetchActiveCoupons();
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  Future<void> _fetchActiveCoupons() async {
+    try {
+      final coupons = await _courseService.getActiveCoupons();
+      if (mounted) {
+        setState(() {
+          _activeCoupons = coupons;
+          _isLoadingCoupons = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCoupons = false;
+        });
+      }
+    }
   }
 
   @override
@@ -320,6 +342,72 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
               Text(
                 _couponErrorMessage!,
                 style: TextStyle(color: Colors.red, fontSize: AppSizer.deviceSp12),
+              ),
+            ],
+            if (!_isCouponApplied && _isLoadingCoupons)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+              )
+            else if (!_isCouponApplied && _activeCoupons.isNotEmpty) ...[
+              SizedBox(height: AppSizer.deviceHeight2),
+              Text(
+                'Available Coupons:',
+                style: TextStyle(
+                  fontSize: AppSizer.deviceSp14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textColor.withOpacity(0.8),
+                ),
+              ),
+              SizedBox(height: AppSizer.deviceHeight1),
+              SizedBox(
+                height: 80,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _activeCoupons.length,
+                  separatorBuilder: (context, index) => SizedBox(width: AppSizer.deviceWidth3),
+                  itemBuilder: (context, index) {
+                    final coupon = _activeCoupons[index];
+                    return GestureDetector(
+                      onTap: () {
+                        _couponController.text = coupon['code'];
+                        _applyCoupon(amount);
+                      },
+                      child: Container(
+                        width: 200,
+                        padding: EdgeInsets.all(AppSizer.deviceWidth2),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
+                          borderRadius: BorderRadius.circular(8),
+                          color: AppColors.primaryColor.withOpacity(0.05),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              coupon['code'],
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primaryColor,
+                                fontSize: AppSizer.deviceSp14,
+                              ),
+                            ),
+                            if (coupon['discountPercent'] != null)
+                              Text(
+                                '${coupon['discountPercent']}% OFF',
+                                style: TextStyle(
+                                  color: Colors.green[700],
+                                  fontSize: AppSizer.deviceSp12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
             if (_isCouponApplied) ...[

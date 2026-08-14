@@ -7,8 +7,9 @@ import 'package:coders_adda_app/views/quiz_program_pages/play_quiz_page.dart';
 
 class CourseQuizzesTab extends StatefulWidget {
   final String courseId;
+  final VoidCallback? onPlay;
 
-  const CourseQuizzesTab({Key? key, required this.courseId}) : super(key: key);
+  const CourseQuizzesTab({Key? key, required this.courseId, this.onPlay}) : super(key: key);
 
   @override
   State<CourseQuizzesTab> createState() => _CourseQuizzesTabState();
@@ -89,6 +90,7 @@ class _CourseQuizzesTabState extends State<CourseQuizzesTab> {
   }
 
   void _startQuiz(Map<String, dynamic> quiz) {
+    widget.onPlay?.call();
     Navigator.push(
       context,
       MaterialPageRoute(

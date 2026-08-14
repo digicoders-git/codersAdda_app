@@ -113,17 +113,14 @@ class CommentUser {
 
   factory CommentUser.fromJson(Map<String, dynamic> json) {
     String pfp = '';
-    // Handle user profile picture structure
-    if (json['profilePicture'] is Map) {
-      pfp = json['profilePicture']['url'] ?? '';
-    } 
-    // Handle admin profile photo string
-    else if (json['profilePhoto'] is String) {
-      pfp = json['profilePhoto'] ?? '';
-    }
-    // Fallback or generic profilePicture field
-    else if (json['profilePicture'] is String) {
-      pfp = json['profilePicture'] ?? '';
+    if (json['profilePicture'] is Map && json['profilePicture']['url'] != null && json['profilePicture']['url'].toString().isNotEmpty) {
+      pfp = json['profilePicture']['url'];
+    } else if (json['picture'] is String && (json['picture'] as String).isNotEmpty) {
+      pfp = json['picture'];
+    } else if (json['profilePhoto'] is String && (json['profilePhoto'] as String).isNotEmpty) {
+      pfp = json['profilePhoto'];
+    } else if (json['profilePicture'] is String && (json['profilePicture'] as String).isNotEmpty) {
+      pfp = json['profilePicture'];
     }
 
     return CommentUser(

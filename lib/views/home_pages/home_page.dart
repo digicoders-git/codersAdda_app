@@ -21,6 +21,7 @@ import 'package:coders_adda_app/views/common/help_support_page.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/auth_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/notification_viewmodel.dart';
+import 'package:coders_adda_app/views/profile_pages/edite_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -464,6 +465,10 @@ class _HomePageState extends State<HomePage> {
           SizedBox(height: AppSizer.deviceHeight3),
           _buildBannerSlider(context, viewModel),
           SizedBox(height: AppSizer.deviceHeight3),
+          _buildProfileCompletionWidget(),
+          SizedBox(height: AppSizer.deviceHeight3),
+          _buildCouponsSlider(context, viewModel),
+          SizedBox(height: AppSizer.deviceHeight3),
           if (viewModel.isLoading && viewModel.homeData.coursesOnSale.isEmpty)
             Center(child: CircularProgressIndicator())
           else ...[
@@ -628,6 +633,185 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       },
+    );
+  }
+
+  // ===================== Profile Completion =====================
+  Widget _buildProfileCompletionWidget() {
+    return Consumer<ProfileViewModel>(
+      builder: (context, profileVM, child) {
+        if (profileVM.user == null) return const SizedBox.shrink();
+        
+        final percentage = profileVM.user!.calculatedProgressPercentage.toInt();
+        if (percentage == 100) return const SizedBox.shrink();
+
+        return GestureDetector(
+          onTap: () {
+            NavigationService.navigateTo(context, EditProfilePage(user: profileVM.user!));
+          },
+          child: Container(
+            padding: EdgeInsets.all(AppSizer.deviceWidth4),
+            decoration: BoxDecoration(
+              color: AppColors.primaryColor.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.primaryColor.withOpacity(0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Complete your profile ($percentage%)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryColor,
+                          fontSize: AppSizer.deviceSp14,
+                        ),
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.primaryColor),
+                  ],
+                ),
+                SizedBox(height: AppSizer.deviceHeight1),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: percentage / 100,
+                    backgroundColor: Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+                    minHeight: 8,
+                  ),
+                ),
+                SizedBox(height: AppSizer.deviceHeight0_5),
+                Text(
+                  'Tap here to add missing details.',
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp12,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ===================== Coupons Slider =====================
+  Widget _buildCouponsSlider(BuildContext context, HomeViewModel viewModel) {
+    if (viewModel.activeCoupons.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth4),
+          child: Text(
+            'Special Offers',
+            style: TextStyle(
+              fontSize: AppSizer.deviceSp20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textColor,
+            ),
+          ),
+        ),
+        SizedBox(height: AppSizer.deviceHeight2),
+        SizedBox(
+          height: AppSizer.deviceHeight15,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth4),
+            itemCount: viewModel.activeCoupons.length,
+            itemBuilder: (context, index) {
+              final coupon = viewModel.activeCoupons[index];
+              return Container(
+                width: AppSizer.deviceWidth70,
+                margin: EdgeInsets.only(right: AppSizer.deviceWidth4),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.orange.shade400, Colors.deepOrange],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.orange.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        border: Border(
+                          right: BorderSide(
+                            color: Colors.white,
+                            width: 2,
+                            style: BorderStyle.solid,
+                          ),
+                        ),
+                      ),
+                      child: Center(
+                        child: RotatedBox(
+                          quarterTurns: 3,
+                          child: Text(
+                            'COUPON',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(AppSizer.deviceWidth3),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              coupon.code,
+                              style: TextStyle(
+                                fontSize: AppSizer.deviceSp18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              coupon.description,
+                              style: TextStyle(
+                                fontSize: AppSizer.deviceSp12,
+                                color: Colors.white.withOpacity(0.9),
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

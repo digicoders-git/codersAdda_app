@@ -5,6 +5,7 @@ import 'package:coders_adda_app/veiw_model/course_detail_viewmodel.dart';
 import 'package:coders_adda_app/views/buy_new_courses_pages/course_purchase_page.dart';
 import 'package:coders_adda_app/views/buy_new_courses_pages/purchase_success_modal.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
+import 'package:coders_adda_app/views/my_owened_courses/my_learning_player_page.dart';
 import 'package:coders_adda_app/views/my_owened_courses/lecture_video_player_page.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -519,7 +520,8 @@ class AllCourseDetailPage extends StatelessWidget {
 
   Widget _buildBottomActionButton(BuildContext context, Course course, CourseDetailViewModel viewModel) {
     final profileVM = Provider.of<ProfileViewModel>(context, listen: false);
-    final isEnrolled = profileVM.user?.purchaseCourseIds.contains(course.id) ?? false;
+    final isEnrolled = profileVM.user?.purchaseCourseIds.contains(course.id) == true ||
+                       profileVM.user?.subscriptionCourseIds.contains(course.id) == true;
 
     return Container(
       padding: EdgeInsets.all(AppSizer.deviceWidth4),
@@ -530,10 +532,9 @@ class AllCourseDetailPage extends StatelessWidget {
           child: FilledButton(
             onPressed: isEnrolled 
               ? () {
-                  final tabIndex = course.isFree ? 0 : 1;
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
+                    MaterialPageRoute(builder: (context) => MyLearningCoursePlayer(courseId: course.id)),
                   );
                 }
               : (viewModel.isLoading 

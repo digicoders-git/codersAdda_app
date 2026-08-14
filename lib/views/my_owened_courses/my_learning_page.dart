@@ -4,6 +4,7 @@ import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/veiw_model/my_learning_viewmodel.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_pdf_page.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_player_page.dart';
+import 'package:coders_adda_app/views/my_owened_pdf/offline_pdfs_page.dart' as coders_adda_app_offline_pdfs;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,6 +27,17 @@ class MyLearningPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              actions: [
+                IconButton(
+                  icon: Icon(Icons.download_done, color: AppColors.primaryColor),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => coders_adda_app_offline_pdfs.OfflinePdfsPage()),
+                    );
+                  },
+                ),
+              ],
             ),
             body: Column(
               children: [
@@ -187,12 +199,11 @@ class MyLearningPage extends StatelessWidget {
   }
 
   Widget _buildCourseCard(BuildContext context, MyLearningCourse course) {
-    // Demo data - you can add these to your model
-    final double rating = 4.5;
-    final int totalRatings = 128;
-    final String duration = "8h 30m";
-    final int totalVideos = 45;
-    final String category = "Flutter Development";
+    final double rating = course.rating > 0 ? course.rating : 0.0;
+    final int totalRatings = 0; // The UI doesn't seem to display this in the circle, but kept for compatibility
+    final String duration = course.duration.isNotEmpty ? course.duration : "0h 0m";
+    final int totalVideos = course.totalVideos > 0 ? course.totalVideos : 0;
+    final String category = course.technology.isNotEmpty ? course.technology : "Course";
 
     return GestureDetector(
       onTap: () {

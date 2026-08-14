@@ -22,7 +22,7 @@ class ApiClient {
   Future<dynamic> get(String url) async {
     try {
       final headers = await _getHeaders();
-      final response = await _client.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
+      final response = await _client.get(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 30));
       return _processResponse(response);
     } on SocketException {
       throw Exception('No Internet Connection');
@@ -39,7 +39,7 @@ class ApiClient {
         Uri.parse(url),
         headers: headers,
         body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 30));
       return _processResponse(response);
     } on SocketException {
       throw Exception('No Internet Connection');
@@ -56,7 +56,7 @@ class ApiClient {
         Uri.parse(url),
         headers: headers,
         body: jsonEncode(body),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 30));
       return _processResponse(response);
     } on SocketException {
       throw Exception('No Internet Connection');
@@ -102,7 +102,7 @@ class ApiClient {
   Future<dynamic> delete(String url) async {
     try {
       final headers = await _getHeaders();
-      final response = await _client.delete(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 10));
+      final response = await _client.delete(Uri.parse(url), headers: headers).timeout(const Duration(seconds: 30));
       return _processResponse(response);
     } on SocketException {
       throw Exception('No Internet Connection');

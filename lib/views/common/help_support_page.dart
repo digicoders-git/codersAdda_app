@@ -9,7 +9,8 @@ import 'package:coders_adda_app/services/faq_service.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 
 class HelpSupportPage extends StatefulWidget {
-  const HelpSupportPage({Key? key}) : super(key: key);
+  final int initialIndex;
+  const HelpSupportPage({Key? key, this.initialIndex = 0}) : super(key: key);
 
   @override
   State<HelpSupportPage> createState() => _HelpSupportPageState();
@@ -46,7 +47,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 2, vsync: this, initialIndex: widget.initialIndex);
     _filteredFaqs = [];
     _searchController.addListener(_filterFaqs);
 
@@ -365,30 +366,67 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                   ),
                 ),
               )
-            else
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _myTickets.length,
-                itemBuilder: (context, index) {
-                  final ticket = _myTickets[index];
-                  final String category = ticket['category'] ?? 'Query';
-                  final String subject = ticket['subject'] ?? 'Support Issue';
-                  final String message = ticket['message'] ?? '';
-                  final String status = ticket['status'] ?? 'Pending';
-                  final String adminReply = ticket['adminReply'] ?? '';
-                  final String createdAt = ticket['createdAt'] ?? '';
+            else ...[
+              Builder(
+                builder: (context) {
+                  final query = _searchController.text.toLowerCase();
+                  final filteredTickets = _myTickets.where((ticket) {
+                    if (query.isEmpty) return true;
+                    final subject = (ticket['subject'] ?? '').toString().toLowerCase();
+                    final message = (ticket['message'] ?? '').toString().toLowerCase();
+                    return subject.contains(query) || message.contains(query);
+                  }).toList();
 
-                  return _buildTicketResponseCard(
-                    category: category,
-                    subject: subject,
-                    message: message,
-                    status: status,
-                    adminReply: adminReply,
-                    createdAt: createdAt,
+                  if (filteredTickets.isEmpty) {
+                    return Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      child: Padding(
+                        padding: EdgeInsets.all(AppSizer.deviceWidth6),
+                        child: Column(
+                          children: [
+                            Icon(Icons.search_off, size: 54, color: Colors.grey.shade400),
+                            SizedBox(height: AppSizer.deviceHeight1_5),
+                            Text(
+                              'No matching queries found',
+                              style: TextStyle(
+                                fontSize: AppSizer.deviceSp16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: filteredTickets.length,
+                    itemBuilder: (context, index) {
+                      final ticket = filteredTickets[index];
+                      final String category = ticket['category'] ?? 'Query';
+                      final String subject = ticket['subject'] ?? 'Support Issue';
+                      final String message = ticket['message'] ?? '';
+                      final String status = ticket['status'] ?? 'Pending';
+                      final String adminReply = ticket['adminReply'] ?? '';
+                      final String createdAt = ticket['createdAt'] ?? '';
+
+                      return _buildTicketResponseCard(
+                        category: category,
+                        subject: subject,
+                        message: message,
+                        status: status,
+                        adminReply: adminReply,
+                        createdAt: createdAt,
+                      );
+                    },
                   );
                 },
               ),
+            ],
           ],
         ),
       ),

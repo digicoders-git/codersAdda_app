@@ -49,6 +49,7 @@ class AppUser {
 class LoginResponse {
   final bool success;
   final bool requireMobile;
+  final bool waitingForApproval;
   final String? message;
   final String? verificationId;
   final AppUser? user;
@@ -56,6 +57,7 @@ class LoginResponse {
   LoginResponse({
     required this.success,
     this.requireMobile = false,
+    this.waitingForApproval = false,
     this.message,
     this.verificationId,
     this.user,

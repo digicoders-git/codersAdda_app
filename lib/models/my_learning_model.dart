@@ -11,6 +11,9 @@ class MyLearningCourse {
   final String technology;
   final String source;
   final List<CourseCurriculum> curriculum;
+  final double rating;
+  final String duration;
+  final int totalVideos;
 
   MyLearningCourse({
     required this.id,
@@ -23,6 +26,9 @@ class MyLearningCourse {
     this.technology = '',
     this.source = '',
     this.curriculum = const [],
+    this.rating = 0.0,
+    this.duration = '0h',
+    this.totalVideos = 0,
   });
 
   factory MyLearningCourse.fromJson(Map<String, dynamic> json) {
@@ -39,6 +45,12 @@ class MyLearningCourse {
       curriculum: (json['curriculum'] as List<dynamic>?)
           ?.map((e) => CourseCurriculum.fromJson(e))
           .toList() ?? [],
+      rating: (json['totalRating'] ?? 0).toDouble(),
+      duration: json['duration'] ?? '0h',
+      totalVideos: (json['curriculum'] as List<dynamic>?)?.fold<int>(0, (sum, module) {
+          final lessons = module['lessons'] as List?;
+          return sum + (lessons?.length ?? 0);
+        }) ?? 0,
     );
   }
 }
@@ -102,6 +114,8 @@ class MyLearningPdf {
   final String downloadUrl;
   final String authorName;
   final String source;
+  final String category;
+  final String thumbnail;
 
   MyLearningPdf({
     required this.id,
@@ -111,6 +125,8 @@ class MyLearningPdf {
     required this.downloadUrl,
     this.authorName = '',
     this.source = '',
+    this.category = '',
+    this.thumbnail = '',
   });
 
   factory MyLearningPdf.fromJson(Map<String, dynamic> json) {
@@ -122,6 +138,8 @@ class MyLearningPdf {
       downloadUrl: ApiUrls.resolveMediaUrl(json['pdf']),
       authorName: json['authorName'] ?? '',
       source: json['source'] ?? '',
+      category: json['category'] is String ? json['category'] : (json['category']?['title'] ?? ''),
+      thumbnail: json['thumbnail'] is String ? json['thumbnail'] : (json['thumbnail']?['url'] ?? ''),
     );
   }
 }

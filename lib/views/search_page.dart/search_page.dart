@@ -1,4 +1,8 @@
+import 'package:coders_adda_app/models/course_model.dart';
+import 'package:coders_adda_app/services/course_service.dart';
+import 'package:coders_adda_app/services/navigation_service.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
+import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class SearchPage extends StatefulWidget {
@@ -10,50 +14,45 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
-  final List<String> _recentSearches = [
-    'Flutter development',
-    'React Native course',
-    'Python for beginners',
-    'Web development',
-    'Data science',
-    'Machine learning',
-    'UI/UX design',
-    'Mobile app development',
-  ];
+  final CourseService _courseService = CourseService();
 
-  List<String> _filteredSearches = [];
-  List<String> _searchSuggestions = [
-    'Flutter tutorial for beginners',
-    'Flutter vs React Native',
-    'Flutter animation',
-    'Flutter state management',
-    'Flutter web development',
-    'Flutter Firebase',
-    'Flutter API integration',
-    'Flutter UI design',
-  ];
+  List<Course> _allCourses = [];
+  List<Course> _filteredCourses = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _filteredSearches = _recentSearches;
+    _fetchCourses();
+  }
+
+  Future<void> _fetchCourses() async {
+    setState(() => _isLoading = true);
+    final courses = await _courseService.getAllCoursesForSearch();
+    if (mounted) {
+      setState(() {
+        _allCourses = courses;
+        _filteredCourses = [];
+        _isLoading = false;
+      });
+    }
   }
 
   void _search(String query) {
     if (query.isEmpty) {
       setState(() {
-        _filteredSearches = _recentSearches;
+        _filteredCourses = [];
       });
       return;
     }
 
-    // Filter recent searches based on query
-    final filtered = _recentSearches.where((search) {
-      return search.toLowerCase().contains(query.toLowerCase());
-    }).toList();
-
+    final lowerQuery = query.toLowerCase();
     setState(() {
-      _filteredSearches = filtered;
+      _filteredCourses = _allCourses.where((course) {
+        return course.title.toLowerCase().contains(lowerQuery) ||
+            course.technology.toLowerCase().contains(lowerQuery) ||
+            course.description.toLowerCase().contains(lowerQuery);
+      }).toList();
     });
   }
 
@@ -62,29 +61,17 @@ class _SearchPageState extends State<SearchPage> {
     _search('');
   }
 
-  void _performSearch(String query) {
-    if (query.isNotEmpty) {
-      // Add to recent searches if not already present
-      if (!_recentSearches.contains(query)) {
-        setState(() {
-          _recentSearches.insert(0, query);
-          // Keep only last 10 searches
-          if (_recentSearches.length > 10) {
-            _recentSearches.removeLast();
-          }
-        });
-      }
-
-      // Navigate to search results or perform search
-      print('Searching for: $query');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Search",style: TextStyle(fontSize: AppSizer.deviceSp20,fontWeight: FontWeight.bold),),
+        title: Text(
+          "Search Courses",
+          style: TextStyle(
+            fontSize: AppSizer.deviceSp20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
@@ -102,8 +89,9 @@ class _SearchPageState extends State<SearchPage> {
                 ),
                 child: TextField(
                   controller: _searchController,
+                  autofocus: true,
                   decoration: InputDecoration(
-                    hintText: 'Search courses...',
+                    hintText: 'Search courses by name or technology...',
                     prefixIcon: Icon(Icons.search, color: Colors.grey),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -115,157 +103,103 @@ class _SearchPageState extends State<SearchPage> {
                     contentPadding: EdgeInsets.symmetric(
                       vertical: 15,
                       horizontal: 16,
-                    ), 
-                    isCollapsed:
-                        true,
+                    ),
+                    isCollapsed: true,
                   ),
                   onChanged: _search,
-                  onSubmitted: _performSearch,
                 ),
               ),
             ),
           ),
 
-         
-          if (_searchController.text.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Suggestions',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  ..._searchSuggestions
-                      .where(
-                        (suggestion) => suggestion.toLowerCase().contains(
-                          _searchController.text.toLowerCase(),
+          Expanded(
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : _searchController.text.isEmpty
+                    ? Center(
+                        child: Text(
+                          "Type to search for courses",
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                       )
-                      .take(5)
-                      .map((suggestion) => _buildSuggestionItem(suggestion))
-                      .toList(),
-                ],
-              ),
-            ),
-          ],
-
-          
-          if (_searchController.text.isEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Recent Searches',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  if (_recentSearches.isNotEmpty)
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _recentSearches.clear();
-                        });
-                      },
-                      child: Text(
-                        'Clear all',
-                        style: TextStyle(color: Colors.blue),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            SizedBox(height: 8),
-          ],
-
-          
-          Expanded(
-            child:
-                _searchController.text.isNotEmpty && _filteredSearches.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 64,
-                          color: Colors.grey[300],
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'No results found for "${_searchController.text}"',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
+                    : _filteredCourses.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off,
+                                  size: 64,
+                                  color: Colors.grey[300],
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No results found for "${_searchController.text}"',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: _filteredCourses.length,
+                            itemBuilder: (context, index) {
+                              final course = _filteredCourses[index];
+                              return _buildCourseResult(course);
+                            },
                           ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'Try different keywords',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _filteredSearches.length,
-                    itemBuilder: (context, index) {
-                      final search = _filteredSearches[index];
-                      return _buildRecentSearchItem(search);
-                    },
-                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRecentSearchItem(String search) {
-    return ListTile(
-      leading: Icon(Icons.history, color: Colors.grey),
-      title: Text(search),
-      trailing: IconButton(
-        icon: Icon(Icons.clear, size: 16),
-        onPressed: () {
-          setState(() {
-            _recentSearches.remove(search);
-            _filteredSearches = List.from(_recentSearches);
-          });
+  Widget _buildCourseResult(Course course) {
+    return Card(
+      elevation: 2,
+      margin: EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: EdgeInsets.all(8),
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: course.thumbnail.isNotEmpty
+              ? Image.network(
+                  course.thumbnail,
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                )
+              : Container(
+                  width: 60,
+                  height: 60,
+                  color: Colors.grey[200],
+                  child: Icon(Icons.menu_book, color: Colors.grey),
+                ),
+        ),
+        title: Text(
+          course.title,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4.0),
+          child: Text(
+            course.isFree ? "Free" : "₹${course.price}",
+            style: TextStyle(
+              color: course.isFree ? AppColors.successColor : AppColors.primaryColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+        onTap: () {
+          NavigationService.navigateToCourseDetail(context, course);
         },
       ),
-      onTap: () {
-        _searchController.text = search;
-        _performSearch(search);
-      },
-      contentPadding: EdgeInsets.zero,
-    );
-  }
-
-  Widget _buildSuggestionItem(String suggestion) {
-    return ListTile(
-      leading: Icon(Icons.search, color: Colors.grey),
-      title: Text(suggestion),
-      onTap: () {
-        _searchController.text = suggestion;
-        _performSearch(suggestion);
-      },
-      contentPadding: EdgeInsets.zero,
-      visualDensity: VisualDensity.compact,
     );
   }
 }

@@ -30,15 +30,37 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
   double? _finalAmount;
   bool _isCouponApplied = false;
   late bool _hasApplied;
+  
+  List<Map<String, dynamic>> _activeCoupons = [];
+  bool _isLoadingCoupons = true;
 
   @override
   void initState() {
     super.initState();
+    _fetchActiveCoupons();
     _hasApplied = widget.job.hasApplied;
     _razorpay = Razorpay();
     _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  Future<void> _fetchActiveCoupons() async {
+    try {
+      final coupons = await _courseService.getActiveCoupons();
+      if (mounted) {
+        setState(() {
+          _activeCoupons = coupons;
+          _isLoadingCoupons = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingCoupons = false;
+        });
+      }
+    }
   }
 
   @override
@@ -746,6 +768,97 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
                         padding: const EdgeInsets.only(top: 8.0),
                         child: Text(_couponErrorMessage!, style: TextStyle(color: Colors.red, fontSize: AppSizer.deviceSp12)),
                       ),
+                    if (!_isCouponApplied && _isLoadingCoupons)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                      )
+                    else if (!_isCouponApplied && _activeCoupons.isNotEmpty) ...[
+                      SizedBox(height: AppSizer.deviceHeight2),
+                      Text(
+                        'Available Coupons:',
+                        style: TextStyle(
+                          fontSize: AppSizer.deviceSp13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      SizedBox(
+                        height: 70,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _activeCoupons.length,
+                          separatorBuilder: (context, index) => SizedBox(width: 8),
+                          itemBuilder: (context, index) {
+                            final coupon = _activeCoupons[index];
+                            return GestureDetector(
+                              onTap: () async {
+                                _couponController.text = coupon['code'];
+                                final code = _couponController.text.trim();
+                                if (code.isEmpty) return;
+                                setDialogState(() { _isValidatingCoupon = true; _couponErrorMessage = null; });
+                                try {
+                                  double amount = job.price?.toDouble() ?? 0;
+                                  final res = await _courseService.validateCoupon(code, amount);
+                                  if (res['success'] == true) {
+                                    setDialogState(() {
+                                      _isCouponApplied = true;
+                                      _discountAmount = (res['discountAmount'] as num).toDouble();
+                                      _finalAmount = (res['finalAmount'] as num).toDouble();
+                                    });
+                                  } else {
+                                    setDialogState(() {
+                                      _couponErrorMessage = res['message'] ?? 'Invalid coupon';
+                                      _isCouponApplied = false;
+                                    });
+                                  }
+                                } catch (e) {
+                                  setDialogState(() {
+                                    _couponErrorMessage = e.toString().replaceAll('Exception:', '').replaceAll('Error:', '').trim();
+                                    _isCouponApplied = false;
+                                  });
+                                } finally {
+                                  setDialogState(() { _isValidatingCoupon = false; });
+                                }
+                              },
+                              child: Container(
+                                width: 160,
+                                padding: EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                                  borderRadius: BorderRadius.circular(8),
+                                  color: Colors.blue.withOpacity(0.05),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      coupon['code'],
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue,
+                                        fontSize: AppSizer.deviceSp13,
+                                      ),
+                                    ),
+                                    if (coupon['discountPercent'] != null)
+                                      Text(
+                                        '${coupon['discountPercent']}% OFF',
+                                        style: TextStyle(
+                                          color: Colors.green[700],
+                                          fontSize: AppSizer.deviceSp11,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                     if (_isCouponApplied)
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),

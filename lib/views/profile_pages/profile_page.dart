@@ -93,6 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: EdgeInsets.all(AppSizer.deviceWidth4),
               child: Column(
                 children: [
+                  _buildProfileCompletionWidget(user),
                   _buildProfileHeader(user),
                   SizedBox(height: AppSizer.deviceHeight1),
                   _buildLearningStats(viewModel, user),
@@ -114,6 +115,63 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _buildProfileCompletionWidget(UserProfile user) {
+    int percentage = user.calculatedProgressPercentage;
+    if (percentage == 100) return const SizedBox.shrink();
+
+    return Container(
+      margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
+      padding: EdgeInsets.all(AppSizer.deviceWidth4),
+      decoration: BoxDecoration(
+        color: AppColors.primaryColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
+        border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Profile Completion',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryColor,
+                ),
+              ),
+              Text(
+                '$percentage%',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryColor,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: AppSizer.deviceHeight1),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: percentage / 100,
+              backgroundColor: Colors.grey[300],
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+              minHeight: 8,
+            ),
+          ),
+          SizedBox(height: AppSizer.deviceHeight1),
+          Text(
+            'Complete your profile to unlock all features and recommendations.',
+            style: TextStyle(
+              fontSize: AppSizer.deviceSp12,
+              color: Colors.grey[700],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProfileHeader(UserProfile user) {
     return Card(
       elevation: 4,
@@ -128,25 +186,49 @@ class _ProfilePageState extends State<ProfilePage> {
             Row(
               children: [
                   // Profile Image
-                  Container(
-                    width: AppSizer.deviceWidth20,
-                    height: AppSizer.deviceWidth20,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primaryColor, width: 3),
-                      color: Colors.grey.shade200, // Background color for fallback
-                    ),
-                    child: ClipOval(
-                      child: Image.network(
-                        user.profilePicture.isNotEmpty 
-                            ? user.profilePicture 
-                            : "https://via.placeholder.com/150",
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(Icons.person, size: AppSizer.deviceWidth10, color: Colors.grey);
-                        },
+                  Stack(
+                    children: [
+                      Container(
+                        width: AppSizer.deviceWidth20,
+                        height: AppSizer.deviceWidth20,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              color: user.hasActiveSubscription ? Colors.amber : AppColors.primaryColor, 
+                              width: user.hasActiveSubscription ? 4 : 3),
+                          color: Colors.grey.shade200, // Background color for fallback
+                        ),
+                        child: ClipOval(
+                          child: Image.network(
+                            user.profilePicture.isNotEmpty 
+                                ? user.profilePicture 
+                                : "https://via.placeholder.com/150",
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(Icons.person, size: AppSizer.deviceWidth10, color: Colors.grey);
+                            },
+                          ),
+                        ),
                       ),
-                    ),
+                      if (user.hasActiveSubscription)
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.amber,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: const Icon(
+                              Icons.workspace_premium,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
 
                 SizedBox(width: AppSizer.deviceWidth4),
@@ -156,13 +238,39 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        user.name,
-                        style: TextStyle(
-                          fontSize: AppSizer.deviceSp20,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              user.name,
+                              style: TextStyle(
+                                fontSize: AppSizer.deviceSp20,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (user.hasActiveSubscription)
+                            Container(
+                              margin: const EdgeInsets.only(left: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.amber.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.amber),
+                              ),
+                              child: const Text(
+                                'PRO',
+                                style: TextStyle(
+                                  color: Colors.amber,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       SizedBox(height: AppSizer.deviceHeight0_5),
                       Text(

@@ -2,6 +2,15 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:coders_adda_app/main.dart';
+import 'package:coders_adda_app/models/course_model.dart';
+import 'package:coders_adda_app/models/pdf_model.dart';
+import 'package:coders_adda_app/views/home_pages/all_course_details_page.dart';
+import 'package:coders_adda_app/views/buy_new_pdf_pages/pdf_detail_page.dart';
+import 'package:coders_adda_app/views/my_owened_courses/my_learning_player_page.dart';
+import 'package:coders_adda_app/views/common/help_support_page.dart';
+import 'package:coders_adda_app/views/my_owened_pdf/offline_pdfs_page.dart';
+import 'package:coders_adda_app/views/register_pages/login_page.dart';
+import 'package:coders_adda_app/services/auth_service.dart';
 
 // Top-level function for background messages
 @pragma('vm:entry-point')
@@ -66,6 +75,11 @@ class NotificationService {
 
     // Foreground messaging listener
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.data['type'] == 'LOGIN_APPROVAL_REQUEST') {
+        _showLoginApprovalDialog();
+        return; // Don't show standard notification for this
+      }
+
       RemoteNotification? notification = message.notification;
 
       if (notification != null) {
@@ -119,11 +133,21 @@ class NotificationService {
       try {
         if (actionLink.startsWith('/course-detail/')) {
           final courseId = actionLink.replaceFirst('/course-detail/', '');
-          // Navigate to My Learning and let user find the course
-          navigator.pushNamedAndRemoveUntil('/home', (route) => false);
-          debugPrint('[DeepLink] Course detail: $courseId - sent to home');
+          navigator.push(MaterialPageRoute(builder: (_) => MyLearningCoursePlayer(courseId: courseId)));
+          debugPrint('[DeepLink] Course detail: $courseId - opened course player');
         }
-        else if (actionLink == '/quiz') {
+        else if (actionLink.startsWith('/ebook-details/')) {
+          final ebookId = actionLink.replaceFirst('/ebook-details/', '');
+          final dummyPdf = PdfItem(
+            id: ebookId, title: 'Loading...', description: '', fileSize: '', category: '', categoryId: '', isFree: false, priceType: 'paid', downloadUrl: '', thumbnail: '', uploadedAt: DateTime.now(), author: '', isActive: true
+          );
+          navigator.push(MaterialPageRoute(builder: (_) => PdfDetailPage(pdf: dummyPdf)));
+        }
+        else if (actionLink.startsWith('/course-test/')) {
+          final courseId = actionLink.replaceFirst('/course-test/', '');
+          navigator.push(MaterialPageRoute(builder: (_) => MyLearningCoursePlayer(courseId: courseId)));
+        }
+        else if (actionLink.trim().toLowerCase() == '/quiz') {
           navigator.pushNamed('/quiz');
         }
         else if (actionLink == '/subscription') {
@@ -135,6 +159,12 @@ class NotificationService {
         else if (actionLink == '/certificates' || actionLink == '/my-certificates') {
           navigator.pushNamed('/certificates');
         }
+        else if (actionLink == '/support') {
+          navigator.push(MaterialPageRoute(builder: (_) => const HelpSupportPage(initialIndex: 1)));
+        }
+        else if (actionLink == '/downloads') {
+          navigator.push(MaterialPageRoute(builder: (_) => OfflinePdfsPage()));
+        }
         else {
           debugPrint('[DeepLink] Unhandled link: $actionLink');
         }
@@ -142,6 +172,29 @@ class NotificationService {
         debugPrint('[DeepLink] Navigation error: $e');
       }
     });
+  }
+
+  Future<void> showLocalNotification({
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    await _localNotificationsPlugin.show(
+      id: DateTime.now().millisecond,
+      title: title,
+      body: body,
+      payload: payload,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'codersadda_notifications',
+          'General Notifications',
+          channelDescription: 'Notifications for CodersAdda updates',
+          icon: '@mipmap/ic_launcher',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+    );
   }
 
   Future<String?> getToken() async {
@@ -153,8 +206,73 @@ class NotificationService {
     }
   }
 
+  Future<void> scheduleProfileCompletionReminder() async {
+    await _localNotificationsPlugin.periodicallyShow(
+      id: 999, // Specific ID for profile reminder
+      title: 'Complete Your Profile!',
+      body: 'Your profile is incomplete. Complete it now to unlock all features and recommendations.',
+      repeatInterval: RepeatInterval.daily,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'codersadda_notifications',
+          'General Notifications',
+          channelDescription: 'Notifications for CodersAdda updates',
+          icon: '@mipmap/ic_launcher',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+      payload: '/profile', // You can handle this in deep links if you add '/profile'
+      androidScheduleMode: AndroidScheduleMode.inexact,
+    );
+  }
+
+  Future<void> cancelProfileCompletionReminder() async {
+    await _localNotificationsPlugin.cancel(id: 999);
+  }
+
+  Future<void> cancelAllNotifications() async {
+    await _localNotificationsPlugin.cancelAll();
+  }
+
   // Token refresh listener
   void listenToTokenRefresh(Function(String) onTokenRefresh) {
     _fcm.onTokenRefresh.listen(onTokenRefresh);
+  }
+
+  void _showLoginApprovalDialog() {
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Login Attempt"),
+          content: const Text("Another device is trying to log into your account. Do you want to allow them and log out from this device?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext), 
+              child: const Text("Deny")
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                final authService = AuthService();
+                await authService.approveLogin();
+                await authService.logout();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (route) => false,
+                );
+              },
+              child: const Text("Allow & Logout"),
+            ),
+          ],
+        );
+      }
+    );
   }
 }

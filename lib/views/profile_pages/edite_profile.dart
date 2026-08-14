@@ -5,6 +5,7 @@ import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:provider/provider.dart';
 
 class EditProfilePage extends StatelessWidget {
@@ -455,6 +456,25 @@ class EditProfilePage extends StatelessWidget {
                 _pickImage(ImageSource.camera, viewModel);
               },
             ),
+            if (viewModel.selectedImage != null)
+              ListTile(
+                leading: Icon(Icons.crop, color: AppColors.primaryColor),
+                title: Text('Adjust Photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _adjustImage(viewModel.selectedImage!.path, viewModel);
+                },
+              ),
+            if (viewModel.selectedImage != null || (user.profilePicture.isNotEmpty && user.profilePicture != ''))
+              ListTile(
+                leading: Icon(Icons.delete, color: Colors.red),
+                title: Text('Remove Photo', style: TextStyle(color: Colors.red)),
+                onTap: () {
+                  Navigator.pop(context);
+                  viewModel.setSelectedImage(null);
+                  // TODO: If a backend flag is needed to delete the existing image, set it here.
+                },
+              ),
           ],
         ),
       ),
@@ -466,10 +486,36 @@ class EditProfilePage extends StatelessWidget {
     try {
       final XFile? image = await _picker.pickImage(source: source);
       if (image != null) {
-        viewModel.setSelectedImage(File(image.path));
+        _adjustImage(image.path, viewModel);
       }
     } catch (e) {
       print('Error picking image: $e');
+    }
+  }
+
+  void _adjustImage(String path, ProfileViewModel viewModel) async {
+    try {
+      final CroppedFile? croppedFile = await ImageCropper().cropImage(
+        sourcePath: path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+              toolbarTitle: 'Adjust Profile Picture',
+              toolbarColor: AppColors.primaryColor,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.square,
+              lockAspectRatio: true),
+          IOSUiSettings(
+            title: 'Adjust Profile Picture',
+            aspectRatioLockEnabled: true,
+          ),
+        ],
+      );
+      if (croppedFile != null) {
+        viewModel.setSelectedImage(File(croppedFile.path));
+      }
+    } catch (e) {
+      print('Error cropping image: $e');
     }
   }
 
@@ -481,6 +527,12 @@ class EditProfilePage extends StatelessWidget {
 
     if (viewModel.emailController.text.isEmpty) {
       _showErrorDialog(context, 'Please enter your email');
+      return;
+    }
+    
+    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+    if (!emailRegex.hasMatch(viewModel.emailController.text)) {
+      _showErrorDialog(context, 'Please enter a valid email address');
       return;
     }
 

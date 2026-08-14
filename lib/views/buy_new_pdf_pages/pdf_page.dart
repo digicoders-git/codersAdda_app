@@ -6,6 +6,7 @@ import 'package:coders_adda_app/veiw_model/pdf_viewmodel.dart';
 import 'package:coders_adda_app/views/buy_new_pdf_pages/pdf_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 
 class PdfPage extends StatelessWidget {
   final PdfViewModel viewModel = PdfViewModel();
@@ -287,27 +288,62 @@ class PdfPage extends StatelessWidget {
                             ),
                   SizedBox(width: AppSizer.deviceWidth4,),         
                   
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppSizer.deviceWidth2,
-                      vertical: AppSizer.deviceHeight0_5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: pdf.isFree 
-                          ? AppColors.successColor.withOpacity(0.1)
-                          : AppColors.primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      pdf.isFree ? 'FREE' : '₹${pdf.price}',
-                      style: TextStyle(
-                        fontSize: AppSizer.deviceSp12,
-                        fontWeight: FontWeight.bold,
-                        color: pdf.isFree 
-                            ? AppColors.successColor 
-                            : AppColors.primaryColor,
-                      ),
-                    ),
+                  Consumer<ProfileViewModel>(
+                    builder: (context, profileVM, child) {
+                      final isPurchased = profileVM.user?.purchaseEbookIds.contains(pdf.id) ?? false;
+                      
+                      if (isPurchased) {
+                        return Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSizer.deviceWidth2,
+                            vertical: AppSizer.deviceHeight0_5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.successColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.successColor.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.lock_open, size: AppSizer.deviceSp12, color: AppColors.successColor),
+                              SizedBox(width: 4),
+                              Text(
+                                'UNLOCKED',
+                                style: TextStyle(
+                                  fontSize: AppSizer.deviceSp10,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.successColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      
+                      return Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSizer.deviceWidth2,
+                          vertical: AppSizer.deviceHeight0_5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: pdf.isFree 
+                              ? AppColors.successColor.withOpacity(0.1)
+                              : AppColors.primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          pdf.isFree ? 'FREE' : '₹${pdf.price}',
+                          style: TextStyle(
+                            fontSize: AppSizer.deviceSp12,
+                            fontWeight: FontWeight.bold,
+                            color: pdf.isFree 
+                                ? AppColors.successColor 
+                                : AppColors.primaryColor,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   
                  

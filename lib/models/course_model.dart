@@ -96,7 +96,17 @@ class Course {
           ? (json['faqs'] as List).map((i) => CourseFAQ.fromJson(i)).toList()
           : [],
       reviews: (json['reviews'] is List)
-          ? (json['reviews'] as List).map((i) => CourseReview.fromJson(i)).where((r) => r.isApproved).toList()
+          ? () {
+              final seen = <String>{};
+              return (json['reviews'] as List)
+                  .map((i) => CourseReview.fromJson(i))
+                  .where((r) => r.isApproved)
+                  .where((r) {
+                    final key = r.id.isNotEmpty ? r.id : '${r.studentName}_${r.comment}_${r.rating}';
+                    return seen.add(key);
+                  })
+                  .toList();
+            }()
           : [],
     );
   }

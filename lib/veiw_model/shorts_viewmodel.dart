@@ -134,4 +134,16 @@ class ShortsViewModel with ChangeNotifier {
       rethrow;
     }
   }
+
+  Future<void> editComment(String shortId, String commentId, String text) async {
+    try {
+      final response = await _shortsService.editComment(commentId, text);
+      if (response['success'] == true) {
+        await fetchComments(shortId); // Refresh comments to reflect the edit
+      }
+    } catch (e) {
+      print('Error editing comment in ViewModel: $e');
+      rethrow;
+    }
+  }
 }

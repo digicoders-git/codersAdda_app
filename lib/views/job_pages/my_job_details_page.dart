@@ -7,9 +7,11 @@ import 'package:coders_adda_app/models/job_model.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
 import 'package:coders_adda_app/views/job_pages/single_job_detailed_page.dart';
+import 'package:coders_adda_app/views/job_pages/job_page.dart';
 import 'package:provider/provider.dart';
 import 'package:coders_adda_app/veiw_model/job_application_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/my_learning_viewmodel.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 
 class MyJobDetailsPage extends StatefulWidget {
   const MyJobDetailsPage({super.key});
@@ -30,7 +32,7 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _loadSavedJobs();
   }
 
@@ -116,9 +118,19 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Icon(Icons.lock_open, size: AppSizer.deviceSp18),
+                  SizedBox(width: AppSizer.deviceWidth1),
+                  Text('Unlocked'),
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
                   Icon(Icons.send, size: AppSizer.deviceSp18),
-                  SizedBox(width: AppSizer.deviceWidth2),
-                  Text('Unlocked Jobs'),
+                  SizedBox(width: AppSizer.deviceWidth1),
+                  Text('Applied'),
                 ],
               ),
             ),
@@ -127,8 +139,8 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.bookmark, size: AppSizer.deviceSp18),
-                  SizedBox(width: AppSizer.deviceWidth2),
-                  Text('Saved Jobs'),
+                  SizedBox(width: AppSizer.deviceWidth1),
+                  Text('Saved'),
                 ],
               ),
             ),
@@ -138,13 +150,102 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Applied Jobs Tab
+          _buildUnlockedJobsTab(),
           _buildAppliedJobsTab(),
-          
-          // Saved Jobs Tab
           _buildSavedJobsTab(),
         ],
       ),
+    );
+  }
+
+
+  
+  Widget _buildUnlockedJobsTab() {
+    return Consumer<ProfileViewModel>(
+      builder: (context, profileVM, child) {
+        final unlockedJobs = profileVM.user?.purchaseJobs ?? [];
+        
+        if (unlockedJobs.isEmpty) {
+          return _buildEmptyState(
+            icon: Icons.lock_open,
+            title: 'No Unlocked Jobs',
+            description: 'You haven\'t unlocked any jobs yet.',
+          );
+        }
+
+        return ListView.separated(
+          padding: EdgeInsets.all(AppSizer.deviceWidth4),
+          itemCount: unlockedJobs.length,
+          separatorBuilder: (context, index) => SizedBox(height: AppSizer.deviceHeight2),
+          itemBuilder: (context, index) {
+            final job = unlockedJobs[index];
+            
+            return Card(
+              elevation: 2,
+              child: Padding(
+                padding: EdgeInsets.all(AppSizer.deviceWidth4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                job['jobTitle'] ?? 'Unknown Job',
+                                style: TextStyle(
+                                  fontSize: AppSizer.deviceSp16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: AppSizer.deviceHeight1),
+                              Text(
+                                '${job['companyName'] ?? ''} • ${job['location'] ?? ''}',
+                                style: TextStyle(
+                                  color: AppColors.onSurfaceVariant,
+                                  fontSize: AppSizer.deviceSp14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight2),
+                    Wrap(
+                      spacing: AppSizer.deviceWidth4,
+                      runSpacing: AppSizer.deviceHeight1,
+                      children: [
+                        _buildJobDetailItem(Icons.currency_rupee, job['salaryPackage']?.toString() ?? ''),
+                        _buildJobDetailItem(Icons.work, job['requiredExperience'] ?? ''),
+                        _buildJobDetailItem(Icons.location_city, job['workType'] ?? ''),
+                        _buildJobDetailItem(Icons.category, job['jobCategory'] ?? ''),
+                        _buildJobDetailItem(Icons.people, '${job['numberOfOpenings'] ?? '0'} Openings'),
+                      ],
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight2),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: () {
+                              final detail = JobDetail.fromJson(job).copyWith(hasApplied: false, companyIsHide: false, locked: false);
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => JobDetailsPage(job: detail)));
+                            },
+                            child: Text('View Full Details'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      }
     );
   }
 
@@ -505,7 +606,7 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
             SizedBox(height: AppSizer.deviceHeight4),
             FilledButton(
               onPressed: () {
-                // Navigate to jobs page
+                Navigator.push(context, MaterialPageRoute(builder: (context) => JobsPage()));
               },
               child: Text('Browse Jobs'),
             ),

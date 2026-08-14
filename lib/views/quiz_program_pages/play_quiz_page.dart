@@ -353,7 +353,13 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
 
   Future<void> _downloadCertificate(String urlString) async {
     try {
-      final Uri url = Uri.parse(urlString);
+      String resolvedUrl = urlString;
+      if (resolvedUrl.contains('localhost')) {
+        final uri = Uri.parse(resolvedUrl);
+        final baseUri = Uri.parse(ApiUrls.baseUrl);
+        resolvedUrl = resolvedUrl.replaceFirst('${uri.scheme}://${uri.host}:${uri.port}', '${baseUri.scheme}://${baseUri.host}:${baseUri.port}');
+      }
+      final Uri url = Uri.parse(resolvedUrl);
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {

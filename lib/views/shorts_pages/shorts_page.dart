@@ -68,23 +68,28 @@ class _ShortsPageState extends State<ShortsPage> {
   }
 
   Widget _buildVideoPlayer(BuildContext context, ShortsViewModel viewModel) {
-    return PageView.builder(
-      scrollDirection: Axis.vertical,
-      itemCount: viewModel.shorts.length,
-      onPageChanged: viewModel.setCurrentIndex,
-      itemBuilder: (context, index) {
-        final short = viewModel.shorts[index];
-        return Stack(
-          children: [
-            ShortVideoPlayer(
-              short: short,
-              isCurrent: viewModel.currentIndex == index && widget.isActive,
-            ),
-            _buildRightSideActions(context, viewModel, short),
-            _buildBottomInfo(context, viewModel, short),
-          ],
-        );
+    return RefreshIndicator(
+      onRefresh: () async {
+        await viewModel.fetchShorts();
       },
+      child: PageView.builder(
+        scrollDirection: Axis.vertical,
+        itemCount: viewModel.shorts.length,
+        onPageChanged: viewModel.setCurrentIndex,
+        itemBuilder: (context, index) {
+          final short = viewModel.shorts[index];
+          return Stack(
+            children: [
+              ShortVideoPlayer(
+                short: short,
+                isCurrent: viewModel.currentIndex == index && widget.isActive,
+              ),
+              _buildRightSideActions(context, viewModel, short),
+              _buildBottomInfo(context, viewModel, short),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -199,7 +204,8 @@ class _ShortsPageState extends State<ShortsPage> {
             '${short.totalShares}',
             Colors.white,
             () {
-              Share.share('Check out this short video on Coders Adda: ${short.caption}\n${short.videoUrl}');
+              // Share the app install link instead of the raw video URL
+              Share.share('Check out this short video on Coders Adda: ${short.caption}\n\nDownload the app now to watch:\nhttps://play.google.com/store/apps/details?id=digi.coders.codersadda');
             },
           ),
           
@@ -449,12 +455,26 @@ class _ShortsPageState extends State<ShortsPage> {
       children: [
         ListTile(
           contentPadding: EdgeInsets.only(left: isReply ? 56.0 : 16.0, right: 16.0),
-          leading: CircleAvatar(
-            radius: isReply ? 14 : 18,
-            backgroundImage: NetworkImage(comment.user.profilePicture.isNotEmpty 
-              ? comment.user.profilePicture 
-              : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPt0AP8G4XMUzpI6d-vyXPk8W0UoiSjj4aBQ&s'),
-          ),
+          leading: comment.user.profilePicture.isNotEmpty
+            ? CircleAvatar(
+                radius: isReply ? 14 : 18,
+                backgroundColor: Colors.blue,
+                child: ClipOval(
+                  child: Image.network(
+                    comment.user.profilePicture,
+                    width: isReply ? 28 : 36,
+                    height: isReply ? 28 : 36,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => 
+                      Icon(Icons.person, color: Colors.white, size: isReply ? 16 : 20),
+                  ),
+                ),
+              )
+            : CircleAvatar(
+                radius: isReply ? 14 : 18,
+                backgroundColor: Colors.blue,
+                child: Icon(Icons.person, color: Colors.white, size: isReply ? 16 : 20),
+              ),
           title: Row(
             children: [
               Text(comment.user.name, style: TextStyle(fontWeight: FontWeight.bold, fontSize: isReply ? 12 : 14, color: Colors.black)),
@@ -466,11 +486,44 @@ class _ShortsPageState extends State<ShortsPage> {
           ),
           subtitle: Text(comment.commentText, style: TextStyle(color: Colors.black87, fontSize: isReply ? 12 : 14)),
           trailing: isMyComment 
-            ? IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-                onPressed: () async {
-                  await vm.deleteComment(shortId, comment.id);
-                },
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
+                    onPressed: () {
+                      final ctrl = TextEditingController(text: comment.commentText);
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: const Text('Edit Comment'),
+                          content: TextField(
+                            controller: ctrl,
+                            decoration: const InputDecoration(hintText: 'Enter your comment'),
+                          ),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                            ElevatedButton(
+                              onPressed: () async {
+                                if (ctrl.text.trim().isNotEmpty) {
+                                  Navigator.pop(ctx);
+                                  await vm.editComment(shortId, comment.id, ctrl.text.trim());
+                                }
+                              },
+                              child: const Text('Save'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                    onPressed: () async {
+                      await vm.deleteComment(shortId, comment.id);
+                    },
+                  ),
+                ],
               )
             : null,
         ),

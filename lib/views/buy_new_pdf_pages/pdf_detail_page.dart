@@ -7,6 +7,8 @@ import 'package:coders_adda_app/views/buy_new_courses_pages/purchase_success_mod
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 import 'package:coders_adda_app/services/pdf_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 
 class PdfDetailPage extends StatefulWidget {
   final PdfItem pdf;
@@ -375,68 +377,107 @@ class _PdfDetailPageState extends State<PdfDetailPage> {
       child: SafeArea(
         child: SizedBox(
           width: double.infinity,
-          child: currentPdf.isFree
-              ? FilledButton(
+          child: Consumer<ProfileViewModel>(
+            builder: (context, profileViewModel, child) {
+              final isPurchased = profileViewModel.user?.purchaseEbookIds.contains(currentPdf.id) ?? false;
+              
+              if (isPurchased) {
+                return FilledButton(
                   onPressed: () {
-                    // FREE PDF - Enroll for free
-                    _enrollForFree(context);
+                    // Already purchased - Navigate to My Ebooks
+                    final tabIndex = PurchaseSuccessModal.getTabIndexForItemType('ebook', true);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
+                      (route) => route.isFirst,
+                    );
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.successColor,
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
                   ),
-                  child: Text(
-                    'ENROLL FOR FREE',
-                    style: TextStyle(
-                      fontSize: AppSizer.deviceSp16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle_outline, color: Colors.white, size: AppSizer.deviceSp20),
+                      SizedBox(width: AppSizer.deviceWidth2),
+                      Text(
+                        'UNLOCKED (GO TO LIBRARY)',
+                        style: TextStyle(
+                          fontSize: AppSizer.deviceSp16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                )
-              : FilledButton(
-                  onPressed: () {
-                    // PAID PDF - Navigate to CourseCheckoutPage
-                    final courseForCheckout = Course(
-                      id: currentPdf.id,
-                      title: currentPdf.title,
-                      description: currentPdf.description,
-                      instructor: currentPdf.author,
-                      price: currentPdf.price,
-                      thumbnail: currentPdf.thumbnail,
-                      category: currentPdf.category,
-                      technology: currentPdf.category,
-                      isFree: false,
-                      rating: 4.5,
-                      totalStudents: currentPdf.viewCount,
-                      duration: 'Lifetime Access',
-                      totalLessons: 1,
-                      createdAt: currentPdf.uploadedAt,
-                    );
-                    
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CourseCheckoutPage(
-                          course: courseForCheckout,
-                          itemType: 'ebook',
+                );
+              }
+
+              return currentPdf.isFree
+                  ? FilledButton(
+                      onPressed: () {
+                        // FREE PDF - Enroll for free
+                        _enrollForFree(context);
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.successColor,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
+                      ),
+                      child: Text(
+                        'ENROLL FOR FREE',
+                        style: TextStyle(
+                          fontSize: AppSizer.deviceSp16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                  : FilledButton(
+                      onPressed: () {
+                        // PAID PDF - Navigate to CourseCheckoutPage
+                        final courseForCheckout = Course(
+                          id: currentPdf.id,
+                          title: currentPdf.title,
+                          description: currentPdf.description,
+                          instructor: currentPdf.author,
+                          price: currentPdf.price,
+                          thumbnail: currentPdf.thumbnail,
+                          category: currentPdf.category,
+                          technology: currentPdf.category,
+                          isFree: false,
+                          rating: 4.5,
+                          totalStudents: currentPdf.viewCount,
+                          duration: 'Lifetime Access',
+                          totalLessons: 1,
+                          createdAt: currentPdf.uploadedAt,
+                        );
+                        
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CourseCheckoutPage(
+                              course: courseForCheckout,
+                              itemType: 'ebook',
+                            ),
+                          ),
+                        );
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
+                      ),
+                      child: Text(
+                        'BUY NOW - ₹${currentPdf.price}',
+                        style: TextStyle(
+                          fontSize: AppSizer.deviceSp16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     );
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
-                  ),
-                  child: Text(
-                    'BUY NOW - ₹${currentPdf.price}',
-                    style: TextStyle(
-                      fontSize: AppSizer.deviceSp16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+            },
+          ),
         ),
       ),
     );

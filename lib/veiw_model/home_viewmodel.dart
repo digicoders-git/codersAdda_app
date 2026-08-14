@@ -1,12 +1,15 @@
 import 'package:coders_adda_app/models/home_model.dart';
 import 'package:coders_adda_app/models/course_model.dart';
+import 'package:coders_adda_app/models/coupon.dart';
 import 'package:coders_adda_app/services/course_service.dart';
 import 'package:coders_adda_app/services/slider_service.dart';
+import 'package:coders_adda_app/services/coupon_service.dart';
 import 'package:flutter/material.dart';
 
 class HomeViewModel with ChangeNotifier {
   final SliderService _sliderService = SliderService();
   final CourseService _courseService = CourseService();
+  final CouponService _couponService = CouponService();
   
   bool _isLoading = false;
   bool get isLoading => _isLoading;
@@ -19,6 +22,9 @@ class HomeViewModel with ChangeNotifier {
 
   List<Course> _freeCourses = [];
   List<Course> get freeCourses => _freeCourses;
+
+  List<Coupon> _activeCoupons = [];
+  List<Coupon> get activeCoupons => _activeCoupons;
 
   final List<PdfItem> _freePdfs = [
     PdfItem(
@@ -57,6 +63,7 @@ class HomeViewModel with ChangeNotifier {
         _fetchSliders(forceRefresh: forceRefresh),
         _fetchTrendingCourses(),
         _fetchFreeCourses(),
+        _fetchCoupons(),
       ]);
     } catch (e) {
       print('Error in HomeViewModel fetchHomeData: $e');
@@ -87,6 +94,14 @@ class HomeViewModel with ChangeNotifier {
       _freeCourses = await _courseService.getCoursesByFilter(priceType: 'free');
     } catch (e) {
       debugPrint('Error fetching free courses: $e');
+    }
+  }
+
+  Future<void> _fetchCoupons() async {
+    try {
+      _activeCoupons = await _couponService.getActiveCoupons();
+    } catch (e) {
+      debugPrint('Error fetching coupons: $e');
     }
   }
 

@@ -1,8 +1,21 @@
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:math';
 
 class AuthService {
   final ApiClient _apiClient = ApiClient();
+
+  Future<String> getDeviceId() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? deviceId = prefs.getString('deviceId');
+    if (deviceId == null || deviceId.isEmpty) {
+      final random = Random();
+      deviceId = '${DateTime.now().millisecondsSinceEpoch}_${random.nextInt(100000)}';
+      await prefs.setString('deviceId', deviceId);
+    }
+    return deviceId;
+  }
 
   // Request OTP API
   Future<dynamic> requestOtp(String mobile, {String? referralCode}) async {
@@ -22,12 +35,17 @@ class AuthService {
   }
 
   // Verify OTP API
-  Future<dynamic> verifyOtp(String mobile, String otp, {String? referralCode}) async {
+  Future<dynamic> verifyOtp(String mobile, String otp, {String? referralCode, String? fcmToken}) async {
     try {
+      final String deviceId = await getDeviceId();
       final Map<String, dynamic> body = {
         'mobile': mobile,
         'otp': otp,
+        'deviceId': deviceId,
       };
+      if (fcmToken != null && fcmToken.isNotEmpty) {
+        body['fcmToken'] = fcmToken;
+      }
       if (referralCode != null && referralCode.isNotEmpty) {
         body['referralCode'] = referralCode;
       }
@@ -83,5 +101,26 @@ class AuthService {
   // Logout
   Future<void> logout() async {
     await _apiClient.deleteToken();
+  }
+
+  // Check login approval status
+  Future<dynamic> checkLoginApprovalStatus(String mobile) async {
+    try {
+      final String deviceId = await getDeviceId();
+      final response = await _apiClient.get('${ApiUrls.checkLoginApprovalStatus}?mobile=$mobile&deviceId=$deviceId');
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Approve Login
+  Future<dynamic> approveLogin() async {
+    try {
+      final response = await _apiClient.post(ApiUrls.approveLogin, {});
+      return response;
+    } catch (e) {
+      rethrow;
+    }
   }
 }

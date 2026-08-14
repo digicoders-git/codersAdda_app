@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:coders_adda_app/models/profile_model.dart';
 import 'package:coders_adda_app/services/profile_service.dart';
+import 'package:coders_adda_app/services/notification_service.dart';
 import 'package:flutter/material.dart';
 
 class ProfileViewModel with ChangeNotifier {
@@ -58,6 +59,15 @@ class ProfileViewModel with ChangeNotifier {
       _user = await _profileService.getUserProfile();
       _isLoading = false;
       notifyListeners();
+      
+      // Handle profile completion notification
+      if (_user != null) {
+        if (_user!.calculatedProgressPercentage < 100) {
+          NotificationService().scheduleProfileCompletionReminder();
+        } else {
+          NotificationService().cancelProfileCompletionReminder();
+        }
+      }
     } catch (e) {
       _isLoading = false;
       _errorMessage = e.toString();

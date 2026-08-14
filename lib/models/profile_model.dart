@@ -20,9 +20,30 @@ class UserProfile {
   final int freeJobUnlocksUsed;
   final int courseCount;
   final List<String> purchaseCourseIds;
+  final List<String> purchaseEbookIds;
   final bool isAmbassador;
   final int completedCount;
   final int progressPercentage;
+  final bool hasActiveSubscription;
+  final List<String> subscriptionCourseIds;
+  final List<Map<String, dynamic>> purchaseJobs;
+
+  int get calculatedProgressPercentage {
+    int total = 11;
+    int filled = 0;
+    if (name.isNotEmpty) filled++;
+    if (email.isNotEmpty) filled++;
+    if (mobile.isNotEmpty) filled++;
+    if (profilePicture.isNotEmpty) filled++;
+    if (college.isNotEmpty) filled++;
+    if (course.isNotEmpty) filled++;
+    if (semester.isNotEmpty) filled++;
+    if (about.isNotEmpty) filled++;
+    if (skills.isNotEmpty) filled++;
+    if (technology.isNotEmpty) filled++;
+    if (github.isNotEmpty || linkedin.isNotEmpty || portfolio.isNotEmpty) filled++;
+    return ((filled / total) * 100).toInt();
+  }
 
   UserProfile({
     required this.id,
@@ -46,9 +67,13 @@ class UserProfile {
     this.freeJobUnlocksUsed = 0,
     this.courseCount = 0,
     this.purchaseCourseIds = const [],
+    this.purchaseEbookIds = const [],
     this.isAmbassador = false,
     this.completedCount = 0,
     this.progressPercentage = 0,
+    this.hasActiveSubscription = false,
+    this.subscriptionCourseIds = const [],
+    this.purchaseJobs = const [],
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
@@ -89,12 +114,54 @@ class UserProfile {
           ?.map((c) => (c is Map) ? (c['_id']?.toString() ?? '') : c.toString())
           .where((id) => id.isNotEmpty)
           .toList() ?? [],
+      purchaseEbookIds: (user['purchaseEbooks'] as List?)
+          ?.map((e) => (e is Map) ? (e['_id']?.toString() ?? '') : e.toString())
+          .where((id) => id.isNotEmpty)
+          .toList() ?? [],
       isAmbassador: user['isAmbassador'] ?? false,
       completedCount: (json['user']?['quizCertificates'] as List?)?.length ?? 0,
       progressPercentage: (() {
         int total = (user['purchaseCourses'] as List?)?.length ?? 0;
         int completed = (json['user']?['quizCertificates'] as List?)?.length ?? 0;
         return total > 0 ? ((completed / (total > completed ? total : completed)) * 100).toInt().clamp(0, 100) : 0;
+      })(),
+      hasActiveSubscription: (() {
+        final subs = user['purchaseSubscriptions'] as List?;
+        if (subs == null || subs.isEmpty) return false;
+        final now = DateTime.now();
+        for (var sub in subs) {
+          if (sub['status'] == 'active') {
+            final endDate = DateTime.tryParse(sub['endDate'] ?? '');
+            if (endDate != null && endDate.isAfter(now)) {
+              return true;
+            }
+          }
+        }
+        return false;
+      })(),
+      subscriptionCourseIds: (() {
+        final subs = user['purchaseSubscriptions'] as List?;
+        if (subs == null || subs.isEmpty) return <String>[];
+        final now = DateTime.now();
+        List<String> included = [];
+        for (var sub in subs) {
+          if (sub['status'] == 'active') {
+            final endDate = DateTime.tryParse(sub['endDate'] ?? '');
+            if (endDate != null && endDate.isAfter(now)) {
+              final subData = sub['subscription'];
+              if (subData != null && subData['includedCourses'] != null) {
+                final courses = subData['includedCourses'] as List;
+                included.addAll(courses.map((c) => (c is Map) ? c['_id']?.toString() ?? '' : c.toString()));
+              }
+            }
+          }
+        }
+        return included;
+      })(),
+      purchaseJobs: (() {
+        final jobs = user['purchaseJobs'] as List?;
+        if (jobs == null) return <Map<String, dynamic>>[];
+        return jobs.whereType<Map<String, dynamic>>().toList();
       })(),
     );
   }

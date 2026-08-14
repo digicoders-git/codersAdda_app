@@ -325,8 +325,18 @@ class _CourseDetailScreenState extends State<MyLearningCoursePlayer>
                           children: [
                             const FAQsTab(),
                             const ReviewsTab(),
-                            CourseQuizzesTab(courseId: widget.courseId),
-                            CourseTestsTab(courseId: widget.courseId),
+                            CourseQuizzesTab(
+                              courseId: widget.courseId,
+                              onPlay: () {
+                                _podController?.pause();
+                              },
+                            ),
+                            CourseTestsTab(
+                              courseId: widget.courseId,
+                              onPlay: () {
+                                _podController?.pause();
+                              },
+                            ),
                           ],
                         ),
                       ),
