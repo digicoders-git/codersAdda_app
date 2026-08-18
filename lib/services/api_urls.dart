@@ -1,7 +1,7 @@
 class ApiUrls {
   // Use http://10.0.2.2:3900 for Android Emulator to connect to localhost
   // Use http://localhost:3900 for Web/Windows testing
-  static const String baseUrl = 'https://coders-adda-backend.onrender.com';
+  static const String baseUrl = 'https://api.codersadda.com';
   // static const String baseUrl = 'http://192.168.29.234:3900';
   // static const String baseUrl = 'http://10.0.2.2:3900';
 
