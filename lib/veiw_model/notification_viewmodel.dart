@@ -79,6 +79,14 @@ class NotificationViewModel extends ChangeNotifier {
   }
 
   Future<void> markAsRead(String id) async {
+    // Optimistic UI update
+    final index = notifications.indexWhere((n) => n.id == id);
+    if (index != -1 && !notifications[index].isRead) {
+      notifications[index].isRead = true;
+      if (unreadCount > 0) unreadCount--;
+      notifyListeners();
+    }
+
     try {
       final token = await _getToken();
       if (token == null) return;
@@ -88,6 +96,7 @@ class NotificationViewModel extends ChangeNotifier {
         headers: {'Authorization': 'Bearer $token'},
       );
 
+      // We still fetch to ensure sync, but UI is already updated
       fetchNotifications();
       fetchUnreadCount();
     } catch (e) {

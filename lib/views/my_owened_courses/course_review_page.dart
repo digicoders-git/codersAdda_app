@@ -14,7 +14,16 @@ class ReviewsTab extends StatelessWidget {
     final viewModel = Provider.of<CoursePlayerViewModel>(context);
     final reviews = viewModel.reviews;
     final ratingCount = reviews.length;
-    final avgRating = viewModel.course?.rating ?? 0.0;
+    
+    double calculatedAvg = 0.0;
+    if (ratingCount > 0) {
+      double totalRating = 0;
+      for (var review in reviews) {
+        totalRating += review.rating;
+      }
+      calculatedAvg = totalRating / ratingCount;
+    }
+    final avgRating = calculatedAvg > 0 ? calculatedAvg : (viewModel.course?.rating ?? 0.0);
     
     return ListView(
       padding: EdgeInsets.all(AppSizer.deviceWidth4),

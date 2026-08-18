@@ -12,7 +12,7 @@ class CoursePlayerViewModel extends ChangeNotifier {
   String? _errorMessage;
   CourseLesson? _selectedLesson;
   String? _selectedTopicId;
-  bool _isPlayingPromo = false;
+  bool _isExplicitlyPlayingPromo = false;
 
   CoursePlayerViewModel(String courseId) {
     fetchCourseDetails(courseId);
@@ -26,10 +26,20 @@ class CoursePlayerViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   CourseLesson? get selectedLesson => _selectedLesson;
   String? get selectedTopicId => _selectedTopicId;
-  bool get isPlayingPromo => _isPlayingPromo;
+  
+  bool get isPlayingPromo {
+    if (_isExplicitlyPlayingPromo) return true;
+    if (_selectedLesson != null && _selectedLesson!.videoUrl.isNotEmpty) {
+      return false;
+    }
+    if (_course?.promoVideoUrl != null && _course!.promoVideoUrl.isNotEmpty) {
+      return true;
+    }
+    return false;
+  }
 
   String? get currentVideoUrl {
-    if (_isPlayingPromo) return _course?.promoVideoUrl;
+    if (_isExplicitlyPlayingPromo) return _course?.promoVideoUrl;
     if (_selectedLesson != null && _selectedLesson!.videoUrl.isNotEmpty) {
       return _selectedLesson!.videoUrl;
     }
@@ -40,7 +50,7 @@ class CoursePlayerViewModel extends ChangeNotifier {
   }
 
   void playPromoVideo() {
-    _isPlayingPromo = true;
+    _isExplicitlyPlayingPromo = true;
     _selectedLesson = null;
     notifyListeners();
   }
@@ -77,7 +87,7 @@ class CoursePlayerViewModel extends ChangeNotifier {
 
       if ((_selectedLesson == null || _selectedLesson!.videoUrl.isEmpty) && 
           _course?.promoVideoUrl != null && _course!.promoVideoUrl.isNotEmpty) {
-        _isPlayingPromo = true;
+        _isExplicitlyPlayingPromo = true;
       }
     } catch (e) {
       _errorMessage = 'Failed to load course details: $e';
@@ -90,8 +100,112 @@ class CoursePlayerViewModel extends ChangeNotifier {
   void selectLesson(CourseLesson lesson, String topicId) {
     _selectedLesson = lesson;
     _selectedTopicId = topicId;
-    _isPlayingPromo = false;
+    _isExplicitlyPlayingPromo = false;
     notifyListeners();
+  }
+
+  bool get hasPrevLecture {
+    if (_course == null || _course!.curriculum.isEmpty || _selectedLesson == null) return false;
+    
+    final curriculum = _course!.curriculum;
+    
+    // Find current module and lesson index
+    for (int i = 0; i < curriculum.length; i++) {
+      final module = curriculum[i];
+      final lessonIndex = module.lessons.indexWhere((l) => l.id == _selectedLesson!.id);
+      
+      if (lessonIndex != -1) {
+        if (lessonIndex - 1 >= 0) {
+          return true;
+        }
+        for (int j = i - 1; j >= 0; j--) {
+          if (curriculum[j].lessons.isNotEmpty) {
+            return true;
+          }
+        }
+        break;
+      }
+    }
+    return false;
+  }
+
+  bool get hasNextLecture {
+    if (_course == null || _course!.curriculum.isEmpty || _selectedLesson == null) return false;
+    
+    final curriculum = _course!.curriculum;
+    
+    // Find current module and lesson index
+    for (int i = 0; i < curriculum.length; i++) {
+      final module = curriculum[i];
+      final lessonIndex = module.lessons.indexWhere((l) => l.id == _selectedLesson!.id);
+      
+      if (lessonIndex != -1) {
+        // If there is a next lesson in the current module
+        if (lessonIndex + 1 < module.lessons.length) {
+          return true;
+        }
+        // Otherwise check next modules for lessons
+        for (int j = i + 1; j < curriculum.length; j++) {
+          if (curriculum[j].lessons.isNotEmpty) {
+            return true;
+          }
+        }
+        break;
+      }
+    }
+    return false;
+  }
+
+  void playPrevLecture() {
+    if (_course == null || _course!.curriculum.isEmpty || _selectedLesson == null) return;
+    
+    final curriculum = _course!.curriculum;
+    
+    for (int i = 0; i < curriculum.length; i++) {
+      final module = curriculum[i];
+      final lessonIndex = module.lessons.indexWhere((l) => l.id == _selectedLesson!.id);
+      
+      if (lessonIndex != -1) {
+        if (lessonIndex - 1 >= 0) {
+          selectLesson(module.lessons[lessonIndex - 1], module.id);
+          return;
+        }
+        for (int j = i - 1; j >= 0; j--) {
+          if (curriculum[j].lessons.isNotEmpty) {
+            selectLesson(curriculum[j].lessons.last, curriculum[j].id);
+            return;
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  void playNextLecture() {
+    if (_course == null || _course!.curriculum.isEmpty || _selectedLesson == null) return;
+    
+    final curriculum = _course!.curriculum;
+    
+    for (int i = 0; i < curriculum.length; i++) {
+      final module = curriculum[i];
+      final lessonIndex = module.lessons.indexWhere((l) => l.id == _selectedLesson!.id);
+      
+      if (lessonIndex != -1) {
+        // Play next lesson in current module
+        if (lessonIndex + 1 < module.lessons.length) {
+          selectLesson(module.lessons[lessonIndex + 1], module.id);
+          return;
+        }
+        // Play first lesson in next modules
+        for (int j = i + 1; j < curriculum.length; j++) {
+          if (curriculum[j].lessons.isNotEmpty) {
+            selectLesson(curriculum[j].lessons.first, curriculum[j].id);
+            return;
+          }
+        }
+        break;
+      }
+    }
   }
 
   // If curriculum needs refreshing from separate APIs

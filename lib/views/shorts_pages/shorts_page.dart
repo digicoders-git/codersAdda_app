@@ -3,10 +3,12 @@ import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/veiw_model/shorts_viewmodel.dart';
 import 'package:coders_adda_app/views/shorts_pages/short_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/models/shorts_model.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
+import 'package:coders_adda_app/views/navigation_class.dart';
 
 class ShortsPage extends StatefulWidget {
   final bool isActive;
@@ -23,8 +25,21 @@ class _ShortsPageState extends State<ShortsPage> {
   void initState() {
     super.initState();
     _viewModel = ShortsViewModel();
-    if (widget.isActive) {
-      _viewModel.fetchShorts();
+    // Arguments are handled in didChangeDependencies
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    // We only want to fetch once when the widget is initialized and active
+    if (widget.isActive && _viewModel.shorts.isEmpty && !_viewModel.isLoading) {
+      String? initialShortId;
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args != null && args is Map<String, dynamic>) {
+        initialShortId = args['shortId'] as String?;
+      }
+      _viewModel.fetchShorts(initialShortId: initialShortId);
     }
   }
 
@@ -32,9 +47,7 @@ class _ShortsPageState extends State<ShortsPage> {
   void didUpdateWidget(ShortsPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive && !oldWidget.isActive) {
-      if (_viewModel.shorts.isEmpty && !_viewModel.isLoading) {
         _viewModel.fetchShorts();
-      }
     }
   }
 
@@ -74,6 +87,7 @@ class _ShortsPageState extends State<ShortsPage> {
       },
       child: PageView.builder(
         scrollDirection: Axis.vertical,
+        physics: const AlwaysScrollableScrollPhysics(),
         itemCount: viewModel.shorts.length,
         onPageChanged: viewModel.setCurrentIndex,
         itemBuilder: (context, index) {
@@ -102,7 +116,32 @@ class _ShortsPageState extends State<ShortsPage> {
         padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth4),
         child: Row(
           children: [
-             Spacer(),
+            // Back Button
+            GestureDetector(
+              onTap: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                } else {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => MainNavigation()),
+                  );
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.all(AppSizer.deviceWidth2),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                  size: AppSizer.deviceSp20,
+                ),
+              ),
+            ),
+            Spacer(),
             
             // Search Button
             GestureDetector(
@@ -123,26 +162,7 @@ class _ShortsPageState extends State<ShortsPage> {
               ),
             ),
             
-            SizedBox(width: AppSizer.deviceWidth2),
-            
-            // More Options
-            GestureDetector(
-              onTap: () {
-                _showMoreOptions(context);
-              },
-              child: Container(
-                padding: EdgeInsets.all(AppSizer.deviceWidth2),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.more_vert,
-                  color: Colors.white,
-                  size: AppSizer.deviceSp20,
-                ),
-              ),
-            ),
+
           ],
         ),
       ),
@@ -200,12 +220,13 @@ class _ShortsPageState extends State<ShortsPage> {
           
           _buildActionButton(
             context,
-            Icons.share,
+            CupertinoIcons.paperplane,
             '${short.totalShares}',
             Colors.white,
             () {
               // Share the app install link instead of the raw video URL
-              Share.share('Check out this short video on Coders Adda: ${short.caption}\n\nDownload the app now to watch:\nhttps://play.google.com/store/apps/details?id=digi.coders.codersadda');
+              viewModel.addShare(short.id);
+              Share.share('Check out this short video on Coders Adda: ${short.caption}\n\nWatch now:\nhttps://codersadda.digicoders.in/short?id=${short.id}\n\nOr download the app:\nhttps://play.google.com/store/apps/details?id=digi.coders.codersadda');
             },
           ),
           
@@ -289,25 +310,7 @@ class _ShortsPageState extends State<ShortsPage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                SizedBox(width: AppSizer.deviceWidth2),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSizer.deviceWidth2,
-                    vertical: AppSizer.deviceHeight0_5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    'Follow',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: AppSizer.deviceSp10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+
               ],
             ),
             

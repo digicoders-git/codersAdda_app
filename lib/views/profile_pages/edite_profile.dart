@@ -165,9 +165,9 @@ class EditProfilePage extends StatelessWidget {
                     image: DecorationImage(
                       image: viewModel.selectedImage != null
                           ? FileImage(viewModel.selectedImage!) as ImageProvider
-                          : NetworkImage(user.profilePicture.isNotEmpty 
-                              ? user.profilePicture 
-                              : "https://via.placeholder.com/150"),
+                          : (!viewModel.isPhotoRemoved && user.profilePicture.isNotEmpty)
+                              ? NetworkImage(user.profilePicture)
+                              : const NetworkImage("https://via.placeholder.com/150"),
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -420,6 +420,7 @@ class EditProfilePage extends StatelessWidget {
             TextFormField(
               controller: viewModel.bioController,
               maxLines: 4,
+              maxLength: 300,
               decoration: InputDecoration(
                 labelText: 'Bio/Description',
                 alignLabelWithHint: true,
@@ -471,8 +472,7 @@ class EditProfilePage extends StatelessWidget {
                 title: Text('Remove Photo', style: TextStyle(color: Colors.red)),
                 onTap: () {
                   Navigator.pop(context);
-                  viewModel.setSelectedImage(null);
-                  // TODO: If a backend flag is needed to delete the existing image, set it here.
+                  viewModel.removePhoto();
                 },
               ),
           ],
@@ -533,6 +533,23 @@ class EditProfilePage extends StatelessWidget {
     final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
     if (!emailRegex.hasMatch(viewModel.emailController.text)) {
       _showErrorDialog(context, 'Please enter a valid email address');
+      return;
+    }
+
+    final urlRegex = RegExp(r'^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$');
+
+    if (viewModel.githubController.text.isNotEmpty && !urlRegex.hasMatch(viewModel.githubController.text.trim())) {
+      _showErrorDialog(context, 'Please enter a valid GitHub URL');
+      return;
+    }
+
+    if (viewModel.linkedinController.text.isNotEmpty && !urlRegex.hasMatch(viewModel.linkedinController.text.trim())) {
+      _showErrorDialog(context, 'Please enter a valid LinkedIn URL');
+      return;
+    }
+
+    if (viewModel.portfolioController.text.isNotEmpty && !urlRegex.hasMatch(viewModel.portfolioController.text.trim())) {
+      _showErrorDialog(context, 'Please enter a valid Portfolio URL');
       return;
     }
 

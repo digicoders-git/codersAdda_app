@@ -32,12 +32,22 @@ class MyLearningCourse {
   });
 
   factory MyLearningCourse.fromJson(Map<String, dynamic> json) {
+    String _safeString(dynamic value) {
+      if (value == null) return '';
+      if (value is String) return value;
+      if (value is Map) {
+        if (value.containsKey('name')) return value['name']?.toString() ?? '';
+        if (value.containsKey('fullName')) return value['fullName']?.toString() ?? '';
+      }
+      return value.toString();
+    }
+
     return MyLearningCourse(
       id: json['_id'] ?? '',
       title: json['title'] ?? '',
       progress: 0.0,
       thumbnail: json['thumbnail']?['url'] ?? '',
-      instructor: json['instructor']?['_id'] ?? '',
+      instructor: _safeString(json['instructor']),
       purchaseDate: DateTime.now(),
       isFree: json['priceType'] == 'free',
       technology: json['technology'] ?? '',
@@ -45,7 +55,17 @@ class MyLearningCourse {
       curriculum: (json['curriculum'] as List<dynamic>?)
           ?.map((e) => CourseCurriculum.fromJson(e))
           .toList() ?? [],
-      rating: (json['totalRating'] ?? 0).toDouble(),
+      rating: (() {
+        if (json['reviews'] is List && (json['reviews'] as List).isNotEmpty) {
+          final reviews = json['reviews'] as List;
+          double totalRating = 0;
+          for (var r in reviews) {
+            totalRating += (r['rating'] ?? 0).toDouble();
+          }
+          return totalRating / reviews.length;
+        }
+        return (json['totalRating'] ?? 0).toDouble();
+      })(),
       duration: json['duration'] ?? '0h',
       totalVideos: (json['curriculum'] as List<dynamic>?)?.fold<int>(0, (sum, module) {
           final lessons = module['lessons'] as List?;
@@ -116,6 +136,9 @@ class MyLearningPdf {
   final String source;
   final String category;
   final String thumbnail;
+  final double rating;
+  final int views;
+  final int totalReviews;
 
   MyLearningPdf({
     required this.id,
@@ -127,6 +150,9 @@ class MyLearningPdf {
     this.source = '',
     this.category = '',
     this.thumbnail = '',
+    this.rating = 0.0,
+    this.views = 0,
+    this.totalReviews = 0,
   });
 
   factory MyLearningPdf.fromJson(Map<String, dynamic> json) {
@@ -140,6 +166,9 @@ class MyLearningPdf {
       source: json['source'] ?? '',
       category: json['category'] is String ? json['category'] : (json['category']?['title'] ?? ''),
       thumbnail: json['thumbnail'] is String ? json['thumbnail'] : (json['thumbnail']?['url'] ?? ''),
+      rating: (json['rating'] ?? 0).toDouble(),
+      views: json['views'] ?? 0,
+      totalReviews: json['totalReviews'] ?? 0,
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:coders_adda_app/utils/certificate_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:coders_adda_app/models/certificate_model.dart';
@@ -71,34 +72,7 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> with SingleTick
   }
 
   Future<void> _downloadCertificate(String urlString) async {
-    if (urlString.isEmpty) return;
-    
-    // Resolve localhost to API base URL if needed
-    try {
-      String resolvedUrl = urlString;
-      if (resolvedUrl.contains('localhost')) {
-        final uri = Uri.parse(resolvedUrl);
-        final baseUri = Uri.parse(ApiUrls.baseUrl);
-        resolvedUrl = resolvedUrl.replaceFirst('${uri.scheme}://${uri.host}:${uri.port}', '${baseUri.scheme}://${baseUri.host}:${baseUri.port}');
-      }
-      final Uri url = Uri.parse(resolvedUrl);
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Could not open certificate download link")),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint("Error launching url: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e")),
-        );
-      }
-    }
+    await CertificateDownloader.downloadAndSave(context, urlString);
   }
 
   @override
@@ -113,6 +87,15 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> with SingleTick
             fontWeight: FontWeight.bold,
           ),
         ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () => Navigator.pop(context),
+              )
+            : IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+              ),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.primaryColor,
@@ -162,26 +145,36 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> with SingleTick
 
   Widget _buildList(List<CertificateModel> list, String type) {
     if (list.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.card_membership, size: 64, color: AppColors.onSurfaceVariant),
-            const SizedBox(height: 16),
-            Text(
-              'No $type certificates found',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp18,
-                color: AppColors.textColor,
-                fontWeight: FontWeight.bold,
+      return RefreshIndicator(
+        onRefresh: _fetchCertificates,
+        color: AppColors.primaryColor,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.card_membership, size: 64, color: AppColors.onSurfaceVariant),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No $type certificates found',
+                    style: TextStyle(
+                      fontSize: AppSizer.deviceSp18,
+                      color: AppColors.textColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Complete ${type.toLowerCase()}s to earn certificates!',
+                    style: TextStyle(color: AppColors.onSurfaceVariant),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Complete ${type.toLowerCase()}s to earn certificates!',
-              style: TextStyle(color: AppColors.onSurfaceVariant),
-            ),
-          ],
+          ),
         ),
       );
     }
@@ -189,6 +182,7 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> with SingleTick
     return RefreshIndicator(
       onRefresh: _fetchCertificates,
       child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(AppSizer.deviceWidth4),
         itemCount: list.length,
         itemBuilder: (context, index) {

@@ -64,14 +64,33 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
         title: const Text('Payment History', style: TextStyle(color: Colors.white)),
         backgroundColor: AppColors.primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () => Navigator.pop(context),
+              )
+            : IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+              ),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : payments.isEmpty
-              ? const Center(child: Text("No transactions found.", style: TextStyle(fontSize: 16)))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: payments.length,
+          : RefreshIndicator(
+              onRefresh: _fetchPayments,
+              color: AppColors.primaryColor,
+              child: payments.isEmpty
+                  ? SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Container(
+                        height: MediaQuery.of(context).size.height * 0.8,
+                        child: const Center(child: Text("No transactions found.", style: TextStyle(fontSize: 16))),
+                      ),
+                    )
+                  : ListView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(16),
+                      itemCount: payments.length,
                   itemBuilder: (context, index) {
                     final payment = payments[index];
                     final bool isSuccess = payment.status == 'success';
@@ -205,6 +224,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                     );
                   },
                 ),
+            ),
     );
   }
 }

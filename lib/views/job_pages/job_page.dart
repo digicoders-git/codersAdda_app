@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
+import 'package:coders_adda_app/views/navigation_class.dart';
 
 
 
@@ -166,7 +167,16 @@ class _JobsPageState extends State<JobsPage> {
                   ),
                   leading: IconButton(
                     icon: Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      } else {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => MainNavigation()),
+                        );
+                      }
+                    },
                   ),
                   actions: [
                     IconButton(

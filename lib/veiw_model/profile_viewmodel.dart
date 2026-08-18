@@ -12,14 +12,23 @@ class ProfileViewModel with ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   File? _selectedImage;
+  bool _isPhotoRemoved = false;
 
-  UserProfile? get user => _user;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  UserProfile? get user => _user;
   File? get selectedImage => _selectedImage;
+  bool get isPhotoRemoved => _isPhotoRemoved;
 
   void setSelectedImage(File? image) {
     _selectedImage = image;
+    _isPhotoRemoved = false;
+    notifyListeners();
+  }
+
+  void removePhoto() {
+    _selectedImage = null;
+    _isPhotoRemoved = true;
     notifyListeners();
   }
 
@@ -152,6 +161,10 @@ class ProfileViewModel with ChangeNotifier {
         'technology': jsonEncode(technologyList),
         'skills': jsonEncode(skillsList),
       };
+
+      if (_isPhotoRemoved) {
+        fields['removePhoto'] = 'true';
+      }
 
       await _profileService.updateProfileMultipart(fields, imageFile: _selectedImage);
       

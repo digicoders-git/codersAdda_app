@@ -18,12 +18,20 @@ class ShortsViewModel with ChangeNotifier {
 
   ShortsViewModel();
 
-  Future<void> fetchShorts() async {
+  Future<void> fetchShorts({String? initialShortId}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
       _shorts = await _shortsService.getActiveShorts();
+      if (initialShortId != null && initialShortId.isNotEmpty) {
+        final index = _shorts.indexWhere((s) => s.id == initialShortId);
+        if (index > 0) {
+          final targetShort = _shorts.removeAt(index);
+          _shorts.insert(0, targetShort);
+        }
+      }
+      _currentIndex = 0;
       // Initialize likes check for the first few shorts if needed, 
       // but usually better to do it as they appear.
     } catch (e) {
@@ -144,6 +152,23 @@ class ShortsViewModel with ChangeNotifier {
     } catch (e) {
       print('Error editing comment in ViewModel: $e');
       rethrow;
+    }
+  }
+
+  Future<void> addShare(String shortId) async {
+    try {
+      final response = await _shortsService.addShare(shortId);
+      if (response['message'] == 'Shared successfully') {
+        // Update local share count
+        final index = _shorts.indexWhere((s) => s.id == shortId);
+        if (index != -1) {
+          final count = _shorts[index].totalShares;
+          _shorts[index] = _shorts[index].copyWith(totalShares: count + 1);
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      print('Error adding short share in ViewModel: $e');
     }
   }
 }

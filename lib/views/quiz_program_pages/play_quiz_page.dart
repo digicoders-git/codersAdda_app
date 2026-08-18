@@ -3,8 +3,10 @@ import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
+import 'package:coders_adda_app/utils/certificate_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:coders_adda_app/views/quiz_program_pages/quiz_review_page.dart';
 
 class PlayQuizPage extends StatefulWidget {
   final String quizId;
@@ -310,6 +312,33 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                     ),
                     const SizedBox(height: 10),
                   ],
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(dialogContext); // Close dialog
+                      Navigator.push(
+                        this.context,
+                        MaterialPageRoute(
+                          builder: (context) => QuizReviewPage(
+                            questions: _questions,
+                            userAnswers: _userAnswers,
+                          ),
+                        ),
+                      ).then((_) {
+                        Navigator.pop(this.context, true); // Close quiz page when returning
+                      });
+                    },
+                    icon: const Icon(Icons.rate_review, color: Color(0xFFFFD700)),
+                    label: const Text("Review Answers"),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFFFD700),
+                      side: const BorderSide(color: Color(0xFFFFD700)),
+                      minimumSize: const Size(double.infinity, 45),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {
                       Navigator.pop(dialogContext); // Pop Dialog
@@ -352,27 +381,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
   }
 
   Future<void> _downloadCertificate(String urlString) async {
-    try {
-      String resolvedUrl = urlString;
-      if (resolvedUrl.contains('localhost')) {
-        final uri = Uri.parse(resolvedUrl);
-        final baseUri = Uri.parse(ApiUrls.baseUrl);
-        resolvedUrl = resolvedUrl.replaceFirst('${uri.scheme}://${uri.host}:${uri.port}', '${baseUri.scheme}://${baseUri.host}:${baseUri.port}');
-      }
-      final Uri url = Uri.parse(resolvedUrl);
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Could not open certificate download link")),
-        );
-      }
-    } catch (e) {
-      debugPrint("Error launching url: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
-    }
+    await CertificateDownloader.downloadAndSave(context, urlString);
   }
 
   void _onOptionSelected(String optionKey) {

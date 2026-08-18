@@ -3,6 +3,7 @@ import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/veiw_model/shorts_viewmodel.dart';
 import 'package:coders_adda_app/views/shorts_pages/short_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
@@ -144,12 +145,13 @@ class _ShortsFullscreenPageState extends State<ShortsFullscreenPage> {
           SizedBox(height: AppSizer.deviceHeight2),
           _buildActionButton(
             context,
-            Icons.share,
+            CupertinoIcons.paperplane,
             '${short.totalShares}',
             Colors.white,
             () {
               // Share the app install link instead of the raw video URL
-              Share.share('Check out this short video on Coders Adda: ${short.caption}\n\nDownload the app now to watch:\nhttps://play.google.com/store/apps/details?id=digi.coders.codersadda');
+              viewModel.addShare(short.id);
+              Share.share('Check out this short video on Coders Adda: ${short.caption}\n\nWatch now:\nhttps://codersadda.digicoders.in/short?id=${short.id}\n\nOr download the app:\nhttps://play.google.com/store/apps/details?id=digi.coders.codersadda');
             },
           ),
           SizedBox(height: AppSizer.deviceHeight2),
@@ -229,25 +231,7 @@ class _ShortsFullscreenPageState extends State<ShortsFullscreenPage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                SizedBox(width: AppSizer.deviceWidth2),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSizer.deviceWidth2,
-                    vertical: AppSizer.deviceHeight0_5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    'Follow',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: AppSizer.deviceSp10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+
               ],
             ),
             SizedBox(height: AppSizer.deviceHeight1),

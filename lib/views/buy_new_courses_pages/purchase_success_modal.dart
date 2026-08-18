@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 
 class PurchaseSuccessModal extends StatelessWidget {
   final String title;
   final String itemType;
   final VoidCallback onGoToMyLearning;
   final List<String>? customBenefits;
+  final VoidCallback? onClose;
 
   const PurchaseSuccessModal({
     Key? key,
@@ -15,11 +18,17 @@ class PurchaseSuccessModal extends StatelessWidget {
     required this.itemType,
     required this.onGoToMyLearning,
     this.customBenefits,
+    this.onClose,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
+    return WillPopScope(
+      onWillPop: () async {
+        Provider.of<ProfileViewModel>(context, listen: false).fetchUserProfile();
+        return true;
+      },
+      child: Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
@@ -43,6 +52,7 @@ class PurchaseSuccessModal extends StatelessWidget {
             Container(
               width: AppSizer.deviceWidth25,
               height: AppSizer.deviceWidth25,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: AppColors.successColor.withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -60,7 +70,7 @@ class PurchaseSuccessModal extends StatelessWidget {
             Text(
               '🎉 Congratulations!',
               style: TextStyle(
-                fontSize: AppSizer.deviceSp24,
+                fontSize: AppSizer.deviceSp20,
                 fontWeight: FontWeight.bold,
                 color: AppColors.primaryColor,
               ),
@@ -114,7 +124,14 @@ class PurchaseSuccessModal extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      Provider.of<ProfileViewModel>(context, listen: false).fetchUserProfile();
+                      if (onClose != null) {
+                        onClose!();
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    },
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: AppColors.primaryColor),
                       padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
@@ -162,6 +179,7 @@ class PurchaseSuccessModal extends StatelessWidget {
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -243,6 +261,7 @@ class PurchaseSuccessModal extends StatelessWidget {
     required String itemType,
     required VoidCallback onGoToMyLearning,
     List<String>? customBenefits,
+    VoidCallback? onClose,
   }) {
     showDialog(
       context: context,
@@ -252,6 +271,7 @@ class PurchaseSuccessModal extends StatelessWidget {
         itemType: itemType,
         onGoToMyLearning: onGoToMyLearning,
         customBenefits: customBenefits,
+        onClose: onClose,
       ),
     );
   }

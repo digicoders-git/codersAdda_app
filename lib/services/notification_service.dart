@@ -122,17 +122,39 @@ class NotificationService {
   void _handleDeepLink(String actionLink) {
     if (actionLink.isEmpty) return;
     
-    final navigator = navigatorKey.currentState;
-    if (navigator == null) return;
+    // Retry mechanism for cold start (when navigatorKey is not ready yet)
+    _tryNavigate(actionLink, 0);
+  }
 
-    final context = navigatorKey.currentContext;
-    if (context == null) return;
+  void _tryNavigate(String actionLink, int attempts) {
+    if (attempts > 10) {
+      debugPrint('[DeepLink] Navigator never became ready. Aborting deep link.');
+      return;
+    }
+
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) {
+      // Navigator is not ready yet, wait and try again
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _tryNavigate(actionLink, attempts + 1);
+      });
+      return;
+    }
 
     // Use post-frame callback so app is ready to navigate
     WidgetsBinding.instance.addPostFrameCallback((_) {
       try {
-        if (actionLink.startsWith('/course-detail/')) {
-          final courseId = actionLink.replaceFirst('/course-detail/', '');
+        if (actionLink.startsWith('/course-detail/') || 
+            actionLink.startsWith('/course/') || 
+            actionLink.startsWith('/class-detail/') || 
+            actionLink.startsWith('/class/')) {
+          
+          String courseId = actionLink
+              .replaceFirst('/course-detail/', '')
+              .replaceFirst('/course/', '')
+              .replaceFirst('/class-detail/', '')
+              .replaceFirst('/class/', '');
+              
           navigator.push(MaterialPageRoute(builder: (_) => MyLearningCoursePlayer(courseId: courseId)));
           debugPrint('[DeepLink] Course detail: $courseId - opened course player');
         }

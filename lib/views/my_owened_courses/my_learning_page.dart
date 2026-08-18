@@ -7,19 +7,66 @@ import 'package:coders_adda_app/views/my_owened_courses/my_learning_player_page.
 import 'package:coders_adda_app/views/my_owened_pdf/offline_pdfs_page.dart' as coders_adda_app_offline_pdfs;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:coders_adda_app/views/navigation_class.dart';
 
-class MyLearningPage extends StatelessWidget {
+class MyLearningPage extends StatefulWidget {
   final int initialTabIndex;
 
   const MyLearningPage({super.key, this.initialTabIndex = 0});
+
+  @override
+  State<MyLearningPage> createState() => _MyLearningPageState();
+}
+
+class _MyLearningPageState extends State<MyLearningPage> with SingleTickerProviderStateMixin {
+  late MyLearningViewModel viewModel;
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    viewModel = MyLearningViewModel()..selectCategory(widget.initialTabIndex);
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
+    _tabController.addListener(_handleTabSelection);
+  }
+
+  void _handleTabSelection() {
+    if (_tabController.indexIsChanging || _tabController.index != viewModel.selectedCategoryIndex) {
+      viewModel.selectCategory(_tabController.index);
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => MyLearningViewModel()..selectCategory(initialTabIndex),
+    return ChangeNotifierProvider.value(
+      value: viewModel,
       child: Consumer<MyLearningViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
             appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  } else {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => MainNavigation()),
+                    );
+                  }
+                },
+              ),
               title: Text(
                 'My Learning',
                 style: TextStyle(
@@ -27,25 +74,50 @@ class MyLearningPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+              bottom: TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                labelColor: AppColors.primaryColor,
+                unselectedLabelColor: AppColors.onSurfaceVariant,
+                indicatorColor: AppColors.primaryColor,
+                tabs: const [
+                  Tab(text: 'Free Courses', icon: Icon(Icons.school)),
+                  Tab(text: 'Premium Courses', icon: Icon(Icons.workspace_premium)),
+                  Tab(text: 'Free E-Books', icon: Icon(Icons.menu_book)),
+                  Tab(text: 'Premium E-Books', icon: Icon(Icons.library_books)),
+                ],
+              ),
               actions: [
-                IconButton(
-                  icon: Icon(Icons.download_done, color: AppColors.primaryColor),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => coders_adda_app_offline_pdfs.OfflinePdfsPage()),
-                    );
-                  },
-                ),
+                // IconButton(
+                //   icon: Icon(Icons.download_done, color: AppColors.primaryColor),
+                //   onPressed: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(builder: (context) => coders_adda_app_offline_pdfs.OfflinePdfsPage()),
+                //     );
+                //   },
+                // ),
               ],
             ),
-            body: Column(
+            body: TabBarView(
+              controller: _tabController,
               children: [
-                // Tab Buttons
-                _buildTabButtons(context, viewModel),
-
-                // Content Area
-                Expanded(child: _buildSelectedContent(context, viewModel)),
+                RefreshIndicator(
+                  onRefresh: () => viewModel.fetchMyLibrary(),
+                  child: _buildCoursesList(context, viewModel.freeCourses, 'Free Courses'),
+                ),
+                RefreshIndicator(
+                  onRefresh: () => viewModel.fetchMyLibrary(),
+                  child: _buildCoursesList(context, viewModel.premiumCourses, 'Premium Courses'),
+                ),
+                RefreshIndicator(
+                  onRefresh: () => viewModel.fetchMyLibrary(),
+                  child: _buildPdfsList(context, viewModel.freePdfs, 'Free E-Books'),
+                ),
+                RefreshIndicator(
+                  onRefresh: () => viewModel.fetchMyLibrary(),
+                  child: _buildPdfsList(context, viewModel.premiumPdfs, 'Premium E-Books'),
+                ),
               ],
             ),
           );
@@ -54,108 +126,7 @@ class MyLearningPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTabButtons(BuildContext context, MyLearningViewModel viewModel) {
-    final List<TabItem> tabs = [
-      TabItem(title: 'Free Courses', icon: Icons.school),
-      TabItem(title: 'Premium Courses', icon: Icons.workspace_premium),
-      TabItem(title: 'Free E-Books', icon: Icons.menu_book),
-      TabItem(title: 'Premium E-Books', icon: Icons.library_books),
-    ];
-
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSizer.deviceWidth4,
-        vertical: AppSizer.deviceHeight2,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 2)),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: List.generate(tabs.length, (index) {
-            final tab = tabs[index];
-            final isSelected = viewModel.selectedCategoryIndex == index;
-            return Padding(
-              padding: EdgeInsets.only(right: AppSizer.deviceWidth3),
-              child: ElevatedButton(
-                onPressed: () {
-                  viewModel.selectCategory(index);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isSelected
-                      ? AppColors.primaryColor
-                      : Colors.grey.shade100,
-                  foregroundColor: isSelected
-                      ? Colors.white
-                      : AppColors.textColor,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSizer.deviceWidth4,
-                    vertical: AppSizer.deviceHeight2,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
-                  ),
-                  elevation: isSelected ? 2 : 0,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(tab.icon, size: AppSizer.deviceSp16),
-                    SizedBox(width: AppSizer.deviceWidth2),
-                    Text(
-                      tab.title,
-                      style: TextStyle(
-                        fontSize: AppSizer.deviceSp14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSelectedContent(
-    BuildContext context,
-    MyLearningViewModel viewModel,
-  ) {
-    switch (viewModel.selectedCategoryIndex) {
-      case 0:
-        return _buildCoursesList(
-          context,
-          viewModel.freeCourses,
-          'Free Courses',
-        );
-      case 1:
-        return _buildCoursesList(
-          context,
-          viewModel.premiumCourses,
-          'Premium Courses',
-        );
-      case 2:
-        return _buildPdfsList(context, viewModel.freePdfs, 'Free E-Books');
-      case 3:
-        return _buildPdfsList(
-          context,
-          viewModel.premiumPdfs,
-          'Premium E-Books',
-        );
-      default:
-        return _buildCoursesList(
-          context,
-          viewModel.freeCourses,
-          'Free Courses',
-        );
-    }
-  }
+  // _buildTabButtons and _buildSelectedContent removed as we now use TabBar and TabBarView
 
   Widget _buildCoursesList(
     BuildContext context,
@@ -164,6 +135,7 @@ class MyLearningPage extends StatelessWidget {
   ) {
     if (courses.isEmpty) {
       return _buildEmptyState(
+        context: context,
         icon: Icons.video_library,
         title: 'No $title',
         message: 'Explore our courses and start learning!',
@@ -171,6 +143,7 @@ class MyLearningPage extends StatelessWidget {
     }
 
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.all(AppSizer.deviceWidth4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -583,6 +556,7 @@ class MyLearningPage extends StatelessWidget {
   ) {
     if (pdfs.isEmpty) {
       return _buildEmptyState(
+        context: context,
         icon: Icons.picture_as_pdf,
         title: 'No $title',
         message: 'No PDFs available in this category',
@@ -590,6 +564,7 @@ class MyLearningPage extends StatelessWidget {
     }
 
     return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.all(AppSizer.deviceWidth4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -624,10 +599,6 @@ class MyLearningPage extends StatelessWidget {
   }
 
   Widget _buildPdfCard(BuildContext context, MyLearningPdf pdf) {
-    // Demo data for additional details
-    final int pageCount = 45;
-    final double rating = 4.5;
-    final int totalRatings = 128;
 
     return GestureDetector(
       onTap: () {
@@ -771,7 +742,7 @@ class MyLearningPage extends StatelessWidget {
                                     ),
                                     SizedBox(width: AppSizer.deviceWidth1),
                                     Text(
-                                      rating.toString(),
+                                      pdf.rating.toStringAsFixed(1),
                                       style: TextStyle(
                                         fontSize: AppSizer.deviceSp13,
                                         fontWeight: FontWeight.w600,
@@ -784,7 +755,7 @@ class MyLearningPage extends StatelessWidget {
 
                                 // Total Ratings
                                 Text(
-                                  '($totalRatings)',
+                                  '(${pdf.totalReviews})',
                                   style: TextStyle(
                                     fontSize: AppSizer.deviceSp12,
                                     color: AppColors.onSurfaceVariant,
@@ -807,7 +778,7 @@ class MyLearningPage extends StatelessWidget {
                             ),
                             SizedBox(width: AppSizer.deviceWidth1),
                             Text(
-                              '${(totalRatings * 5).toInt()}+ views',
+                              '${pdf.views}+ views',
                               style: TextStyle(
                                 fontSize: AppSizer.deviceSp12,
                                 color: AppColors.onSurfaceVariant,
@@ -851,31 +822,39 @@ class MyLearningPage extends StatelessWidget {
   }
 
   Widget _buildEmptyState({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String message,
   }) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: AppSizer.deviceSp64, color: Colors.grey),
-          SizedBox(height: AppSizer.deviceHeight3),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: AppSizer.deviceSp18,
-              color: Colors.grey,
-              fontWeight: FontWeight.w600,
+    return SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: AppSizer.deviceSp64, color: Colors.grey),
+            SizedBox(height: AppSizer.deviceHeight3),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: AppSizer.deviceSp18,
+                color: Colors.grey,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          SizedBox(height: AppSizer.deviceHeight2),
-          Text(
-            message,
-            style: TextStyle(fontSize: AppSizer.deviceSp14, color: Colors.grey),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            SizedBox(height: AppSizer.deviceHeight2),
+            Text(
+              message,
+              style: TextStyle(
+                fontSize: AppSizer.deviceSp14,
+                color: Colors.grey.shade400,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

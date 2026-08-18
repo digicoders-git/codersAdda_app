@@ -167,73 +167,85 @@ class _AutoSlidingCourseListState extends State<AutoSlidingCourseList> {
                         Row(
                           children: [
                             // Rating
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: AppSizer.deviceWidth1_5,
-                                vertical: AppSizer.deviceHeight0_5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.buttonColor.withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.star,
-                                    color: AppColors.buttonColor,
-                                    size: AppSizer.deviceSp16,
-                                  ),
-                                  SizedBox(width: 2),
-                                  Text(
-                                    '4.7',
-                                    style: TextStyle(
-                                      fontSize: AppSizer.deviceSp14,
-                                      fontWeight: FontWeight.bold,
+                            Flexible(
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSizer.deviceWidth1_5,
+                                  vertical: AppSizer.deviceHeight0_5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.buttonColor.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.star,
                                       color: AppColors.buttonColor,
+                                      size: AppSizer.deviceSp16,
                                     ),
-                                  ),
-                                  SizedBox(width: 2),
-                                  Text(
-                                    '(1.8k)',
-                                    style: TextStyle(
-                                      fontSize: AppSizer.deviceSp12,
-                                      color: AppColors.onSurfaceVariant,
+                                    SizedBox(width: 2),
+                                    Flexible(
+                                      child: Text(
+                                        course.rating > 0 ? course.rating.toStringAsFixed(1) : '0.0',
+                                        style: TextStyle(
+                                          fontSize: AppSizer.deviceSp14,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.buttonColor,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    SizedBox(width: 2),
+                                    Text(
+                                      '(${course.reviews.length})',
+                                      style: TextStyle(
+                                        fontSize: AppSizer.deviceSp12,
+                                        color: AppColors.onSurfaceVariant,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             SizedBox(width: AppSizer.deviceWidth2),
 
                             // Duration
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: AppSizer.deviceWidth1_5,
-                                vertical: AppSizer.deviceHeight0_5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.buttonColor.withOpacity(0.3),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.access_time_filled_outlined,
-                                    color: AppColors.primaryColor,
-                                    size: AppSizer.deviceSp12,
-                                  ),
-                                  SizedBox(width: 2),
-                                  Text(
-                                    '8h',
-                                    style: TextStyle(
-                                      fontSize: AppSizer.deviceSp14,
-                                      fontWeight: FontWeight.w600,
+                            Flexible(
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: AppSizer.deviceWidth1_5,
+                                  vertical: AppSizer.deviceHeight0_5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.buttonColor.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.access_time_filled_outlined,
                                       color: AppColors.primaryColor,
+                                      size: AppSizer.deviceSp12,
                                     ),
-                                  ),
-                                ],
+                                    SizedBox(width: 2),
+                                    Flexible(
+                                      child: Text(
+                                        course.duration.isNotEmpty ? course.duration : '0h',
+                                        style: TextStyle(
+                                          fontSize: AppSizer.deviceSp14,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.primaryColor,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],

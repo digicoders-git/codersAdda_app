@@ -44,6 +44,15 @@ class _SubscriptionDetailPageState extends State<SubscriptionDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Subscription Details'),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () => Navigator.pop(context),
+              )
+            : IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+              ),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())

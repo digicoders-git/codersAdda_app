@@ -83,6 +83,11 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
             context,
             title: widget.plan.name,
             itemType: 'subscription',
+            customBenefits: widget.plan.features,
+            onClose: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
             onGoToMyLearning: () {
               Navigator.pushAndRemoveUntil(
                 context,
@@ -127,10 +132,15 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
         ),
         backgroundColor: AppColors.cardColor,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () => Navigator.pop(context),
+              )
+            : IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+              ),
       ),
       body: Column(
         children: [

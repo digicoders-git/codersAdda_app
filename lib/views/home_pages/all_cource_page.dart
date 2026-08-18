@@ -6,6 +6,7 @@ import 'package:coders_adda_app/veiw_model/course_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:coders_adda_app/views/navigation_class.dart';
 
 class AllCoursePage extends StatefulWidget {
   final CourseViewModel viewModel;
@@ -33,7 +34,7 @@ class _CoursePageState extends State<AllCoursePage>
   }
 
   void _handleTabSelection() {
-    if (_tabController.indexIsChanging) {
+    if (_tabController.indexIsChanging || _tabController.index != widget.viewModel.selectedTabIndex) {
       widget.viewModel.setSelectedTabIndex(_tabController.index);
     }
   }
@@ -50,6 +51,19 @@ class _CoursePageState extends State<AllCoursePage>
       create: (context) => widget.viewModel,
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => MainNavigation()),
+                );
+              }
+            },
+          ),
           title: Text(
             'All Courses',
             style: TextStyle(
@@ -79,9 +93,18 @@ class _CoursePageState extends State<AllCoursePage>
                 Expanded(
                   child: viewModel.isLoading
                       ? Center(child: CircularProgressIndicator())
-                      : RefreshIndicator(
-                          onRefresh: () => viewModel.fetchCourses(),
-                          child: _buildCoursesGrid(context, viewModel),
+                      : TabBarView(
+                          controller: _tabController,
+                          children: [
+                            RefreshIndicator(
+                              onRefresh: () => viewModel.fetchCourses(),
+                              child: _buildCoursesGrid(context, viewModel.freeCourses),
+                            ),
+                            RefreshIndicator(
+                              onRefresh: () => viewModel.fetchCourses(),
+                              child: _buildCoursesGrid(context, viewModel.premiumCourses),
+                            ),
+                          ],
                         ),
                 ),
               ],
@@ -104,43 +127,52 @@ class _CoursePageState extends State<AllCoursePage>
           final isSelected =
               viewModel.selectedTechnology == category.technology;
 
-          return Container(
-            margin: EdgeInsets.only(
-              right: AppSizer.deviceWidth2,
-              top: AppSizer.deviceHeight1,
-              bottom: AppSizer.deviceHeight1,
-            ),
-            child: FilterChip(
-              label: Text(
-                '${category.name} (${category.courseCount})',
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp14,
-                  color: isSelected ? Colors.white : AppColors.textColor,
+          return Builder(
+            builder: (chipContext) {
+              return Container(
+                margin: EdgeInsets.only(
+                  right: AppSizer.deviceWidth2,
+                  top: AppSizer.deviceHeight1,
+                  bottom: AppSizer.deviceHeight1,
                 ),
-              ),
-              selected: isSelected,
-              backgroundColor: Colors.white,
-              selectedColor: AppColors.primaryColor,
-              checkmarkColor: Colors.white,
-              shape: StadiumBorder(
-                side: BorderSide(
-                  color: isSelected
-                      ? AppColors.primaryColor
-                      : AppColors.outline,
+                child: FilterChip(
+                  label: Text(
+                    '${category.name} (${category.courseCount})',
+                    style: TextStyle(
+                      fontSize: AppSizer.deviceSp14,
+                      color: isSelected ? Colors.white : AppColors.textColor,
+                    ),
+                  ),
+                  selected: isSelected,
+                  backgroundColor: Colors.white,
+                  selectedColor: AppColors.primaryColor,
+                  checkmarkColor: Colors.white,
+                  shape: StadiumBorder(
+                    side: BorderSide(
+                      color: isSelected
+                          ? AppColors.primaryColor
+                          : AppColors.outline,
+                    ),
+                  ),
+                  onSelected: (selected) {
+                    viewModel.setSelectedTechnology(category.technology);
+                    Scrollable.ensureVisible(
+                      chipContext,
+                      alignment: 0.5,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  },
                 ),
-              ),
-              onSelected: (selected) {
-                viewModel.setSelectedTechnology(category.technology);
-              },
-            ),
+              );
+            },
           );
         },
       ),
     );
   }
 
-  Widget _buildCoursesGrid(BuildContext context, CourseViewModel viewModel) {
-    final courses = viewModel.filteredCourses;
+  Widget _buildCoursesGrid(BuildContext context, List<Course> courses) {
 
     if (courses.isEmpty) {
       return SingleChildScrollView(
@@ -441,7 +473,7 @@ class _CoursePageState extends State<AllCoursePage>
                           Expanded(
                             child: Consumer<ProfileViewModel>(
                               builder: (context, profileVM, child) {
-                                final isPurchased = profileVM.user?.purchaseCourseIds.contains(course.id) ?? false;
+                                final isPurchased = (profileVM.user?.purchaseCourseIds.contains(course.id) ?? false) || (profileVM.user?.subscriptionCourseIds.contains(course.id) ?? false);
                                 
                                 if (isPurchased) {
                                   return Column(

@@ -6,66 +6,112 @@ import 'package:coders_adda_app/veiw_model/pdf_viewmodel.dart';
 import 'package:coders_adda_app/views/buy_new_pdf_pages/pdf_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:coders_adda_app/views/navigation_class.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 
-class PdfPage extends StatelessWidget {
-  final PdfViewModel viewModel = PdfViewModel();
+class PdfPage extends StatefulWidget {
+  @override
+  State<PdfPage> createState() => _PdfPageState();
+}
+
+class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
+  late PdfViewModel viewModel;
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    viewModel = PdfViewModel();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabSelection);
+  }
+
+  void _handleTabSelection() {
+    if (_tabController.indexIsChanging || _tabController.index != viewModel.selectedTabIndex) {
+      viewModel.setSelectedTabIndex(_tabController.index);
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) => viewModel,
-      child: DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text(
-              'PDF Resources',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            bottom: TabBar(
-              labelColor: AppColors.primaryColor,
-              unselectedLabelColor: AppColors.onSurfaceVariant,
-              indicatorColor: AppColors.primaryColor,
-              tabs: [
-                Tab(text: 'Free PDFs'),
-                Tab(text: 'Premium PDFs'),
-              ],
-              onTap: (index) {
-                viewModel.setSelectedTabIndex(index);
-              },
-            ),
-          ),
-          body: Consumer<PdfViewModel>(
-            builder: (context, viewModel, child) {
-              return Stack(
-                children: [
-                  RefreshIndicator(
-                    onRefresh: () => viewModel.refreshData(),
-                    child: Column(
-                      children: [
-                        _buildCategoryFilter(viewModel),
-                        
-                        Expanded(
-                          child: _buildPdfsList(context, viewModel),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (viewModel.isLoading)
-                    Container(
-                      color: Colors.black.withOpacity(0.1),
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
-                ],
-              );
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => MainNavigation()),
+                );
+              }
             },
           ),
+          title: Text(
+            'PDF Resources',
+            style: TextStyle(
+              fontSize: AppSizer.deviceSp20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          bottom: TabBar(
+            controller: _tabController,
+            labelColor: AppColors.primaryColor,
+            unselectedLabelColor: AppColors.onSurfaceVariant,
+            indicatorColor: AppColors.primaryColor,
+            tabs: [
+              Tab(text: 'Free PDFs'),
+              Tab(text: 'Premium PDFs'),
+            ],
+            onTap: (index) {
+              viewModel.setSelectedTabIndex(index);
+            },
+          ),
+        ),
+        body: Consumer<PdfViewModel>(
+          builder: (context, viewModel, child) {
+            return Stack(
+              children: [
+                Column(
+                  children: [
+                    _buildCategoryFilter(viewModel),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          RefreshIndicator(
+                            onRefresh: () => viewModel.refreshData(),
+                            child: _buildPdfsList(context, viewModel.freePdfs),
+                          ),
+                          RefreshIndicator(
+                            onRefresh: () => viewModel.refreshData(),
+                            child: _buildPdfsList(context, viewModel.paidPdfs),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (viewModel.isLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.1),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -82,42 +128,50 @@ class PdfPage extends StatelessWidget {
           final category = viewModel.categories[index];
           final isSelected = viewModel.selectedCategoryId == category.id;
           
-          return Container(
-            margin: EdgeInsets.only(
-              right: AppSizer.deviceWidth2,
-              top: AppSizer.deviceHeight1,
-              bottom: AppSizer.deviceHeight1,
-            ),
-            child: FilterChip(
-              label: Text(
-                '${category.name} (${category.ebookCount})',
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp14,
-                  color: isSelected ? Colors.white : AppColors.textColor,
+          return Builder(
+            builder: (chipContext) {
+              return Container(
+                margin: EdgeInsets.only(
+                  right: AppSizer.deviceWidth2,
+                  top: AppSizer.deviceHeight1,
+                  bottom: AppSizer.deviceHeight1,
                 ),
-              ),
-              selected: isSelected,
-              backgroundColor: Colors.white,
-              selectedColor: AppColors.primaryColor,
-              checkmarkColor: Colors.white,
-              shape: StadiumBorder(
-                side: BorderSide(
-                  color: isSelected ? AppColors.primaryColor : AppColors.outline,
+                child: FilterChip(
+                  label: Text(
+                    '${category.name} (${category.ebookCount})',
+                    style: TextStyle(
+                      fontSize: AppSizer.deviceSp14,
+                      color: isSelected ? Colors.white : AppColors.textColor,
+                    ),
+                  ),
+                  selected: isSelected,
+                  backgroundColor: Colors.white,
+                  selectedColor: AppColors.primaryColor,
+                  checkmarkColor: Colors.white,
+                  shape: StadiumBorder(
+                    side: BorderSide(
+                      color: isSelected ? AppColors.primaryColor : AppColors.outline,
+                    ),
+                  ),
+                  onSelected: (selected) {
+                    viewModel.setSelectedCategory(category);
+                    Scrollable.ensureVisible(
+                      chipContext,
+                      alignment: 0.5,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  },
                 ),
-              ),
-              onSelected: (selected) {
-                viewModel.setSelectedCategory(category);
-              },
-            ),
+              );
+            },
           );
         },
       ),
     );
   }
 
-  Widget _buildPdfsList(BuildContext context, PdfViewModel viewModel) {
-    final pdfs = viewModel.filteredPdfs;
-    
+  Widget _buildPdfsList(BuildContext context, List<PdfItem> pdfs) {
     if (pdfs.isEmpty) {
       return Center(
         child: Column(

@@ -4,6 +4,7 @@ import 'package:coders_adda_app/views/home_pages/home_page.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 import 'package:coders_adda_app/views/profile_pages/profile_page.dart';
 import 'package:coders_adda_app/views/shorts_pages/shorts_fullscreen_page.dart';
+import 'package:coders_adda_app/views/downloaded_pdfs/downloaded_pdfs_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
@@ -28,7 +29,8 @@ class _MainNavigationState extends State<MainNavigation> {
   final List<Widget> _pages = [
     HomePage(),
     MyLearningPage(),
-    Container(),
+    Container(), // Shorts
+    const DownloadedPdfsPage(),
     ProfilePage(),
   ];
 
@@ -74,10 +76,16 @@ class _MainNavigationState extends State<MainNavigation> {
                 isSpecial: true
               ),
               _buildNavItem(
+                icon: Icons.download_outlined, 
+                activeIcon: Icons.download, 
+                label: 'Downloads', 
+                index: 3
+              ),
+              _buildNavItem(
                 icon: Icons.person_outlined, 
                 activeIcon: Icons.person, 
                 label: 'Profile', 
-                index: 3
+                index: 4
               ),
             ],
           ),
@@ -140,7 +148,7 @@ class _MainNavigationState extends State<MainNavigation> {
             splashColor: AppColors.primaryColor.withOpacity(0.2),
             highlightColor: AppColors.primaryColor.withOpacity(0.1),
             child: Container(
-              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 2),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -188,12 +196,16 @@ class _MainNavigationState extends State<MainNavigation> {
                     ],
                   ),
                   SizedBox(height: 4),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: isActive ? Colors.white : AppColors.textColor,
-                      fontSize: 12,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: isActive ? Colors.white : AppColors.textColor,
+                        fontSize: 11,
+                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                      maxLines: 1,
                     ),
                   ),
                 ],

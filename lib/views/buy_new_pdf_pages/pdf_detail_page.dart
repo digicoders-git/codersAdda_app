@@ -9,6 +9,8 @@ import 'package:coders_adda_app/services/pdf_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
+import 'package:coders_adda_app/services/download_service.dart';
+import 'package:coders_adda_app/services/api_urls.dart';
 
 class PdfDetailPage extends StatefulWidget {
   final PdfItem pdf;
@@ -23,6 +25,63 @@ class _PdfDetailPageState extends State<PdfDetailPage> {
   late PdfItem currentPdf;
   bool isLoading = true;
   final PdfService _pdfService = PdfService();
+  final DownloadService _downloadService = DownloadService();
+  bool _isDownloading = false;
+  double _progress = 0;
+
+  Future<void> _downloadPdf() async {
+    if (currentPdf.downloadUrl.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid download URL')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isDownloading = true;
+      _progress = 0;
+    });
+
+    String url = currentPdf.downloadUrl;
+    if (url.startsWith('/')) {
+      url = '${ApiUrls.baseUrl}$url';
+    } else if (!url.startsWith('http')) {
+      url = '${ApiUrls.baseUrl}/$url';
+    }
+
+    final savePath = await _downloadService.downloadPdf(
+      id: currentPdf.id,
+      title: currentPdf.title,
+      url: url,
+      type: 'ebook',
+      size: currentPdf.fileSize,
+      onReceiveProgress: (count, total) {
+        if (total != -1) {
+          setState(() {
+            _progress = count / total;
+          });
+        }
+      },
+    );
+
+    setState(() {
+      _isDownloading = false;
+    });
+
+    if (savePath == 'Already downloaded') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This E-Book is already downloaded.')),
+      );
+    } else if (savePath != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('E-Book downloaded successfully! Check Downloads.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to download E-Book.')),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -382,35 +441,63 @@ class _PdfDetailPageState extends State<PdfDetailPage> {
               final isPurchased = profileViewModel.user?.purchaseEbookIds.contains(currentPdf.id) ?? false;
               
               if (isPurchased) {
-                return FilledButton(
-                  onPressed: () {
-                    // Already purchased - Navigate to My Ebooks
-                    final tabIndex = PurchaseSuccessModal.getTabIndexForItemType('ebook', true);
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
-                      (route) => route.isFirst,
-                    );
-                  },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.successColor,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.check_circle_outline, color: Colors.white, size: AppSizer.deviceSp20),
-                      SizedBox(width: AppSizer.deviceWidth2),
-                      Text(
-                        'UNLOCKED (GO TO LIBRARY)',
-                        style: TextStyle(
-                          fontSize: AppSizer.deviceSp16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FilledButton(
+                      onPressed: () {
+                        // Already purchased - Navigate to My Ebooks
+                        final tabIndex = PurchaseSuccessModal.getTabIndexForItemType('ebook', currentPdf.isFree);
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
+                          (route) => route.isFirst,
+                        );
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.successColor,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
+                        minimumSize: const Size(double.infinity, 50),
                       ),
-                    ],
-                  ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_circle_outline, color: Colors.white, size: AppSizer.deviceSp20),
+                          SizedBox(width: AppSizer.deviceWidth2),
+                          Text(
+                            'UNLOCKED (GO TO LIBRARY)',
+                            style: TextStyle(
+                              fontSize: AppSizer.deviceSp16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // SizedBox(height: AppSizer.deviceHeight1),
+                    // _isDownloading
+                    //     ? Column(
+                    //         children: [
+                    //           LinearProgressIndicator(
+                    //             value: _progress > 0 ? _progress : null,
+                    //             color: AppColors.primaryColor,
+                    //           ),
+                    //           SizedBox(height: 4),
+                    //           Text('Downloading... ${(_progress * 100).toInt()}%', style: TextStyle(fontSize: 12)),
+                    //         ],
+                    //       )
+                    //     : OutlinedButton.icon(
+                    //         onPressed: _downloadPdf,
+                    //         icon: const Icon(Icons.download),
+                    //         label: const Text('DOWNLOAD E-BOOK'),
+                    //         style: OutlinedButton.styleFrom(
+                    //           foregroundColor: AppColors.primaryColor,
+                    //           side: BorderSide(color: AppColors.primaryColor),
+                    //           minimumSize: const Size(double.infinity, 50),
+                    //         ),
+                    //       ),
+                  ],
                 );
               }
 
@@ -497,8 +584,12 @@ class _PdfDetailPageState extends State<PdfDetailPage> {
             context,
             title: currentPdf.title,
             itemType: 'ebook',
+            onClose: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
             onGoToMyLearning: () {
-              final tabIndex = PurchaseSuccessModal.getTabIndexForItemType('ebook', true);
+              final tabIndex = PurchaseSuccessModal.getTabIndexForItemType('ebook', currentPdf.isFree);
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),

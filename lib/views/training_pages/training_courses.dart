@@ -28,6 +28,15 @@ class TrainingCourses extends StatelessWidget {
           backgroundColor: AppColors.cardColor,
           elevation: 0,
           centerTitle: true,
+          leading: Navigator.canPop(context)
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                  onPressed: () => Navigator.pop(context),
+                )
+              : IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                  onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+                ),
         ),
         body: Consumer<TrainingCoursesViewModel>(
           builder: (context, viewModel, child) {

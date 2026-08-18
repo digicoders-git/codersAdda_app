@@ -77,6 +77,15 @@ class _WalletsPageState extends State<WalletsPage> {
         elevation: 0,
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () => Navigator.pop(context),
+              )
+            : IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+              ),
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: AppColors.primaryColor))

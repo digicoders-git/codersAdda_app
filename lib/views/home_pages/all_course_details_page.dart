@@ -8,6 +8,7 @@ import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_player_page.dart';
 import 'package:coders_adda_app/views/my_owened_courses/lecture_video_player_page.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
+import 'package:coders_adda_app/veiw_model/wishlist_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -39,9 +40,19 @@ class AllCourseDetailPage extends StatelessWidget {
                             ),
                             pinned: true,
                             actions: [
-                              IconButton(
-                                icon: const Icon(Icons.favorite_border),
-                                onPressed: () {},
+                              Consumer<WishlistViewModel>(
+                                builder: (context, wishlistVM, child) {
+                                  final isFav = wishlistVM.isFavorite(currentCourse.id);
+                                  return IconButton(
+                                    icon: Icon(
+                                      isFav ? Icons.favorite : Icons.favorite_border,
+                                      color: isFav ? Colors.red : null,
+                                    ),
+                                    onPressed: () {
+                                      wishlistVM.toggleFavorite(currentCourse.id);
+                                    },
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -277,11 +288,12 @@ class AllCourseDetailPage extends StatelessWidget {
         Text(course.description, style: TextStyle(fontSize: AppSizer.deviceSp15, color: AppColors.onSurfaceVariant, height: 1.6)),
         SizedBox(height: AppSizer.deviceHeight2),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStatItem('${course.totalLessons}', 'Lessons'),
-            SizedBox(width: AppSizer.deviceWidth4),
-            _buildStatItem(course.duration, 'Duration'),
-            SizedBox(width: AppSizer.deviceWidth4),
+            Expanded(child: _buildStatItem('${course.totalLessons}', 'Lessons')),
+            SizedBox(width: AppSizer.deviceWidth2),
+            Expanded(child: _buildStatItem(course.duration, 'Duration')),
+            SizedBox(width: AppSizer.deviceWidth2),
             Expanded(child: _buildStatItemLong(course.technology, 'Tech')),
           ],
         ),
@@ -291,6 +303,7 @@ class AllCourseDetailPage extends StatelessWidget {
 
   Widget _buildStatItem(String value, String label) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           value,
@@ -311,7 +324,7 @@ class AllCourseDetailPage extends StatelessWidget {
       children: [
         Text(
           value,
-          style: TextStyle(fontSize: AppSizer.deviceSp13, fontWeight: FontWeight.bold, color: AppColors.primaryColor),
+          style: TextStyle(fontSize: AppSizer.deviceSp16, fontWeight: FontWeight.bold, color: AppColors.primaryColor),
           overflow: TextOverflow.ellipsis,
           maxLines: 2,
         ),

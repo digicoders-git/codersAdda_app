@@ -188,7 +188,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
       if (response != null && response['success'] == true) {
         _subjectController.clear();
         _messageController.clear();
-        _fetchMyTickets(); // Refresh my tickets list
+        await _fetchMyTickets(); // Refresh my tickets list
 
         showDialog(
           context: context,
@@ -642,7 +642,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
         AppSizer.deviceWidth4,
         AppSizer.deviceHeight1,
         AppSizer.deviceWidth4,
-        AppSizer.deviceHeight3,
+        AppSizer.deviceHeight1_5,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -945,7 +945,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
+        padding: EdgeInsets.all(AppSizer.deviceWidth3),
         child: Form(
           key: _formKey,
           child: Column(
@@ -999,7 +999,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                   if (val != null) setState(() => _selectedCategory = val);
                 },
               ),
-              SizedBox(height: AppSizer.deviceHeight2),
+              SizedBox(height: AppSizer.deviceHeight1_5),
               Text(
                 'Subject',
                 style: TextStyle(
@@ -1021,7 +1021,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                   ),
                 ),
               ),
-              SizedBox(height: AppSizer.deviceHeight2),
+              SizedBox(height: AppSizer.deviceHeight1_5),
               Text(
                 'Description / Message',
                 style: TextStyle(
@@ -1033,7 +1033,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
               SizedBox(height: AppSizer.deviceHeight0_5),
               TextFormField(
                 controller: _messageController,
-                maxLines: 4,
+                maxLines: 3,
                 validator: (val) => val == null || val.trim().isEmpty ? 'Please describe your query' : null,
                 decoration: InputDecoration(
                   hintText: 'Explain your question or problem in detail...',
@@ -1041,14 +1041,14 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                   contentPadding: EdgeInsets.all(AppSizer.deviceWidth3),
                 ),
               ),
-              SizedBox(height: AppSizer.deviceHeight2_5),
+              SizedBox(height: AppSizer.deviceHeight1_5),
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: _isSubmitting ? null : _submitSupportTicket,
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
-                    padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
+                    padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   child: _isSubmitting

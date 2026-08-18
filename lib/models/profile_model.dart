@@ -25,7 +25,9 @@ class UserProfile {
   final int completedCount;
   final int progressPercentage;
   final bool hasActiveSubscription;
+  final String activeSubscriptionName;
   final List<String> subscriptionCourseIds;
+  final List<Map<String, dynamic>> purchaseSubscriptions;
   final List<Map<String, dynamic>> purchaseJobs;
 
   int get calculatedProgressPercentage {
@@ -72,7 +74,9 @@ class UserProfile {
     this.completedCount = 0,
     this.progressPercentage = 0,
     this.hasActiveSubscription = false,
+    this.activeSubscriptionName = '',
     this.subscriptionCourseIds = const [],
+    this.purchaseSubscriptions = const [],
     this.purchaseJobs = const [],
   });
 
@@ -119,10 +123,10 @@ class UserProfile {
           .where((id) => id.isNotEmpty)
           .toList() ?? [],
       isAmbassador: user['isAmbassador'] ?? false,
-      completedCount: (json['user']?['quizCertificates'] as List?)?.length ?? 0,
+      completedCount: (json['user']?['courseCertificates'] as List?)?.length ?? 0,
       progressPercentage: (() {
         int total = (user['purchaseCourses'] as List?)?.length ?? 0;
-        int completed = (json['user']?['quizCertificates'] as List?)?.length ?? 0;
+        int completed = (json['user']?['courseCertificates'] as List?)?.length ?? 0;
         return total > 0 ? ((completed / (total > completed ? total : completed)) * 100).toInt().clamp(0, 100) : 0;
       })(),
       hasActiveSubscription: (() {
@@ -130,8 +134,11 @@ class UserProfile {
         if (subs == null || subs.isEmpty) return false;
         final now = DateTime.now();
         for (var sub in subs) {
-          if (sub['status'] == 'active') {
-            final endDate = DateTime.tryParse(sub['endDate'] ?? '');
+          final status = sub['status'] ?? 'active';
+          if (status == 'active') {
+            final endDateStr = sub['endDate'];
+            if (endDateStr == null) return true; // Assume lifetime if no end date
+            final endDate = DateTime.tryParse(endDateStr);
             if (endDate != null && endDate.isAfter(now)) {
               return true;
             }
@@ -139,17 +146,39 @@ class UserProfile {
         }
         return false;
       })(),
+      activeSubscriptionName: (() {
+        final subs = user['purchaseSubscriptions'] as List?;
+        if (subs == null || subs.isEmpty) return '';
+        final now = DateTime.now();
+        for (var sub in subs) {
+          final status = sub['status'] ?? 'active';
+          if (status == 'active') {
+            final endDateStr = sub['endDate'];
+            final endDate = endDateStr != null ? DateTime.tryParse(endDateStr) : null;
+            if (endDateStr == null || (endDate != null && endDate.isAfter(now))) {
+              final subData = sub['subscription'];
+              if (subData != null && subData is Map && subData['planType'] != null) {
+                return subData['planType'].toString();
+              }
+              return 'Pro Member';
+            }
+          }
+        }
+        return '';
+      })(),
       subscriptionCourseIds: (() {
         final subs = user['purchaseSubscriptions'] as List?;
         if (subs == null || subs.isEmpty) return <String>[];
         final now = DateTime.now();
         List<String> included = [];
         for (var sub in subs) {
-          if (sub['status'] == 'active') {
-            final endDate = DateTime.tryParse(sub['endDate'] ?? '');
-            if (endDate != null && endDate.isAfter(now)) {
+          final status = sub['status'] ?? 'active';
+          if (status == 'active') {
+            final endDateStr = sub['endDate'];
+            final endDate = endDateStr != null ? DateTime.tryParse(endDateStr) : null;
+            if (endDateStr == null || (endDate != null && endDate.isAfter(now))) {
               final subData = sub['subscription'];
-              if (subData != null && subData['includedCourses'] != null) {
+              if (subData != null && subData is Map && subData['includedCourses'] != null) {
                 final courses = subData['includedCourses'] as List;
                 included.addAll(courses.map((c) => (c is Map) ? c['_id']?.toString() ?? '' : c.toString()));
               }
@@ -157,6 +186,11 @@ class UserProfile {
           }
         }
         return included;
+      })(),
+      purchaseSubscriptions: (() {
+        final subs = user['purchaseSubscriptions'] as List?;
+        if (subs == null) return <Map<String, dynamic>>[];
+        return subs.whereType<Map<String, dynamic>>().toList();
       })(),
       purchaseJobs: (() {
         final jobs = user['purchaseJobs'] as List?;

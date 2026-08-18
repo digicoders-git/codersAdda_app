@@ -22,6 +22,9 @@ import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/auth_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/notification_viewmodel.dart';
 import 'package:coders_adda_app/views/profile_pages/edite_profile.dart';
+import 'package:coders_adda_app/views/downloaded_pdfs/downloaded_pdfs_page.dart';
+import 'package:coders_adda_app/views/test_program_pages/general_tests_page.dart';
+import 'package:coders_adda_app/views/my_owened_courses/my_learning_player_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -336,6 +339,18 @@ class _HomePageState extends State<HomePage> {
                         );
                       },
                     ),
+                    _drawerItem(
+                      Icons.assignment,
+                      'General Tests',
+                      Colors.orange,
+                      () {
+                        Navigator.pop(context);
+                        NavigationService.navigateTo(
+                          context,
+                          const GeneralTestsPage(),
+                        );
+                      },
+                    ),
                     _drawerItem(Icons.person, 'My Jobs', Colors.grey, () {
                       Navigator.pop(context);
                       NavigationService.navigateTo(context, MyJobDetailsPage());
@@ -345,6 +360,10 @@ class _HomePageState extends State<HomePage> {
                       thickness: 1,
                       color: AppColors.outline.withOpacity(0.3),
                     ),
+                    _drawerItem(Icons.download, 'Downloads', Colors.teal, () {
+                      Navigator.pop(context);
+                      NavigationService.navigateTo(context, const DownloadedPdfsPage());
+                    }),
                     _drawerItem(Icons.person, 'Profile', Colors.purple, () {
                       Navigator.pop(context);
                       NavigationService.navigateTo(context, ProfilePage());
@@ -465,6 +484,7 @@ class _HomePageState extends State<HomePage> {
           SizedBox(height: AppSizer.deviceHeight3),
           _buildBannerSlider(context, viewModel),
           SizedBox(height: AppSizer.deviceHeight3),
+          _buildContinueWatching(context, viewModel),
           _buildProfileCompletionWidget(),
           SizedBox(height: AppSizer.deviceHeight3),
           _buildCouponsSlider(context, viewModel),
@@ -482,6 +502,102 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       ),
+    );
+  }
+
+  Widget _buildContinueWatching(BuildContext context, HomeViewModel viewModel) {
+    final progress = viewModel.recentProgress;
+    if (progress == null) return const SizedBox.shrink();
+
+    final course = progress['course'];
+    final lecture = progress['lecture'];
+    if (course == null || lecture == null) return const SizedBox.shrink();
+
+    final String courseId = course['_id'] ?? '';
+    final String courseTitle = course['title'] ?? 'Course';
+    final String lectureTitle = lecture['title'] ?? 'Lecture';
+    final int watchedSeconds = progress['watchedSeconds'] ?? 0;
+    final int durationSeconds = progress['durationSeconds'] ?? 1; // avoid divide by zero
+    final double percent = (watchedSeconds / durationSeconds).clamp(0.0, 1.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Continue Learning",
+          style: TextStyle(
+            fontSize: AppSizer.deviceSp18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: AppSizer.deviceHeight2),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MyLearningCoursePlayer(courseId: courseId),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.play_circle_fill, color: AppColors.primaryColor, size: 30),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        courseTitle,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        lectureTitle,
+                        style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: percent,
+                        backgroundColor: Colors.grey.shade200,
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(height: AppSizer.deviceHeight3),
+      ],
     );
   }
 
@@ -975,73 +1091,85 @@ Widget _buildCoursesOnSale(BuildContext context, List<Course> courses) {
                             Row(
                               children: [
                                 // Rating
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: AppSizer.deviceWidth1_5,
-                                    vertical: AppSizer.deviceHeight0_5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.buttonColor.withOpacity(0.3),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.star,
-                                        color: AppColors.primaryColor,
-                                        size: AppSizer.deviceSp16,
-                                      ),
-                                      SizedBox(width: 2),
-                                      Text(
-                                        '4.5',
-                                        style: TextStyle(
-                                          fontSize: AppSizer.deviceSp14,
-                                          fontWeight: FontWeight.bold,
+                                Flexible(
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: AppSizer.deviceWidth1_5,
+                                      vertical: AppSizer.deviceHeight0_5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.buttonColor.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.star,
                                           color: AppColors.primaryColor,
+                                          size: AppSizer.deviceSp16,
                                         ),
-                                      ),
-                                      SizedBox(width: 2),
-                                      Text(
-                                        '(2.5k)',
-                                        style: TextStyle(
-                                          fontSize: AppSizer.deviceSp12,
-                                          color: AppColors.onSurfaceVariant,
+                                        SizedBox(width: 2),
+                                        Flexible(
+                                          child: Text(
+                                            course.rating > 0 ? course.rating.toStringAsFixed(1) : '0.0',
+                                            style: TextStyle(
+                                              fontSize: AppSizer.deviceSp14,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppColors.primaryColor,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                        SizedBox(width: 2),
+                                        Text(
+                                          '(${course.reviews.length})',
+                                          style: TextStyle(
+                                            fontSize: AppSizer.deviceSp12,
+                                            color: AppColors.onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 SizedBox(width: AppSizer.deviceWidth2),
 
                                 // Duration
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: AppSizer.deviceWidth1_5,
-                                    vertical: AppSizer.deviceHeight0_5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.buttonColor.withOpacity(0.3),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.access_time_filled_outlined,
-                                        color: AppColors.primaryColor,
-                                        size: AppSizer.deviceSp12,
-                                      ),
-                                      SizedBox(width: 2),
-                                      Text(
-                                        '12h',
-                                        style: TextStyle(
-                                          fontSize: AppSizer.deviceSp14,
-                                          fontWeight: FontWeight.w600,
+                                Flexible(
+                                  child: Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: AppSizer.deviceWidth1_5,
+                                      vertical: AppSizer.deviceHeight0_5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.buttonColor.withOpacity(0.3),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.access_time_filled_outlined,
                                           color: AppColors.primaryColor,
+                                          size: AppSizer.deviceSp12,
                                         ),
-                                      ),
-                                    ],
+                                        SizedBox(width: 2),
+                                        Flexible(
+                                          child: Text(
+                                            course.duration.isNotEmpty ? course.duration : '0h',
+                                            style: TextStyle(
+                                              fontSize: AppSizer.deviceSp14,
+                                              fontWeight: FontWeight.w600,
+                                              color: AppColors.primaryColor,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],

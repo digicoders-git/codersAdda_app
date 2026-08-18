@@ -8,14 +8,14 @@ import 'package:coders_adda_app/views/quiz_program_pages/play_quiz_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 
-class TestPage extends StatefulWidget {
-  const TestPage({super.key});
+class GeneralTestsPage extends StatefulWidget {
+  const GeneralTestsPage({super.key});
 
   @override
-  State<TestPage> createState() => _TestPageState();
+  State<GeneralTestsPage> createState() => _GeneralTestsPageState();
 }
 
-class _TestPageState extends State<TestPage> with SingleTickerProviderStateMixin {
+class _GeneralTestsPageState extends State<GeneralTestsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Map<String, dynamic>> _availableQuizzes = [];
   List<Map<String, dynamic>> _attemptedQuizzes = [];
@@ -58,7 +58,7 @@ class _TestPageState extends State<TestPage> with SingleTickerProviderStateMixin
     if (quiz.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Invalid quiz code. Please check and try again."),
+          content: Text("Invalid test code. Please check and try again."),
           backgroundColor: Colors.red,
         ),
       );
@@ -69,7 +69,7 @@ class _TestPageState extends State<TestPage> with SingleTickerProviderStateMixin
     if (hasAttempted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("You have already attempted this quiz."),
+          content: Text("You have already attempted this test."),
           backgroundColor: Colors.red,
         ),
       );
@@ -84,7 +84,7 @@ class _TestPageState extends State<TestPage> with SingleTickerProviderStateMixin
     if (scheduledTime != null && scheduledTime.isAfter(DateTime.now())) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Quiz hasn't started yet. Starts on: ${scheduledTime.day.toString().padLeft(2, '0')}/${scheduledTime.month.toString().padLeft(2, '0')}/${scheduledTime.year} ${scheduledTime.hour.toString().padLeft(2, '0')}:${scheduledTime.minute.toString().padLeft(2, '0')}"),
+          content: Text("Test hasn't started yet. Starts on: ${scheduledTime.day.toString().padLeft(2, '0')}/${scheduledTime.month.toString().padLeft(2, '0')}/${scheduledTime.year} ${scheduledTime.hour.toString().padLeft(2, '0')}:${scheduledTime.minute.toString().padLeft(2, '0')}"),
           backgroundColor: Colors.red,
         ),
       );
@@ -459,7 +459,7 @@ class _TestPageState extends State<TestPage> with SingleTickerProviderStateMixin
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'CodersAdda Quizzes',
+                          'CodersAdda General Tests',
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp20,
                             fontWeight: FontWeight.bold,
@@ -510,7 +510,7 @@ class _TestPageState extends State<TestPage> with SingleTickerProviderStateMixin
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Join Quiz Using Test Code',
+                          'Join Test Using Test Code',
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp18,
                             fontWeight: FontWeight.bold,
@@ -519,7 +519,7 @@ class _TestPageState extends State<TestPage> with SingleTickerProviderStateMixin
                         ),
                         SizedBox(height: AppSizer.deviceHeight1),
                         Text(
-                          'Enter code to attempt quiz',
+                          'Enter code to attempt test',
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp12,
                             color: Colors.white70,

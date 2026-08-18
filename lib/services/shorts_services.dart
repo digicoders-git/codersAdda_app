@@ -85,4 +85,14 @@ class ShortsService {
       rethrow;
     }
   }
+
+  Future<Map<String, dynamic>> addShare(String shortId) async {
+    try {
+      final response = await _apiClient.post('${ApiUrls.addShortShare}/$shortId', {});
+      return response;
+    } catch (e) {
+      print('Error adding short share: $e');
+      rethrow;
+    }
+  }
 }

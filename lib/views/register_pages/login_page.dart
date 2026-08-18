@@ -3,6 +3,7 @@ import 'package:coders_adda_app/veiw_model/auth_viewmodel.dart';
 import 'package:coders_adda_app/views/navigation_class.dart';
 import 'package:coders_adda_app/views/register_pages/register_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
@@ -271,11 +272,15 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(10),
+                  ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your phone number';
                     }
-                    if (value.length != 10) {
+                    if (!RegExp(r'^[0-9]{10}$').hasMatch(value.trim())) {
                       return 'Please enter a valid 10-digit number';
                     }
                     return null;

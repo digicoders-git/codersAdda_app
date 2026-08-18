@@ -1,5 +1,6 @@
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
+import 'package:coders_adda_app/utils/certificate_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
@@ -71,6 +72,32 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
       return;
     }
 
+    final bool hasAttempted = _attemptedQuizzes.any((a) => a['quizId'] == quiz['id']);
+    if (hasAttempted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("You have already attempted this quiz."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    DateTime? scheduledTime;
+    if (quiz['scheduledStartTime'] != null) {
+      scheduledTime = DateTime.tryParse(quiz['scheduledStartTime'].toString())?.toLocal();
+    }
+    
+    if (scheduledTime != null && scheduledTime.isAfter(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Quiz hasn't started yet. Starts on: ${scheduledTime.day.toString().padLeft(2, '0')}/${scheduledTime.month.toString().padLeft(2, '0')}/${scheduledTime.year} ${scheduledTime.hour.toString().padLeft(2, '0')}:${scheduledTime.minute.toString().padLeft(2, '0')}"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     _startQuiz(quiz);
   }
 
@@ -128,155 +155,199 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF0F0C24),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Center(
-          child: Text(
-            attempt['title'] as String,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Divider(color: Colors.white10),
-            const SizedBox(height: 15),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          bool certLoading = false;
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF0F0C24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Center(
+              child: Text(
+                attempt['title'] as String,
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Text("Status:", style: TextStyle(color: Colors.white70)),
-                Text(
-                  isPassed ? "PASSED" : "FAILED",
-                  style: TextStyle(
-                    color: isPassed ? const Color(0xFF00FFCC) : Colors.redAccent,
-                    fontWeight: FontWeight.bold,
-                  ),
+                const Divider(color: Colors.white10),
+                const SizedBox(height: 15),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Status:", style: TextStyle(color: Colors.white70)),
+                    Text(
+                      isPassed ? "PASSED" : "FAILED",
+                      style: TextStyle(
+                        color: isPassed ? const Color(0xFF00FFCC) : Colors.redAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Score:", style: TextStyle(color: Colors.white70)),
+                    Text(
+                      "$score / $total points",
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Percentage:", style: TextStyle(color: Colors.white70)),
+                    Text(
+                      "${percentage.toStringAsFixed(1)}%",
+                      style: TextStyle(
+                        color: isPassed ? const Color(0xFF00FFCC) : Colors.redAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Correct Answers:", style: TextStyle(color: Colors.white70)),
+                    Text(
+                      "${attempt['correct']} / ${attempt['totalQuestions']}",
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Time Taken:", style: TextStyle(color: Colors.white70)),
+                    Text(
+                      attempt['timeTaken'] as String,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Attempt Date:", style: TextStyle(color: Colors.white70)),
+                    Text(
+                      attempt['date'] as String,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("Score:", style: TextStyle(color: Colors.white70)),
-                Text(
-                  "$score / $total points",
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("Percentage:", style: TextStyle(color: Colors.white70)),
-                Text(
-                  "${percentage.toStringAsFixed(1)}%",
-                  style: TextStyle(
-                    color: isPassed ? const Color(0xFF00FFCC) : Colors.redAccent,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("Correct Answers:", style: TextStyle(color: Colors.white70)),
-                Text(
-                  "${attempt['correct']} / ${attempt['totalQuestions']}",
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("Time Taken:", style: TextStyle(color: Colors.white70)),
-                Text(
-                  attempt['timeTaken'] as String,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("Attempt Date:", style: TextStyle(color: Colors.white70)),
-                Text(
-                  attempt['date'] as String,
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (attempt['certificateUrl'] != null) ...[
-                ElevatedButton.icon(
-                  onPressed: () {
-                    _downloadCertificate(attempt['certificateUrl'] as String);
-                  },
-                  icon: const Icon(Icons.workspace_premium, color: Colors.white),
-                  label: const Text("Download Certificate"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 40),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+            actions: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Certificate Download Button — always show if passed
+                  if (isPassed) ...[
+                    ElevatedButton.icon(
+                      onPressed: certLoading
+                          ? null
+                          : () async {
+                              final existingUrl = attempt['certificateUrl'] as String?;
+                              if (existingUrl != null && existingUrl.isNotEmpty) {
+                                _downloadCertificate(existingUrl);
+                              } else {
+                                // Try to issue fresh certificate
+                                setDialogState(() => certLoading = true);
+                                try {
+                                  final response = await _apiClient.post(
+                                    ApiUrls.issueQuizCertificate,
+                                    {
+                                      'quizId': attempt['quizId'],
+                                      'totalScore': '${attempt['score']} / ${attempt['total']}',
+                                    },
+                                  );
+                                  setDialogState(() => certLoading = false);
+                                  if (response != null && response['success'] == true) {
+                                    final newUrl = response['certificate']?['certificateUrl'] as String?;
+                                    if (newUrl != null && newUrl.isNotEmpty) {
+                                      // Cache the URL locally so next tap skips re-issue
+                                      attempt['certificateUrl'] = newUrl;
+                                      _downloadCertificate(newUrl);
+                                    } else {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text("Certificate not available for this quiz yet. Please ask admin to set certificate template."),
+                                            backgroundColor: Colors.orange,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  } else {
+                                    setDialogState(() => certLoading = false);
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(response?['message'] ?? "Failed to generate certificate."),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                } catch (e) {
+                                  setDialogState(() => certLoading = false);
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                      icon: certLoading
+                          ? const SizedBox(
+                              width: 18, height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.workspace_premium, color: Colors.white),
+                      label: Text(certLoading ? "Generating..." : "Download Certificate"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00B87C),
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 45),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  Center(
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: const Text(
+                        "Close",
+                        style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 8),
-              ],
-              Center(
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    "Close",
-                    style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold),
-                  ),
-                ),
+                ],
               ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
   Future<void> _downloadCertificate(String urlString) async {
-    try {
-      String resolvedUrl = urlString;
-      if (resolvedUrl.contains('localhost')) {
-        final uri = Uri.parse(resolvedUrl);
-        final baseUri = Uri.parse(ApiUrls.baseUrl);
-        resolvedUrl = resolvedUrl.replaceFirst('${uri.scheme}://${uri.host}:${uri.port}', '${baseUri.scheme}://${baseUri.host}:${baseUri.port}');
-      }
-      final Uri url = Uri.parse(resolvedUrl);
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Could not open certificate download link")),
-        );
-      }
-    } catch (e) {
-      debugPrint("Error launching url: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
-    }
+    await CertificateDownloader.downloadAndSave(context, urlString);
   }
 
   Future<void> _fetchQuizzes() async {
@@ -425,23 +496,57 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
                   ),
                 ],
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    'CodersAdda Quizzes',
-                    style: TextStyle(
-                      fontSize: AppSizer.deviceSp20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryColor,
+                  if (Navigator.canPop(context)) ...[
+                    IconButton(
+                      icon: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: AppColors.primaryColor,
+                        size: AppSizer.deviceWidth5,
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
-                  ),
-                  SizedBox(height: AppSizer.deviceHeight1),
-                  Text(
-                    'Test your programming skills',
-                    style: TextStyle(
-                      fontSize: AppSizer.deviceSp14,
-                      color: AppColors.onSurfaceVariant,
+                    SizedBox(width: AppSizer.deviceWidth4),
+                  ] else ...[
+                    IconButton(
+                      icon: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: AppColors.primaryColor,
+                        size: AppSizer.deviceWidth5,
+                      ),
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/');
+                      },
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    SizedBox(width: AppSizer.deviceWidth4),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'CodersAdda Quizzes',
+                          style: TextStyle(
+                            fontSize: AppSizer.deviceSp20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
+                        SizedBox(height: AppSizer.deviceHeight1),
+                        Text(
+                          'Test your programming skills',
+                          style: TextStyle(
+                            fontSize: AppSizer.deviceSp14,
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -582,33 +687,47 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
     }
 
     if (_availableQuizzes.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.quiz_outlined,
-              size: AppSizer.deviceSp60,
-              color: AppColors.outline,
-            ),
-            SizedBox(height: AppSizer.deviceHeight3),
-            Text(
-              'No Quizzes Available',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.onSurfaceVariant,
+      return RefreshIndicator(
+        onRefresh: _fetchQuizzes,
+        color: AppColors.primaryColor,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.quiz_outlined,
+                    size: AppSizer.deviceSp60,
+                    color: AppColors.outline,
+                  ),
+                  SizedBox(height: AppSizer.deviceHeight3),
+                  Text(
+                    'No Quizzes Available',
+                    style: TextStyle(
+                      fontSize: AppSizer.deviceSp18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       );
     }
 
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth5),
-      itemCount: _availableQuizzes.length,
-      itemBuilder: (context, index) {
+    return RefreshIndicator(
+      onRefresh: _fetchQuizzes,
+      color: AppColors.primaryColor,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth5),
+        itemCount: _availableQuizzes.length,
+        itemBuilder: (context, index) {
         final quiz = _availableQuizzes[index];
         DateTime? scheduledTime;
         if (quiz['scheduledStartTime'] != null) {
@@ -746,6 +865,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
           ),
         );
       },
+      ),
     );
   }
 
@@ -757,41 +877,55 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
     }
 
     if (_attemptedQuizzes.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.quiz_outlined,
-              size: AppSizer.deviceSp60,
-              color: AppColors.outline,
-            ),
-            SizedBox(height: AppSizer.deviceHeight3),
-            Text(
-              'No Attempted Quizzes',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp18,
-                fontWeight: FontWeight.w600,
-                color: AppColors.onSurfaceVariant,
+      return RefreshIndicator(
+        onRefresh: _fetchAttemptedQuizzes,
+        color: AppColors.primaryColor,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.quiz_outlined,
+                    size: AppSizer.deviceSp60,
+                    color: AppColors.outline,
+                  ),
+                  SizedBox(height: AppSizer.deviceHeight3),
+                  Text(
+                    'No Attempted Quizzes',
+                    style: TextStyle(
+                      fontSize: AppSizer.deviceSp18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                  SizedBox(height: AppSizer.deviceHeight1),
+                  Text(
+                    'Attempt some quizzes to see them here',
+                    style: TextStyle(
+                      fontSize: AppSizer.deviceSp14,
+                      color: AppColors.outline,
+                    ),
+                  ),
+                ],
               ),
             ),
-            SizedBox(height: AppSizer.deviceHeight1),
-            Text(
-              'Attempt some quizzes to see them here',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp14,
-                color: AppColors.outline,
-              ),
-            ),
-          ],
+          ),
         ),
       );
     }
 
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth5),
-      itemCount: _attemptedQuizzes.length,
-      itemBuilder: (context, index) {
+    return RefreshIndicator(
+      onRefresh: _fetchAttemptedQuizzes,
+      color: AppColors.primaryColor,
+      child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth5),
+        itemCount: _attemptedQuizzes.length,
+        itemBuilder: (context, index) {
         final quiz = _attemptedQuizzes[index];
         final score = quiz['score'] as int;
         final totalQuestions = quiz['totalQuestions'] as int;
@@ -907,6 +1041,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
           ),
         );
       },
+      ),
     );
   }
 

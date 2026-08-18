@@ -11,6 +11,8 @@ import 'package:coders_adda_app/services/api_client.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:coders_adda_app/services/download_service.dart';
+import 'package:coders_adda_app/utils/certificate_downloader.dart';
 
 class TopicLecturesPage extends StatefulWidget {
   final CurriculumTopic topic;
@@ -30,6 +32,7 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
   final CourseService _courseService = CourseService();
   final ApiClient _apiClient = ApiClient();
   List<CourseLecture> _lectures = [];
+  List<Map<String, dynamic>> _attemptedQuizzes = [];
   bool _isLoading = true;
   String? _error;
 
@@ -46,12 +49,188 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
     _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
     _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
     _fetchLectures();
+    _fetchAttemptedQuizzes();
   }
 
   @override
   void dispose() {
     _razorpay.clear();
     super.dispose();
+  }
+
+  Future<void> _fetchAttemptedQuizzes() async {
+    try {
+      final response = await _apiClient.get(ApiUrls.getMyQuizAttempts);
+      if (response != null && response['success'] == true) {
+        final List<dynamic> data = response['data'] ?? [];
+        if (mounted) {
+          setState(() {
+            _attemptedQuizzes = data.map((a) {
+              final quiz = a['quizId'] ?? {};
+              final points = quiz['points'] ?? 1;
+              return {
+                'id': a['_id'],
+                'quizId': quiz['_id'] ?? '',
+                'duration': quiz['duration'] ?? 0,
+                'title': quiz['title'] ?? 'Unknown Quiz',
+                'score': (a['marks'] ?? 0) as int,
+                'total': (a['totalMarks'] ?? 0) as int,
+                'date': a['createdAt'] != null ? a['createdAt'].toString().substring(0, 10) : '',
+                'timeTaken': _formatDuration(a['duration'] ?? 0),
+                'correct': ((a['marks'] ?? 0) ~/ points),
+                'totalQuestions': ((a['totalMarks'] ?? 0) ~/ points),
+                'certificateUrl': a['certificateUrl'],
+              };
+            }).toList();
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching attempted quizzes: $e');
+    }
+  }
+
+  String _formatDuration(dynamic seconds) {
+    if (seconds == null) return '0:00';
+    final int sec = seconds is int ? seconds : int.tryParse(seconds.toString()) ?? 0;
+    final int minutes = sec ~/ 60;
+    final int remainingSec = sec % 60;
+    return '${minutes}:${remainingSec.toString().padLeft(2, '0')}';
+  }
+
+  void _showAttemptDetailsDialog(Map<String, dynamic> attempt) {
+    final score = attempt['score'] as int;
+    final total = attempt['total'] as int;
+    final percentage = total > 0 ? (score / total) * 100 : 0.0;
+    final isPassed = percentage >= 50.0;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF0F0C24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Center(
+          child: Text(
+            attempt['title'] as String,
+            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Divider(color: Colors.white10),
+            const SizedBox(height: 15),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Status:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  isPassed ? "PASSED" : "FAILED",
+                  style: TextStyle(
+                    color: isPassed ? const Color(0xFF00FFCC) : Colors.redAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Score:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  "$score / $total points",
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Percentage:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  "${percentage.toStringAsFixed(1)}%",
+                  style: TextStyle(
+                    color: isPassed ? const Color(0xFF00FFCC) : Colors.redAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Correct Answers:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  "${attempt['correct']} / ${attempt['totalQuestions']}",
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Time Taken:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  attempt['timeTaken'] as String,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text("Attempt Date:", style: TextStyle(color: Colors.white70)),
+                Text(
+                  attempt['date'] as String,
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (attempt['certificateUrl'] != null) ...[
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    await CertificateDownloader.downloadAndSave(context, attempt['certificateUrl'] as String);
+                  },
+                  icon: const Icon(Icons.workspace_premium, color: Colors.white),
+                  label: const Text("Download Certificate"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                     "Close",
+                     style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _fetchLectures() async {
@@ -236,9 +415,17 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
             itemCount: _lectures.length,
             itemBuilder: (context, index) {
               final lec = _lectures[index];
+              
+              bool isAttempted = false;
+              if (lec.contentType == 'test' || lec.contentType == 'subjective_test') {
+                 final String testId = (lec.quizId != null && lec.quizId!.isNotEmpty) ? lec.quizId! : '';
+                 isAttempted = testId.isNotEmpty && _attemptedQuizzes.any((a) => a['quizId'] == testId);
+              }
+              
               return _LectureCard(
                 lecture: lec,
                 index: index,
+                isAttempted: isAttempted,
                 onPlay: () async {
                   // 1. Paid lecture guard — check isPaidLecture OR (locked + price > 0 + no video)
                   //    This is defense-in-depth: even if backend didn't set isPaidLecture correctly
@@ -260,6 +447,18 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                     return;
                   }
                   if (lec.contentType == 'test' && lec.quizId != null && lec.quizId!.isNotEmpty) {
+                    if (isAttempted) {
+                      final testId = (lec.quizId != null && lec.quizId!.isNotEmpty) ? lec.quizId! : '';
+                      final attempt = testId.isNotEmpty ? _attemptedQuizzes.firstWhere(
+                        (a) => a['quizId'] == testId, 
+                        orElse: () => <String, dynamic>{}
+                      ) : <String, dynamic>{};
+                      if (attempt.isNotEmpty) {
+                        _showAttemptDetailsDialog(attempt);
+                        return;
+                      }
+                    }
+
                     showDialog(
                       context: context,
                       barrierDismissible: false,
@@ -368,6 +567,7 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                       ),
                     ).then((_) {
                       _fetchLectures();
+                      _fetchAttemptedQuizzes();
                     });
                   }
                 },
@@ -380,20 +580,91 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
   }
 }
 
-class _LectureCard extends StatelessWidget {
+class _LectureCard extends StatefulWidget {
   final CourseLecture lecture;
   final int index;
   final VoidCallback onPlay;
+  final bool isAttempted;
 
   const _LectureCard({
     Key? key,
     required this.lecture,
     required this.index,
     required this.onPlay,
+    this.isAttempted = false,
   }) : super(key: key);
 
   @override
+  State<_LectureCard> createState() => _LectureCardState();
+}
+
+class _LectureCardState extends State<_LectureCard> {
+  final DownloadService _downloadService = DownloadService();
+  bool _isDownloading = false;
+  double _progress = 0;
+
+  Future<void> _downloadPdf() async {
+    // Guard: locked pdf with no resource URL
+    if (widget.lecture.resource.url.isEmpty || widget.lecture.isLocked) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This resource is locked. Please purchase the course to access it.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    String url = widget.lecture.resource.url;
+    if (url.startsWith('/')) {
+      url = '${ApiUrls.baseUrl}$url';
+    } else if (!url.startsWith('http')) {
+      url = '${ApiUrls.baseUrl}/$url';
+    }
+
+    setState(() {
+      _isDownloading = true;
+      _progress = 0;
+    });
+
+    final savePath = await _downloadService.downloadPdf(
+      id: widget.lecture.id,
+      title: widget.lecture.title,
+      url: url,
+      type: 'resource',
+      onReceiveProgress: (count, total) {
+        if (total != -1) {
+          setState(() {
+            _progress = count / total;
+          });
+        }
+      },
+    );
+
+    setState(() {
+      _isDownloading = false;
+    });
+
+    if (savePath == 'Already downloaded') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('This PDF is already downloaded.')),
+      );
+    } else if (savePath != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('PDF downloaded successfully! Check Downloads.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to download PDF.')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final lecture = widget.lecture;
+    final index = widget.index;
+    final onPlay = widget.onPlay;
     if (lecture.contentType == 'video' || lecture.contentType == 'live') {
       return Container(
         margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
@@ -600,8 +871,8 @@ class _LectureCard extends StatelessWidget {
       } else if (lecture.contentType == 'test' || lecture.contentType == 'subjective_test') {
         typeColor = Colors.orange;
         typeIcon = Icons.assignment;
-        actionLabel = 'Attempt Test (Quiz)';
-        btnColor = Colors.orange;
+        actionLabel = widget.isAttempted ? 'View Result (Completed)' : 'Attempt Test (Quiz)';
+        btnColor = widget.isAttempted ? Colors.green : Colors.orange;
       } else {
         typeColor = Colors.blue;
         typeIcon = Icons.launch;
@@ -708,6 +979,34 @@ class _LectureCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (lecture.contentType == 'pdf') ...[
+                    const SizedBox(width: 8),
+                    _isDownloading
+                        ? Container(
+                            width: 48,
+                            height: 48,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: CircularProgressIndicator(
+                              value: _progress > 0 ? _progress : null,
+                              strokeWidth: 2,
+                              color: Colors.red,
+                            ),
+                          )
+                        : IconButton(
+                            onPressed: _downloadPdf,
+                            icon: const Icon(Icons.download),
+                            color: Colors.red,
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.red.withOpacity(0.1),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              padding: const EdgeInsets.all(12),
+                            ),
+                          ),
+                  ],
                 ],
               ),
             ],

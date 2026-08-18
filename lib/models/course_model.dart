@@ -71,17 +71,21 @@ class Course {
       category: _safeString(json['category']),
       technology: json['technology'] ?? '',
       isFree: json['priceType'] == 'free' || (json['price'] ?? 0) == 0,
-      rating: (json['totalRating'] ?? 0).toDouble(),
+      rating: (json['reviews'] is List && (json['reviews'] as List).isNotEmpty)
+          ? (json['reviews'] as List).fold<double>(0, (sum, review) => sum + (review['rating'] ?? 0).toDouble()) / (json['reviews'] as List).length
+          : (json['totalRating'] ?? 0).toDouble(),
       totalStudents: json['totalStudents'] ?? 0,
       duration: json['duration'] ?? '0h',
-      totalLessons: (json['curriculum'] is List)
-          ? (json['curriculum'] as List).fold<int>(0, (sum, module) {
-              final lessons = module['lessons'] as List?;
-              return sum + (lessons?.length ?? 0);
-            })
-          : ((json['whatYouWillLearn'] is List) 
-               ? (json['whatYouWillLearn'] as List).length 
-               : 0),
+      totalLessons: (json['totalLessons'] != null && json['totalLessons'] > 0)
+          ? json['totalLessons'] 
+          : ((json['curriculum'] is List)
+              ? (json['curriculum'] as List).fold<int>(0, (sum, module) {
+                  final lessons = module['lessons'] as List?;
+                  return sum + (lessons?.length ?? 0);
+                })
+              : ((json['whatYouWillLearn'] is List) 
+                   ? (json['whatYouWillLearn'] as List).length 
+                   : 0)),
       createdAt: json['createdAt'] != null 
           ? DateTime.parse(json['createdAt']) 
           : DateTime.now(),

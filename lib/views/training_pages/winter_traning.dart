@@ -495,10 +495,15 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
         ),
         backgroundColor: AppColors.cardColor,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textColor),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textColor),
+                onPressed: () => Navigator.pop(context),
+              )
+            : IconButton(
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textColor),
+                onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+              ),
       ),
       body: Stack(
         children: [

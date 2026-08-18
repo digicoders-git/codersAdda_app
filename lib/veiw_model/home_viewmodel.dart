@@ -4,6 +4,8 @@ import 'package:coders_adda_app/models/coupon.dart';
 import 'package:coders_adda_app/services/course_service.dart';
 import 'package:coders_adda_app/services/slider_service.dart';
 import 'package:coders_adda_app/services/coupon_service.dart';
+import 'package:coders_adda_app/services/api_client.dart';
+import 'package:coders_adda_app/services/api_urls.dart';
 import 'package:flutter/material.dart';
 
 class HomeViewModel with ChangeNotifier {
@@ -25,6 +27,9 @@ class HomeViewModel with ChangeNotifier {
 
   List<Coupon> _activeCoupons = [];
   List<Coupon> get activeCoupons => _activeCoupons;
+
+  Map<String, dynamic>? _recentProgress;
+  Map<String, dynamic>? get recentProgress => _recentProgress;
 
   final List<PdfItem> _freePdfs = [
     PdfItem(
@@ -64,6 +69,7 @@ class HomeViewModel with ChangeNotifier {
         _fetchTrendingCourses(),
         _fetchFreeCourses(),
         _fetchCoupons(),
+        _fetchRecentProgress(),
       ]);
     } catch (e) {
       print('Error in HomeViewModel fetchHomeData: $e');
@@ -102,6 +108,20 @@ class HomeViewModel with ChangeNotifier {
       _activeCoupons = await _couponService.getActiveCoupons();
     } catch (e) {
       debugPrint('Error fetching coupons: $e');
+    }
+  }
+
+  Future<void> _fetchRecentProgress() async {
+    try {
+      final response = await ApiClient().get(ApiUrls.getRecentProgress);
+      if (response['success'] == true && response['data'] != null) {
+        _recentProgress = response['data'];
+      } else {
+        _recentProgress = null;
+      }
+    } catch (e) {
+      debugPrint('Error fetching recent progress: $e');
+      _recentProgress = null;
     }
   }
 

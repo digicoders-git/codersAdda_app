@@ -338,14 +338,29 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
             borderSide: BorderSide(color: AppColors.primaryColor, width: 1.5),
           ),
         ),
-        validator: isRequired
-            ? (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'This field is required';
-                }
-                return null;
+        validator: (value) {
+          if (isRequired && (value == null || value.trim().isEmpty)) {
+            return 'This field is required';
+          }
+          if (value != null && value.trim().isNotEmpty) {
+            if (keyboardType == TextInputType.emailAddress) {
+              final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+              if (!emailRegex.hasMatch(value)) {
+                return 'Please enter a valid email address';
               }
-            : null,
+            } else if (keyboardType == TextInputType.phone) {
+              if (!RegExp(r'^[0-9]{10}$').hasMatch(value.trim())) {
+                return 'Please enter a valid 10-digit phone number';
+              }
+            } else if (keyboardType == TextInputType.url) {
+              final urlRegex = RegExp(r'^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$');
+              if (!urlRegex.hasMatch(value)) {
+                return 'Please enter a valid URL';
+              }
+            }
+          }
+          return null;
+        },
       ),
     );
   }

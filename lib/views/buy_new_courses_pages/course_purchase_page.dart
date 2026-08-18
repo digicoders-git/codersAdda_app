@@ -100,6 +100,10 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
             title: widget.course.title,
             itemType: widget.itemType,
             customBenefits: customBenefits,
+            onClose: () {
+              Navigator.pop(context); // Close modal
+              Navigator.pop(context); // Pop CourseCheckoutPage
+            },
             onGoToMyLearning: () {
               Navigator.pushAndRemoveUntil(
                 context,

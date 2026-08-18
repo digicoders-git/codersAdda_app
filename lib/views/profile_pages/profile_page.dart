@@ -1,4 +1,6 @@
 import 'package:coders_adda_app/models/profile_model.dart';
+import 'package:coders_adda_app/views/navigation_class.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:coders_adda_app/services/navigation_service.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
@@ -8,6 +10,7 @@ import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 import 'package:coders_adda_app/views/profile_pages/edite_profile.dart';
 import 'package:coders_adda_app/views/profile_pages/my_certificates_page.dart';
 import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
+import 'package:coders_adda_app/views/subscription_pages/my_subscriptions_page.dart';
 import 'package:coders_adda_app/views/common/help_support_page.dart';
 import 'package:coders_adda_app/views/profile_pages/payment_history_page.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +35,19 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => MainNavigation()),
+              );
+            }
+          },
+        ),
         title: Text(
           'My Profile',
           style: TextStyle(
@@ -49,11 +65,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EditProfilePage(user: viewModel.user!),
+                      builder: (context) => EditProfilePage(
+                        user: viewModel.user!,
+                      ),
                     ),
                   );
-                  // Refresh profile when coming back from Edit Profile
-                  viewModel.fetchUserProfile();
+                  viewModel.fetchUserProfile(); // Refresh after edit
                 },
               );
             },
@@ -67,14 +84,24 @@ class _ProfilePageState extends State<ProfilePage> {
           }
 
           if (viewModel.errorMessage != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            return RefreshIndicator(
+              onRefresh: () => viewModel.fetchUserProfile(),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  Text('Error: ${viewModel.errorMessage}'),
-                  ElevatedButton(
-                    onPressed: () => viewModel.fetchUserProfile(),
-                    child: Text('Retry'),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('Error: ${viewModel.errorMessage}', style: TextStyle(color: Colors.red)),
+                        SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => viewModel.fetchUserProfile(),
+                          child: Text('Retry'),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -82,7 +109,16 @@ class _ProfilePageState extends State<ProfilePage> {
           }
 
           if (viewModel.user == null) {
-            return Center(child: Text('No Profile Data Found'));
+            return RefreshIndicator(
+              onRefresh: () => viewModel.fetchUserProfile(),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.4),
+                  Center(child: Text('No profile data found')),
+                ],
+              ),
+            );
           }
 
           final user = viewModel.user!;
@@ -90,6 +126,7 @@ class _ProfilePageState extends State<ProfilePage> {
           return RefreshIndicator(
             onRefresh: () => viewModel.fetchUserProfile(),
             child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsets.all(AppSizer.deviceWidth4),
               child: Column(
                 children: [
@@ -261,14 +298,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Colors.amber),
                               ),
-                              child: const Text(
-                                'PRO',
-                                style: TextStyle(
-                                  color: Colors.amber,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                              child: Text(
+                                  user.activeSubscriptionName.isNotEmpty ? user.activeSubscriptionName.toUpperCase() : 'PRO',
+                                  style: const TextStyle(
+                                    color: Colors.amber,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
                             ),
                         ],
                       ),
@@ -296,12 +333,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 Container(
                   padding: EdgeInsets.all(AppSizer.deviceWidth2),
                   decoration: BoxDecoration(
-                    color: AppColors.successColor.withOpacity(0.1),
+                    color: Colors.blue.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.verified,
-                    color: AppColors.successColor,
+                    color: Colors.blue,
                     size: AppSizer.deviceSp20,
                   ),
                 ),
@@ -319,25 +356,30 @@ class _ProfilePageState extends State<ProfilePage> {
                 fontStyle: FontStyle.italic,
               ),
               textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
             ),
 
             SizedBox(height: AppSizer.deviceHeight2),
 
             // Social Links
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: AppSizer.deviceWidth3,
+              runSpacing: AppSizer.deviceHeight1,
               children: [
-                _buildSocialButton(Icons.code, 'GitHub', () {
-                  _launchUrl(user.github);
-                }),
-                SizedBox(width: AppSizer.deviceWidth3),
-                _buildSocialButton(Icons.work, 'LinkedIn', () {
-                  _launchUrl(user.linkedin);
-                }),
-                SizedBox(width: AppSizer.deviceWidth3),
-                _buildSocialButton(Icons.public, 'Portfolio', () {
-                  _launchUrl(user.portfolio);
-                }),
+                if (user.github.isNotEmpty)
+                  _buildSocialButton(Icons.code, 'GitHub', () {
+                    _launchUrl(user.github);
+                  }),
+                if (user.linkedin.isNotEmpty)
+                  _buildSocialButton(Icons.work, 'LinkedIn', () {
+                    _launchUrl(user.linkedin);
+                  }),
+                if (user.portfolio.isNotEmpty)
+                  _buildSocialButton(Icons.public, 'Portfolio', () {
+                    _launchUrl(user.portfolio);
+                  }),
               ],
             ),
           ],
@@ -712,7 +754,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'title': 'My Subscription',
         'color': Colors.amber,
         'onTap': () {
-          NavigationService.navigateTo(context, SubscriptionPage());
+          NavigationService.navigateTo(context, MySubscriptionsPage());
         },
       },
       // {
@@ -808,8 +850,38 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _launchUrl(String url) {
-    // Implement URL launching
+  Future<void> _launchUrl(String urlString) async {
+    if (urlString.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Link not provided')),
+      );
+      return;
+    }
+    
+    // Ensure the URL has a scheme
+    String finalUrl = urlString;
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+      finalUrl = 'https://$finalUrl';
+    }
+
+    final Uri url = Uri.parse(finalUrl);
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not launch $urlString')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Invalid link format')),
+        );
+      }
+    }
   }
 
   void _showComingSoon(BuildContext context) {

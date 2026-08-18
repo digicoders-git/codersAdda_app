@@ -8,7 +8,7 @@ class NotificationModel {
   final String status;
   final String type;
   final DateTime createdAt;
-  final bool isRead;
+  bool isRead;
 
   NotificationModel({
     required this.id,

@@ -110,6 +110,9 @@ class CourseViewModel with ChangeNotifier {
   String get selectedTechnology => _selectedTechnology;
   int get selectedTabIndex => _selectedTabIndex;
 
+  List<Course> get freeCourses => _allCourses.where((c) => c.isFree).toList();
+  List<Course> get premiumCourses => _allCourses.where((c) => !c.isFree).toList();
+
   List<Course> get filteredCourses {
     final bool lookingForFree = _selectedTabIndex == 0;
     

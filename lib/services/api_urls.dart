@@ -1,8 +1,8 @@
 class ApiUrls {
   // Use http://10.0.2.2:3900 for Android Emulator to connect to localhost
   // Use http://localhost:3900 for Web/Windows testing
-  static const String baseUrl = 'https://coders-adda-backend.onrender.com';
-  // static const String baseUrl = 'http://192.168.29.234:3900';
+  // static const String baseUrl = 'https://coders-adda-backend.onrender.com';
+   static const String baseUrl = 'http://192.168.29.234:3900';
   // static const String baseUrl = 'http://10.0.2.2:3900';
 
   // Auth Endpoints
@@ -11,25 +11,42 @@ class ApiUrls {
   static const String approveLogin = '$baseUrl/users/approve-login';
   static const String checkLoginApprovalStatus = '$baseUrl/users/login-approval-status';
   static const String googleLogin = '$baseUrl/users/google-login';
+  static const String myActivityStatus = '$baseUrl/quiz-attempt/activity';
+
+  // Progress Endpoints
+  static const String getRecentProgress = '$baseUrl/progress/recent/watching';
 
   static String resolveMediaUrl(dynamic mediaJson) {
     if (mediaJson == null) return '';
     String localUrl = mediaJson['localUrl'] ?? '';
     String cloudUrl = mediaJson['url'] ?? '';
 
-    if (localUrl.isNotEmpty) {
-      if (localUrl.contains('localhost')) {
-        try {
-          final uri = Uri.parse(localUrl);
-          final baseUri = Uri.parse(baseUrl);
-          localUrl = localUrl.replaceFirst('${uri.scheme}://${uri.host}:${uri.port}', '${baseUri.scheme}://${baseUri.host}:${baseUri.port}');
-        } catch (e) {
-          // Ignore parsing errors
-        }
+    if (cloudUrl.isNotEmpty) {
+      return cloudUrl;
+    }
+
+    bool isLocalEnv = baseUrl.contains('localhost') || baseUrl.contains('192.168') || baseUrl.contains('10.0.2.2');
+
+    if (isLocalEnv && localUrl.isNotEmpty) {
+      try {
+        final uri = Uri.parse(localUrl);
+        final baseUri = Uri.parse(baseUrl);
+        
+        // Handle port serialization properly
+        String uriHostPort = uri.hasPort && uri.port != 80 && uri.port != 443 ? '${uri.host}:${uri.port}' : uri.host;
+        String baseUriHostPort = baseUri.hasPort && baseUri.port != 80 && baseUri.port != 443 ? '${baseUri.host}:${baseUri.port}' : baseUri.host;
+        
+        localUrl = localUrl.replaceFirst('${uri.scheme}://$uriHostPort', '${baseUri.scheme}://$baseUriHostPort');
+      } catch (e) {
+        // Ignore parsing errors
       }
       return localUrl;
     }
-    return cloudUrl;
+
+    if (localUrl.isNotEmpty) {
+      return localUrl;
+    }
+    return '';
   }
 
   // Progress
@@ -77,6 +94,7 @@ class ApiUrls {
   static const String getShortComments = '$baseUrl/short-comments/get'; // We'll append /id
   static const String addShortComment = '$baseUrl/short-comments/add'; // We'll append /id
   static const String deleteShortComment = '$baseUrl/short-comments/delete'; // We'll append /id
+  static const String addShortShare = '$baseUrl/short-shares/add'; // We'll append /id
 
   // My Library Endpoints
   static const String getMyLibrary = '$baseUrl/users/my-library';

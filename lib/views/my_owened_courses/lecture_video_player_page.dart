@@ -1,4 +1,8 @@
 import 'package:coders_adda_app/models/course_model.dart';
+import 'dart:typed_data';
+import 'package:dio/dio.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/views/common/in_app_pdf_viewer_page.dart';
@@ -9,6 +13,7 @@ import 'package:pod_player/pod_player.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class LectureVideoPlayerPage extends StatefulWidget {
   final CourseLecture lecture;
@@ -41,6 +46,10 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
   int _currentIndex = -1;
   bool _isFinished = false;
   bool _hasSentFinalProgress = false;
+  
+  bool _showCustomControls = false;
+  Timer? _hideControlsTimer;
+  StreamSubscription? _connectivitySubscription;
 
   @override
   void initState() {
@@ -48,6 +57,20 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
     _currentLecture = widget.lecture;
     _currentIndex = widget.currentIndex ?? -1;
     _initPlayer();
+    
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+      if (results.contains(ConnectivityResult.none)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('You are offline. Please turn on mobile data or Wi-Fi.'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+      }
+    });
   }
   
   void _playNextLecture() {
@@ -103,7 +126,21 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
     );
   }
 
-  void _initPlayer() {
+  Future<void> _initPlayer() async {
+    final connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      if (mounted) {
+        setState(() { _error = 'No internet connection. Cannot load video.'; _isLoading = false; });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No internet connection. Cannot load video.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
     final url = (_currentLecture.contentType == 'live' && _currentLecture.liveUrl.isNotEmpty)
         ? _currentLecture.liveUrl.trim()
         : _currentLecture.video.url.trim();
@@ -135,6 +172,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
         autoPlay: true,
         isLooping: false,
         videoQualityPriority: [1080, 720, 360],
+        forcedVideoFocus: true,
       ),
     )..initialise().then((_) {
         _controller?.play();
@@ -142,12 +180,34 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
         _startProgressTimer();
         if (mounted) setState(() { _isLoading = false; });
       }).catchError((e) {
-        if (mounted) setState(() { _error = 'Failed to load video: $e'; _isLoading = false; });
+        if (mounted) {
+          setState(() { _error = 'Failed to load video: Check your connection.'; _isLoading = false; });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Video playback failed. Check your connection.'), backgroundColor: Colors.red),
+          );
+        }
       });
   }
 
   void _onVideoStateChanged() {
     if (_controller == null || !_controller!.isInitialised) return;
+
+    final isPlaying = _controller!.isVideoPlaying;
+    
+    // When video pauses, keep controls visible
+    if (!isPlaying) {
+      setState(() {
+        _showCustomControls = true;
+      });
+      _hideControlsTimer?.cancel();
+    } else {
+      // When video plays, start timer to hide controls
+      _hideControlsTimer?.cancel();
+      _hideControlsTimer = Timer(const Duration(seconds: 3), () {
+        if (mounted) setState(() => _showCustomControls = false);
+      });
+    }
+
     final position = _controller!.currentVideoPosition;
     final duration = _controller!.videoPlayerValue?.duration ?? Duration.zero;
 
@@ -229,11 +289,40 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
 
   @override
   void dispose() {
+    _connectivitySubscription?.cancel();
     _controller?.removeListener(_onVideoStateChanged);
     _progressTimer?.cancel();
+    _hideControlsTimer?.cancel();
     _controller?.dispose();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     super.dispose();
+  }
+
+  void _showControlsTemporarily() {
+    if (_showCustomControls) {
+      // Tap when visible -> Hide instantly
+      setState(() {
+        _showCustomControls = false;
+      });
+      _hideControlsTimer?.cancel();
+    } else {
+      // Tap when hidden -> Show temporarily
+      setState(() {
+        _showCustomControls = true;
+      });
+      _hideControlsTimer?.cancel();
+      
+      // Only hide if video is playing
+      if (_controller?.isVideoPlaying == true) {
+        _hideControlsTimer = Timer(const Duration(seconds: 3), () {
+          if (mounted) {
+            setState(() {
+              _showCustomControls = false;
+            });
+          }
+        });
+      }
+    }
   }
 
   @override
@@ -310,59 +399,12 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                           ),
                         ),
                       )
-                    : Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          PodVideoPlayer(controller: _controller!),
-                          // Previous Button Overlay
-                          if (widget.lectures != null && _currentIndex > 0 && !_isFinished)
-                            Positioned(
-                              left: 16,
-                              child: GestureDetector(
-                                onTap: _playPreviousLecture,
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.black45,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.skip_previous, color: Colors.white, size: 32),
-                                ),
-                              ),
-                            ),
-                          // Next Button Overlay
-                          if (widget.lectures != null && _currentIndex < widget.lectures!.length - 1 && !_isFinished)
-                            Positioned(
-                              right: 16,
-                              child: GestureDetector(
-                                onTap: _playNextLecture,
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.black45,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.skip_next, color: Colors.white, size: 32),
-                                ),
-                              ),
-                            ),
-                          if (_isFinished)
-                            Positioned.fill(
-                              child: Container(
-                                color: Colors.black54,
-                                child: Center(
-                                  child: IconButton(
-                                    icon: const Icon(Icons.replay, color: Colors.white, size: 64),
-                                    onPressed: () {
-                                      _controller?.videoSeekTo(Duration.zero);
-                                      _controller?.play();
-                                      setState(() { _isFinished = false; });
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
+                    : AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: PodVideoPlayer(
+                          controller: _controller!,
+                          videoTitle: const SizedBox.shrink(),
+                        ),
                       ),
           ),
 
@@ -541,19 +583,19 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.deepOrange.withOpacity(0.07),
+                          color: AppColors.cardColor,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.deepOrange.withOpacity(0.3)),
+                          border: Border.all(color: AppColors.outline.withOpacity(0.5)),
                         ),
                         child: Row(
                           children: [
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: Colors.deepOrange.withOpacity(0.15),
+                                color: Colors.red.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(Icons.picture_as_pdf, color: Colors.deepOrange, size: 28),
+                              child: const Icon(Icons.picture_as_pdf, color: Colors.red, size: 28),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -568,7 +610,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                                 ],
                               ),
                             ),
-                            const Icon(Icons.open_in_new, color: Colors.deepOrange, size: 20),
+                            Icon(Icons.open_in_new, color: AppColors.primaryColor, size: 20),
                           ],
                         ),
                       ),
@@ -602,21 +644,49 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
                           onTap: () async {
-                            final Uri url = Uri.parse(_certificateUrl!);
+                            if (_certificateUrl == null || _certificateUrl!.isEmpty) return;
                             try {
-                              if (await canLaunchUrl(url)) {
-                                await launchUrl(url, mode: LaunchMode.externalApplication);
+                              if (await Permission.storage.request().isGranted || await Permission.photos.request().isGranted) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text("Downloading certificate...")),
+                                  );
+                                }
+                                
+                                var response = await Dio().get(
+                                  _certificateUrl!, 
+                                  options: Options(responseType: ResponseType.bytes)
+                                );
+                                final result = await ImageGallerySaverPlus.saveImage(
+                                  Uint8List.fromList(response.data),
+                                  quality: 100,
+                                  name: "CodersAdda_Certificate_${DateTime.now().millisecondsSinceEpoch}",
+                                );
+
+                                if (result['isSuccess'] == true) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text("Certificate saved to gallery!")),
+                                    );
+                                  }
+                                } else {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text("Failed to save certificate.")),
+                                    );
+                                  }
+                                }
                               } else {
                                 if (mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text("Could not open certificate link")),
+                                    const SnackBar(content: Text("Storage permission required.")),
                                   );
                                 }
                               }
                             } catch (e) {
                               if (mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text("Error opening link: $e")),
+                                  SnackBar(content: Text("Error: $e")),
                                 );
                               }
                             }

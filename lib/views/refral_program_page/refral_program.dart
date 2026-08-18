@@ -602,6 +602,8 @@ import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
+import 'package:provider/provider.dart';
+import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 
 class RefralProgram extends StatefulWidget {
   const RefralProgram({super.key});
@@ -632,6 +634,27 @@ class _RefralProgramState extends State<RefralProgram> {
   void initState() {
     super.initState();
     _fetchStatus();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileVM = Provider.of<ProfileViewModel>(context, listen: false);
+      if (profileVM.user != null) {
+        _nameController.text = profileVM.user!.name;
+        _emailController.text = profileVM.user!.email;
+        _phoneController.text = profileVM.user!.mobile;
+        _collegeController.text = profileVM.user!.college;
+        _courseController.text = profileVM.user!.course;
+      } else {
+        profileVM.fetchUserProfile().then((_) {
+          if (profileVM.user != null) {
+            _nameController.text = profileVM.user!.name;
+            _emailController.text = profileVM.user!.email;
+            _phoneController.text = profileVM.user!.mobile;
+            _collegeController.text = profileVM.user!.college;
+            _courseController.text = profileVM.user!.course;
+          }
+        });
+      }
+    });
   }
 
   Future<void> _fetchStatus() async {
@@ -790,6 +813,7 @@ class _RefralProgramState extends State<RefralProgram> {
                       controller: _nameController,
                       label: 'Full Name',
                       icon: Icons.person_outline,
+                      readOnly: true,
                       validator: (value) => value!.isEmpty ? 'Please enter your name' : null,
                     ),
                     SizedBox(height: AppSizer.deviceHeight3),
@@ -799,6 +823,7 @@ class _RefralProgramState extends State<RefralProgram> {
                       label: 'Email Address',
                       icon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
+                      readOnly: true,
                       validator: (value) {
                         if (value!.isEmpty) return 'Please enter your email';
                         if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w]{2,4}').hasMatch(value)) {
@@ -814,6 +839,7 @@ class _RefralProgramState extends State<RefralProgram> {
                       label: 'Phone Number',
                       icon: Icons.phone_iphone_outlined,
                       keyboardType: TextInputType.phone,
+                      readOnly: true,
                       validator: (value) => value!.isEmpty ? 'Please enter your phone number' : null,
                     ),
                     SizedBox(height: AppSizer.deviceHeight3),
@@ -822,6 +848,7 @@ class _RefralProgramState extends State<RefralProgram> {
                       controller: _collegeController,
                       label: 'College Name',
                       icon: Icons.school_outlined,
+                      readOnly: true,
                       validator: (value) => value!.isEmpty ? 'Please enter your college name' : null,
                     ),
                     SizedBox(height: AppSizer.deviceHeight3),
@@ -830,6 +857,7 @@ class _RefralProgramState extends State<RefralProgram> {
                       controller: _courseController,
                       label: 'Course/Stream',
                       icon: Icons.menu_book_outlined,
+                      readOnly: true,
                       validator: (value) => value!.isEmpty ? 'Please enter your course' : null,
                     ),
                     SizedBox(height: AppSizer.deviceHeight6),
@@ -1185,9 +1213,11 @@ class _RefralProgramState extends State<RefralProgram> {
     required IconData icon,
     required String? Function(String?) validator,
     TextInputType keyboardType = TextInputType.text,
+    bool readOnly = false,
   }) {
     return TextFormField(
       controller: controller,
+      readOnly: readOnly,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Container(
