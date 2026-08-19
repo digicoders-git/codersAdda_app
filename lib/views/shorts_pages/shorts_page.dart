@@ -425,7 +425,7 @@ class _ShortsPageState extends State<ShortsPage> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.send, color: AppColors.primaryColor),
+                            icon: Icon(Icons.send, color: AppColors.primaryColor),
                             onPressed: () async {
                               if (commentController.text.trim().isNotEmpty) {
                                 final text = commentController.text;

@@ -80,7 +80,7 @@ class _JobsPageState extends State<JobsPage> {
         'salary': job.salaryPackage,
         'experience': job.requiredExperience,
       });
-      _showSnackBar('${job.jobTitle} saved successfully', Colors.green);
+      _showSnackBar('${job.jobTitle} saved successfully', AppColors.logoGreen);
     }
 
     await _storage.write(key: 'saved_job_ids', value: jsonEncode(_savedJobIds));
@@ -98,7 +98,7 @@ class _JobsPageState extends State<JobsPage> {
       viewModel.verifyJobPayment(
         viewModel.purchasingJobId!,
         response, 
-        onSuccess: (msg) => _showSnackBar(msg, Colors.green),
+        onSuccess: (msg) => _showSnackBar(msg, AppColors.logoGreen),
         onError: (msg) => _showSnackBar(msg, Colors.red),
       );
     }
@@ -784,7 +784,7 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                   child: Container(
                     padding: EdgeInsets.all(AppSizer.deviceWidth1),
                     decoration: BoxDecoration(
-                      color: Colors.amber,
+                      color: AppColors.logoOrange,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -961,7 +961,7 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                         job, 
                         profileViewModel,
                         onSuccess: (msg) {
-                          _showSnackBar(msg, Colors.green);
+                          _showSnackBar(msg, AppColors.logoGreen);
                           _navigateToJobDetails(context, job);
                         },
                         onError: (msg) => _showSnackBar(msg, Colors.red),
@@ -977,7 +977,7 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                       style: TextStyle(fontSize: AppSizer.deviceSp16),
                     ),
                     style: FilledButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: AppColors.logoGreen,
                       padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -1014,7 +1014,7 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                           job, 
                           profileViewModel,
                           onSuccess: (msg) {
-                            _showSnackBar(msg, Colors.green);
+                            _showSnackBar(msg, AppColors.logoGreen);
                             _navigateToJobDetails(context, job);
                           },
                           onError: (msg) => _showSnackBar(msg, Colors.red),
@@ -1212,7 +1212,7 @@ void _navigateToJobDetails(BuildContext context, JobDetail job) {
     builder: (context) => AlertDialog(
       title: Row(
         children: [
-          Icon(Icons.star, color: Colors.amber),
+          Icon(Icons.star, color: AppColors.logoOrange),
           SizedBox(width: AppSizer.deviceWidth2),
           Text('Upgrade to Premium'),
         ],

@@ -13,7 +13,7 @@
 //         title: Text(
 //           'Internship / Apprenticeship',
 //           style: TextStyle(
-//             color: AppColors.textColor,
+//             color: AppColors.logoNavy,
 //             fontSize: AppSizer.deviceSp20,
 //             fontWeight: FontWeight.bold,
 //           ),
@@ -21,7 +21,7 @@
 //         backgroundColor: AppColors.cardColor,
 //         elevation: 0,
 //         leading: IconButton(
-//           icon: Icon(Icons.arrow_back, color: AppColors.textColor),
+//           icon: Icon(Icons.arrow_back, color: AppColors.logoNavy),
 //           onPressed: () => Navigator.pop(context),
 //         ),
 //       ),
@@ -53,7 +53,7 @@
 //                   Text(
 //                     'Gain real-world experience with industry projects and professional mentorship',
 //                     style: TextStyle(
-//                       color: AppColors.textColor,
+//                       color: AppColors.logoNavy,
 //                       fontSize: AppSizer.deviceSp14,
 //                     ),
 //                   ),
@@ -86,7 +86,7 @@
 //             Text(
 //               'Program Highlights',
 //               style: TextStyle(
-//                 color: AppColors.textColor,
+//                 color: AppColors.logoNavy,
 //                 fontSize: AppSizer.deviceSp18,
 //                 fontWeight: FontWeight.bold,
 //               ),
@@ -104,7 +104,7 @@
 //             Text(
 //               'What You Will Learn',
 //               style: TextStyle(
-//                 color: AppColors.textColor,
+//                 color: AppColors.logoNavy,
 //                 fontSize: AppSizer.deviceSp18,
 //                 fontWeight: FontWeight.bold,
 //               ),
@@ -163,7 +163,7 @@
 //             Text(
 //               title,
 //               style: TextStyle(
-//                 color: AppColors.textColor,
+//                 color: AppColors.logoNavy,
 //                 fontSize: AppSizer.deviceSp14,
 //                 fontWeight: FontWeight.bold,
 //               ),
@@ -197,7 +197,7 @@
 //             child: Text(
 //               text,
 //               style: TextStyle(
-//                 color: AppColors.textColor,
+//                 color: AppColors.logoNavy,
 //                 fontSize: AppSizer.deviceSp14,
 //               ),
 //             ),
@@ -223,7 +223,7 @@
 //             child: Text(
 //               text,
 //               style: TextStyle(
-//                 color: AppColors.textColor,
+//                 color: AppColors.logoNavy,
 //                 fontSize: AppSizer.deviceSp14,
 //               ),
 //             ),
@@ -252,7 +252,7 @@ class InternApprentTrainingPage extends StatelessWidget {
         title: Text(
           'Internship / Apprenticeship',
           style: TextStyle(
-            color: AppColors.textColor,
+            color: AppColors.logoNavy,
             fontSize: AppSizer.deviceSp20,
             fontWeight: FontWeight.bold,
           ),
@@ -261,11 +261,11 @@ class InternApprentTrainingPage extends StatelessWidget {
         elevation: 0,
         leading: Navigator.canPop(context)
             ? IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textColor),
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.logoNavy),
                 onPressed: () => Navigator.pop(context),
               )
             : IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textColor),
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.logoNavy),
                 onPressed: () => Navigator.pushReplacementNamed(context, '/'),
               ),
       ),
@@ -304,7 +304,7 @@ class InternApprentTrainingPage extends StatelessWidget {
                         Text(
                           'Start your professional journey with real-world projects, mentorship, and career support.',
                           style: TextStyle(
-                            color: AppColors.textColor,
+                            color: AppColors.logoNavy,
                             fontSize: AppSizer.deviceSp14,
                           ),
                         ),
@@ -329,7 +329,7 @@ class InternApprentTrainingPage extends StatelessWidget {
                   Text(
                     'Program Overview',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -350,7 +350,7 @@ class InternApprentTrainingPage extends StatelessWidget {
                   Text(
                     'Key Highlights',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -369,7 +369,7 @@ class InternApprentTrainingPage extends StatelessWidget {
                   Text(
                     'Technologies You Can Choose',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -383,7 +383,7 @@ class InternApprentTrainingPage extends StatelessWidget {
                   Text(
                     'What You Will Learn',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -402,7 +402,7 @@ class InternApprentTrainingPage extends StatelessWidget {
                   Text(
                     'Program Fee Structure',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -416,7 +416,7 @@ class InternApprentTrainingPage extends StatelessWidget {
                   Text(
                     'Contact & Registration',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -531,7 +531,7 @@ class InternApprentTrainingPage extends StatelessWidget {
             Text(
               title,
               style: TextStyle(
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
                 fontSize: AppSizer.deviceSp14,
                 fontWeight: FontWeight.bold,
               ),
@@ -560,7 +560,7 @@ class InternApprentTrainingPage extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(color: AppColors.textColor, fontSize: AppSizer.deviceSp14),
+              style: TextStyle(color: AppColors.logoNavy, fontSize: AppSizer.deviceSp14),
             ),
           ),
         ],
@@ -579,7 +579,7 @@ class InternApprentTrainingPage extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(color: AppColors.textColor, fontSize: AppSizer.deviceSp14),
+              style: TextStyle(color: AppColors.logoNavy, fontSize: AppSizer.deviceSp14),
             ),
           ),
         ],
@@ -606,7 +606,7 @@ class InternApprentTrainingPage extends StatelessWidget {
           backgroundColor: AppColors.cardColor,
           label: Text(
             tech,
-            style: TextStyle(color: AppColors.textColor, fontSize: AppSizer.deviceSp13),
+            style: TextStyle(color: AppColors.logoNavy, fontSize: AppSizer.deviceSp13),
           ),
         );
       }).toList(),
@@ -632,7 +632,7 @@ class InternApprentTrainingPage extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(e.key, style: TextStyle(color: AppColors.textColor, fontSize: AppSizer.deviceSp14)),
+                Text(e.key, style: TextStyle(color: AppColors.logoNavy, fontSize: AppSizer.deviceSp14)),
                 Text(
                   e.value,
                   style: TextStyle(color: AppColors.primaryColor, fontSize: AppSizer.deviceSp14, fontWeight: FontWeight.bold),
@@ -658,7 +658,7 @@ class InternApprentTrainingPage extends StatelessWidget {
           Text(
             'For Queries & Registration:',
             style: TextStyle(
-              color: AppColors.textColor,
+              color: AppColors.logoNavy,
               fontSize: AppSizer.deviceSp15,
               fontWeight: FontWeight.bold,
             ),

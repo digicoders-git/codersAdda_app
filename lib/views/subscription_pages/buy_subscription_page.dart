@@ -1,3 +1,4 @@
+import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/models/subscription_model.dart';
 import 'package:coders_adda_app/services/course_service.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
@@ -366,7 +367,7 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textColor.withOpacity(0.8),
+                  color: AppColors.logoNavy.withOpacity(0.8),
                 ),
               ),
               SizedBox(height: AppSizer.deviceHeight1),
@@ -407,7 +408,7 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
                               Text(
                                 '${coupon['discountPercent']}% OFF',
                                 style: TextStyle(
-                                  color: Colors.green[700],
+                                  color: AppColors.logoGreen,
                                   fontSize: AppSizer.deviceSp12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -425,13 +426,13 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
               Container(
                 padding: EdgeInsets.all(AppSizer.deviceWidth3),
                 decoration: BoxDecoration(
-                  color: Colors.green[50],
+                  color: AppColors.logoGreen,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green),
+                  border: Border.all(color: AppColors.logoGreen),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.check_circle, color: Colors.green, size: AppSizer.deviceSp18),
+                    Icon(Icons.check_circle, color: AppColors.logoGreen, size: AppSizer.deviceSp18),
                     SizedBox(width: AppSizer.deviceWidth2),
                     Expanded(
                       child: Column(
@@ -441,13 +442,13 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
                             'Coupon Applied!',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Colors.green[800],
+                              color: AppColors.logoGreen,
                             ),
                           ),
                           Text(
                             'You saved ₹$_discountAmount with $_selectedCoupon',
                             style: TextStyle(
-                              color: Colors.green[700],
+                              color: AppColors.logoGreen,
                               fontSize: AppSizer.deviceSp12,
                             ),
                           ),
@@ -506,17 +507,17 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
               Container(
                 padding: EdgeInsets.all(AppSizer.deviceWidth3),
                 decoration: BoxDecoration(
-                  color: Colors.green[50],
+                  color: AppColors.logoGreen,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.savings, color: Colors.green, size: AppSizer.deviceSp16),
+                    Icon(Icons.savings, color: AppColors.logoGreen, size: AppSizer.deviceSp16),
                     SizedBox(width: AppSizer.deviceWidth2),
                     Text(
                       'You save ₹${_discountAmount.toStringAsFixed(2)}',
                       style: TextStyle(
-                        color: Colors.green[800],
+                        color: AppColors.logoGreen,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -669,7 +670,7 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
       padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight0_5),
       child: Row(
         children: [
-          Icon(Icons.check, color: Colors.green, size: AppSizer.deviceSp16),
+          Icon(Icons.check, color: AppColors.logoGreen, size: AppSizer.deviceSp16),
           SizedBox(width: AppSizer.deviceWidth2),
           Text(
             text,
@@ -693,7 +694,7 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
             label,
             style: TextStyle(
               fontSize: AppSizer.deviceSp14,
-              color: isDiscount ? Colors.green : AppColors.textColor,
+              color: isDiscount ? AppColors.logoGreen : AppColors.logoNavy,
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -701,7 +702,7 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
             value,
             style: TextStyle(
               fontSize: AppSizer.deviceSp14,
-              color: isDiscount ? Colors.green : (isTotal ? AppColors.primaryColor : AppColors.textColor),
+              color: isDiscount ? AppColors.logoGreen : (isTotal ? AppColors.primaryColor : AppColors.logoNavy),
               fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -733,7 +734,7 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Coupon Applied Successfully!'),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.logoGreen,
             ),
           );
         }

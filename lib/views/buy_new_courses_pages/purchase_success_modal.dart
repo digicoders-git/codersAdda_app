@@ -36,14 +36,7 @@ class PurchaseSuccessModal extends StatelessWidget {
         padding: EdgeInsets.all(AppSizer.deviceWidth6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white,
-              AppColors.primaryColor.withOpacity(0.05),
-            ],
-          ),
+          color: AppColors.primaryColor,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -85,7 +78,7 @@ class PurchaseSuccessModal extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppSizer.deviceSp18,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
               ),
               textAlign: TextAlign.center,
             ),

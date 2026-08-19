@@ -75,7 +75,7 @@ class ReviewsTab extends StatelessWidget {
           style: TextStyle(
             fontSize: AppSizer.deviceSp20,
             fontWeight: FontWeight.bold,
-            color: AppColors.textColor,
+            color: AppColors.logoNavy,
           ),
         ),
         SizedBox(height: AppSizer.deviceHeight2),
@@ -87,7 +87,7 @@ class ReviewsTab extends StatelessWidget {
           style: TextStyle(
             fontSize: AppSizer.deviceSp22,
             fontWeight: FontWeight.bold,
-            color: AppColors.textColor,
+            color: AppColors.logoNavy,
           ),
         ),
         SizedBox(height: AppSizer.deviceHeight1),
@@ -109,7 +109,7 @@ class ReviewsTab extends StatelessWidget {
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: AppSizer.deviceSp16,
-            color: AppColors.textColor,
+            color: AppColors.logoNavy,
           ),
         ),
         SizedBox(height: AppSizer.deviceHeight3),
@@ -163,7 +163,7 @@ class ReviewCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: AppSizer.deviceSp16,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textColor,
+                    color: AppColors.logoNavy,
                   ),
                 ),
                 SizedBox(height: AppSizer.deviceHeight0_5),
@@ -182,7 +182,7 @@ class ReviewCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: AppSizer.deviceSp14,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textColor,
+                        color: AppColors.logoNavy,
                       ),
                     ),
                   ],
@@ -192,7 +192,7 @@ class ReviewCard extends StatelessWidget {
                   review.comment,
                   style: TextStyle(
                     fontSize: AppSizer.deviceSp14,
-                    color: AppColors.textColor,
+                    color: AppColors.logoNavy,
                     height: 1.4,
                   ),
                 ),
@@ -240,7 +240,7 @@ class _WriteReviewSheetState extends State<WriteReviewSheet> {
             style: TextStyle(
               fontSize: AppSizer.deviceSp20,
               fontWeight: FontWeight.bold,
-              color: AppColors.textColor,
+              color: AppColors.logoNavy,
             ),
           ),
           SizedBox(height: AppSizer.deviceHeight2),

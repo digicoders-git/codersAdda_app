@@ -41,7 +41,7 @@ class _MainNavigationState extends State<MainNavigation> {
       bottomNavigationBar: Container(
         margin: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(25),
           boxShadow: [
             BoxShadow(
@@ -108,14 +108,7 @@ class _MainNavigationState extends State<MainNavigation> {
         margin: EdgeInsets.symmetric(horizontal: 4),
         decoration: isActive
             ? BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.primaryColor,
-                    AppColors.accentColor,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: AppColors.primaryColor,
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
@@ -158,12 +151,7 @@ class _MainNavigationState extends State<MainNavigation> {
                         Container(
                           padding: EdgeInsets.all(2),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.orange,
-                                Colors.red,
-                              ],
-                            ),
+                            color: AppColors.primaryColor,
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -175,7 +163,7 @@ class _MainNavigationState extends State<MainNavigation> {
                       else
                         Icon(
                           isActive ? activeIcon : icon,
-                          color: isActive ? Colors.white : AppColors.textColor,
+                          color: isActive ? Colors.white : AppColors.logoNavy,
                           size: isSpecial ? 22 : 20,
                         ),
                       
@@ -201,7 +189,7 @@ class _MainNavigationState extends State<MainNavigation> {
                     child: Text(
                       label,
                       style: TextStyle(
-                        color: isActive ? Colors.white : AppColors.textColor,
+                        color: isActive ? Colors.white : AppColors.logoNavy,
                         fontSize: 11,
                         fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                       ),

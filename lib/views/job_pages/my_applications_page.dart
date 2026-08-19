@@ -22,10 +22,10 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
   Color _getStatusColor(String status) {
     switch (status) {
       case 'Applied': return Colors.blue;
-      case 'Under Review': return Colors.orange;
-      case 'Shortlisted': return Colors.purple;
+      case 'Under Review': return AppColors.logoOrange;
+      case 'Shortlisted': return AppColors.logoNavy;
       case 'Interview Scheduled': return Colors.deepPurple;
-      case 'Selected': return Colors.green;
+      case 'Selected': return AppColors.logoGreen;
       case 'Rejected': return Colors.red;
       default: return Colors.grey;
     }
@@ -201,24 +201,24 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
                           Container(
                             padding: EdgeInsets.all(3.w),
                             decoration: BoxDecoration(
-                              color: Colors.purple.shade50,
+                              color: AppColors.logoNavy,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.purple.shade100),
+                              border: Border.all(color: AppColors.logoNavy),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   children: [
-                                    Icon(Icons.event, size: 4.w, color: Colors.purple.shade700),
+                                    Icon(Icons.event, size: 4.w, color: AppColors.logoNavy),
                                     SizedBox(width: 2.w),
-                                    Text('Interview Scheduled', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: Colors.purple.shade900)),
+                                    Text('Interview Scheduled', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold, color: AppColors.logoNavy)),
                                   ],
                                 ),
                                 SizedBox(height: 1.h),
-                                Text('Date: ${DateFormat('dd MMM yyyy').format(DateTime.parse(app['interviewDate']))}', style: TextStyle(fontSize: 13.sp, color: Colors.purple.shade800)),
-                                if (app['interviewTime'] != null) Text('Time: ${app['interviewTime']}', style: TextStyle(fontSize: 13.sp, color: Colors.purple.shade800)),
-                                if (app['interviewMode'] != null) Text('Mode: ${app['interviewMode']}', style: TextStyle(fontSize: 13.sp, color: Colors.purple.shade800)),
+                                Text('Date: ${DateFormat('dd MMM yyyy').format(DateTime.parse(app['interviewDate']))}', style: TextStyle(fontSize: 13.sp, color: AppColors.logoNavy)),
+                                if (app['interviewTime'] != null) Text('Time: ${app['interviewTime']}', style: TextStyle(fontSize: 13.sp, color: AppColors.logoNavy)),
+                                if (app['interviewMode'] != null) Text('Mode: ${app['interviewMode']}', style: TextStyle(fontSize: 13.sp, color: AppColors.logoNavy)),
                               ],
                             ),
                           )

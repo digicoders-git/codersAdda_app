@@ -25,11 +25,38 @@ class NotificationModel {
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     final notif = json['notification'] ?? {};
+    
+    String? parsedImage;
+    if (notif['image'] != null) {
+      if (notif['image'] is String) {
+        String imgStr = notif['image'];
+        if (imgStr.isNotEmpty) {
+          if (imgStr.startsWith('http')) {
+            parsedImage = imgStr;
+          } else if (imgStr.startsWith('/')) {
+            parsedImage = 'https://api.codersadda.com' + imgStr;
+          } else {
+            parsedImage = 'https://api.codersadda.com/' + imgStr;
+          }
+        }
+      } else if (notif['image'] is Map) {
+         String cloud = notif['image']['url'] ?? '';
+         String local = notif['image']['localUrl'] ?? '';
+         if (cloud.isNotEmpty) parsedImage = cloud;
+         else if (local.isNotEmpty) {
+            if (local.startsWith('http')) parsedImage = local;
+            else if (local.startsWith('/')) parsedImage = 'https://api.codersadda.com' + local;
+            else parsedImage = 'https://api.codersadda.com/' + local;
+         }
+      }
+    }
+
     return NotificationModel(
       id: json['_id'] ?? '',
       title: notif['title'] ?? '',
       body: notif['body'] ?? '',
-      image: notif['image'],
+      image: parsedImage,
+
       actionLink: notif['actionLink'],
       priority: notif['priority'] ?? 'Normal',
       status: notif['status'] ?? 'Sent',

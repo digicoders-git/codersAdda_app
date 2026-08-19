@@ -45,41 +45,24 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primaryColor,
+      backgroundColor: AppColors.backgroundColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: AppSizer.deviceWidth20,
-              height: AppSizer.deviceWidth20,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(50),
-                child: Image.asset(
-                  "assets/images/codersaddalogo.png",
-                  fit: BoxFit.cover,
-                ),
+              width: AppSizer.deviceWidth80,
+              padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth5),
+              child: Image.asset(
+                "assets/images/mainLogo.png",
+                fit: BoxFit.contain,
               ),
             ),
-
-            SizedBox(height: AppSizer.deviceHeight4),
-            Text(
-              'CodersAdda',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: AppSizer.deviceSp28,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight1),
+            SizedBox(height: AppSizer.deviceHeight2),
             Text(
               'Learn • Grow • Succeed',
               style: TextStyle(
-                color: Colors.white70,
+                color: AppColors.textSecondary,
                 fontSize: AppSizer.deviceSp16,
               ),
             ),

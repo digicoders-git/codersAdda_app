@@ -53,11 +53,19 @@ class _HomePageState extends State<HomePage> {
             drawer: _buildDrawer(context),
             appBar: AppBar(
               centerTitle: true,
-              title: Text(
-                'CodersAdda',
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp20,
-                  fontWeight: FontWeight.bold,
+              title: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp20,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Roboto', // Default fallback font
+                  ),
+                  children: [
+                    TextSpan(text: 'Coders', style: TextStyle(color: AppColors.logoNavy)),
+                    TextSpan(text: '{', style: TextStyle(color: AppColors.logoOrange)),
+                    TextSpan(text: 'Adda', style: TextStyle(color: AppColors.primaryColor)),
+                    TextSpan(text: '}', style: TextStyle(color: AppColors.logoGreen)),
+                  ],
                 ),
               ),
               actions: [
@@ -95,7 +103,7 @@ class _HomePageState extends State<HomePage> {
                                   width: 16,
                                   height: 16,
                                   decoration: BoxDecoration(
-                                    color: Colors.red,
+                                    color: AppColors.errorColor,
                                     shape: BoxShape.circle,
                                   ),
                                   child: Center(
@@ -147,11 +155,7 @@ class _HomePageState extends State<HomePage> {
               height: AppSizer.deviceHeight18,
               width: double.infinity,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppColors.primaryColor, AppColors.accentColor],
-                ),
+                color: AppColors.primaryColor,
               ),
               child: Stack(
                 children: [
@@ -208,14 +212,14 @@ class _HomePageState extends State<HomePage> {
                                       color: Colors.white,
                                       width: 2,
                                     ),
-                                    color: Colors.grey.shade300,
+                                    color: AppColors.onSurfaceVariant,
                                   ),
                                   child: ClipOval(
                                     child: Image.network(
                                       user?.profilePicture ?? 'https://via.placeholder.com/150',
                                       fit: BoxFit.cover,
                                       errorBuilder: (context, error, stackTrace) {
-                                        return Icon(Icons.person, size: AppSizer.deviceWidth6, color: Colors.grey);
+                                        return Icon(Icons.person, size: AppSizer.deviceWidth6, color: AppColors.onSurfaceVariant);
                                       },
                                     ),
                                   ),
@@ -302,7 +306,7 @@ class _HomePageState extends State<HomePage> {
                     _drawerItem(
                       Icons.menu_book,
                       'Training Programs',
-                      Colors.blue,
+                      AppColors.logoBlue,
                       () {
                         Navigator.pop(context);
                         NavigationService.navigateTo(
@@ -311,14 +315,14 @@ class _HomePageState extends State<HomePage> {
                         );
                       },
                     ),
-                    _drawerItem(Icons.wallet, 'My Wallet', Colors.green, () {
+                    _drawerItem(Icons.wallet, 'My Wallet', AppColors.logoGreen, () {
                       Navigator.pop(context);
                       NavigationService.navigateTo(context, WalletsPage());
                     }),
                     _drawerItem(
                       Icons.workspace_premium,
                       'Subscription',
-                      Colors.amber,
+                      AppColors.logoOrange,
                       () {
                         Navigator.pop(context);
                         NavigationService.navigateTo(
@@ -330,7 +334,7 @@ class _HomePageState extends State<HomePage> {
                      _drawerItem(
                       Icons.quiz,
                       'Daily Quiz',
-                      Colors.deepOrangeAccent,
+                      AppColors.logoOrange,
                       () {
                         Navigator.pop(context);
                         NavigationService.navigateTo(
@@ -342,7 +346,7 @@ class _HomePageState extends State<HomePage> {
                     _drawerItem(
                       Icons.assignment,
                       'General Tests',
-                      Colors.orange,
+                      AppColors.logoOrange,
                       () {
                         Navigator.pop(context);
                         NavigationService.navigateTo(
@@ -351,7 +355,7 @@ class _HomePageState extends State<HomePage> {
                         );
                       },
                     ),
-                    _drawerItem(Icons.person, 'My Jobs', Colors.grey, () {
+                    _drawerItem(Icons.person, 'My Jobs', AppColors.onSurfaceVariant, () {
                       Navigator.pop(context);
                       NavigationService.navigateTo(context, MyJobDetailsPage());
                     }),
@@ -360,19 +364,19 @@ class _HomePageState extends State<HomePage> {
                       thickness: 1,
                       color: AppColors.outline.withOpacity(0.3),
                     ),
-                    _drawerItem(Icons.download, 'Downloads', Colors.teal, () {
+                    _drawerItem(Icons.download, 'Downloads', AppColors.logoGreen, () {
                       Navigator.pop(context);
                       NavigationService.navigateTo(context, const DownloadedPdfsPage());
                     }),
-                    _drawerItem(Icons.person, 'Profile', Colors.purple, () {
+                    _drawerItem(Icons.person, 'Profile', AppColors.logoNavy, () {
                       Navigator.pop(context);
                       NavigationService.navigateTo(context, ProfilePage());
                     }),
-                    _drawerItem(Icons.settings, 'Settings', Colors.grey, () {
+                    _drawerItem(Icons.settings, 'Settings', AppColors.onSurfaceVariant, () {
                       Navigator.pop(context);
                       _showComingSoon(context);
                     }),
-                    _drawerItem(Icons.help, 'Help & Support', Colors.blue, () {
+                    _drawerItem(Icons.help, 'Help & Support', AppColors.logoBlue, () {
                       Navigator.pop(context);
                       NavigationService.navigateTo(context, const HelpSupportPage());
                     }),
@@ -381,7 +385,7 @@ class _HomePageState extends State<HomePage> {
                       thickness: 1,
                       color: AppColors.outline.withOpacity(0.3),
                     ),
-                    _drawerItem(Icons.logout, 'Logout', Colors.red, () async {
+                    _drawerItem(Icons.logout, 'Logout', AppColors.errorColor, () async {
                       Navigator.pop(context);
                       await context.read<AuthViewModel>().signOut();
                       if (context.mounted) {
@@ -443,7 +447,7 @@ class _HomePageState extends State<HomePage> {
         style: TextStyle(
           fontSize: AppSizer.deviceSp16,
           fontWeight: FontWeight.w500,
-          color: AppColors.textColor,
+          color: AppColors.logoNavy,
         ),
       ),
       trailing: Container(
@@ -552,7 +556,7 @@ class _HomePageState extends State<HomePage> {
                   offset: const Offset(0, 4),
                 )
               ],
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: AppColors.onSurfaceVariant),
             ),
             child: Row(
               children: [
@@ -563,7 +567,7 @@ class _HomePageState extends State<HomePage> {
                     color: AppColors.primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.play_circle_fill, color: AppColors.primaryColor, size: 30),
+                  child: Icon(Icons.play_circle_fill, color: AppColors.primaryColor, size: 30),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -579,14 +583,14 @@ class _HomePageState extends State<HomePage> {
                       const SizedBox(height: 4),
                       Text(
                         lectureTitle,
-                        style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                        style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 12),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8),
                       LinearProgressIndicator(
                         value: percent,
-                        backgroundColor: Colors.grey.shade200,
+                        backgroundColor: AppColors.onSurfaceVariant,
                         valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
                       ),
                     ],
@@ -622,7 +626,7 @@ class _HomePageState extends State<HomePage> {
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp20,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                          color: AppColors.logoNavy,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -631,7 +635,7 @@ class _HomePageState extends State<HomePage> {
                     SizedBox(width: AppSizer.deviceWidth1),
                     Icon(
                       Icons.verified,
-                      color: Colors.blueAccent,
+                      color: AppColors.logoBlue,
                       size: AppSizer.deviceSp18,
                     ),
                   ],
@@ -655,13 +659,13 @@ class _HomePageState extends State<HomePage> {
                 borderRadius: BorderRadius.circular(50),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.blueAccent.withOpacity(0.1),
+                    color: AppColors.logoBlue.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   padding: EdgeInsets.all(AppSizer.deviceWidth2),
                   child: Icon(
                     Icons.credit_card_rounded,
-                    color: Colors.blueAccent,
+                    color: AppColors.logoBlue,
                     size: AppSizer.deviceSp22,
                   ),
                 ),
@@ -677,22 +681,25 @@ class _HomePageState extends State<HomePage> {
   Widget _buildPageCards(BuildContext context) {
     final pages = [
       {
-        'name': 'COURSEs',
+        'name': 'COURSES',
         'icon': Icons.school,
+        'color': AppColors.logoBlue,
         'onTap': () {
           NavigationService.navigateToCoursePage(context);
         },
       },
       {
-        'name': 'E-BOOKs',
+        'name': 'E-BOOKS',
         'icon': Icons.picture_as_pdf,
+        'color': AppColors.logoOrange,
         'onTap': () {
           NavigationService.navigateToPdfPage(context);
         },
       },
       {
-        'name': 'JOBs',
+        'name': 'JOBS',
         'icon': Icons.work,
+        'color': AppColors.logoGreen,
         'onTap': () {
           NavigationService.navigateTo(context, JobsPage());
         },
@@ -700,6 +707,7 @@ class _HomePageState extends State<HomePage> {
       {
         'name': 'PROFILE',
         'icon': Icons.person,
+        'color': AppColors.logoNavy,
         'onTap': () {
           NavigationService.navigateTo(context, ProfilePage());
         },
@@ -718,21 +726,27 @@ class _HomePageState extends State<HomePage> {
       itemCount: pages.length,
       itemBuilder: (context, index) {
         final item = pages[index];
+        final cardColor = item['color'] as Color;
         return GestureDetector(
           onTap: item['onTap'] as VoidCallback,
           child: Card(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
+              side: BorderSide(color: cardColor.withOpacity(0.3), width: 1),
             ),
             elevation: 3,
             child: Container(
               padding: EdgeInsets.all(AppSizer.deviceWidth3),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
+                color: cardColor.withOpacity(0.05),
+              ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     item['icon'] as IconData,
-                    color: AppColors.primaryColor,
+                    color: cardColor,
                     size: AppSizer.deviceSp28,
                   ),
                   SizedBox(height: AppSizer.deviceHeight1),
@@ -741,6 +755,7 @@ class _HomePageState extends State<HomePage> {
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp14,
                       fontWeight: FontWeight.bold,
+                      color: cardColor,
                     ),
                   ),
                 ],
@@ -796,7 +811,7 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: percentage / 100,
-                    backgroundColor: Colors.grey[300],
+                    backgroundColor: AppColors.onSurfaceVariant,
                     valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
                     minHeight: 8,
                   ),
@@ -806,7 +821,7 @@ class _HomePageState extends State<HomePage> {
                   'Tap here to add missing details.',
                   style: TextStyle(
                     fontSize: AppSizer.deviceSp12,
-                    color: Colors.grey[700],
+                    color: AppColors.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -833,7 +848,7 @@ class _HomePageState extends State<HomePage> {
             style: TextStyle(
               fontSize: AppSizer.deviceSp20,
               fontWeight: FontWeight.bold,
-              color: AppColors.textColor,
+              color: AppColors.logoNavy,
             ),
           ),
         ),
@@ -850,15 +865,11 @@ class _HomePageState extends State<HomePage> {
                 width: AppSizer.deviceWidth70,
                 margin: EdgeInsets.only(right: AppSizer.deviceWidth4),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.orange.shade400, Colors.deepOrange],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: AppColors.primaryColor,
                   borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.orange.withOpacity(0.3),
+                      color: AppColors.logoOrange.withOpacity(0.3),
                       blurRadius: 8,
                       offset: Offset(0, 4),
                     ),
@@ -1003,7 +1014,7 @@ Widget _buildCoursesOnSale(BuildContext context, List<Course> courses) {
                          Container(
   height: AppSizer.deviceHeight13,
   decoration: BoxDecoration(
-    color: Colors.grey[300],
+    color: AppColors.onSurfaceVariant,
     borderRadius: BorderRadius.only(
       topLeft: Radius.circular(AppSizer.deviceWidth3),
       topRight: Radius.circular(AppSizer.deviceWidth3),
@@ -1031,15 +1042,7 @@ Widget _buildCoursesOnSale(BuildContext context, List<Course> courses) {
                                 children: [
                                   ShaderMask(
                                     shaderCallback: (Rect bounds) {
-                                      return const LinearGradient(
-                                        colors: [
-                                          Colors.red,
-                                          Colors.orange,
-                                          Colors.yellow,
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ).createShader(bounds);
+                                      return LinearGradient(colors: [AppColors.primaryColor, AppColors.primaryColor]).createShader(bounds);
                                     },
                                     child: Icon(
                                       Icons.local_fire_department,
@@ -1305,7 +1308,7 @@ Widget _buildQuizzesAmbassadorSection(BuildContext context) {
                 context,
                 title: 'Refral Programs',
                 subtitle:
-                    'Become a partner and represent CodersAdda in your college',
+                    'Become a partner and represent Coders{Adda} in your college',
                 icon: Icons.people_alt,
                 iconColor: AppColors.primaryColor,
                 buttonText: 'Apply Now',
@@ -1341,12 +1344,9 @@ Widget _buildDetailedFeatureCard(
       ),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: gradientColors,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppColors.cardColor,
           borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
+          border: Border.all(color: AppColors.primaryColor.withOpacity(0.2)),
         ),
         padding: EdgeInsets.all(AppSizer.deviceWidth4),
         child: Stack(
@@ -1377,7 +1377,7 @@ Widget _buildDetailedFeatureCard(
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                          color: AppColors.logoNavy,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

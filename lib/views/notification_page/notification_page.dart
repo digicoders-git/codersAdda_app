@@ -43,72 +43,42 @@ class _NotificationPageState extends State<NotificationPage> {
 
   // Type → Icon mapping
   IconData _getIcon(String type) {
-    switch (type) {
-      case 'NewLecture':
-        return Icons.play_circle_outline_rounded;
-      case 'NewTopic':
-        return Icons.menu_book_rounded;
-      case 'NewNotes':
-        return Icons.description_outlined;
-      case 'Quiz':
-        return Icons.quiz_rounded;
-      case 'Course':
-        return Icons.school_rounded;
-      case 'Offer':
-        return Icons.local_offer_rounded;
-      case 'Alert':
-        return Icons.warning_amber_rounded;
-      case 'System':
-        return Icons.workspace_premium_rounded;
-      default:
-        return Icons.notifications_rounded;
-    }
+    String t = type.toLowerCase().replaceAll('_', '');
+    if (t.contains('lecture') || t.contains('video')) return Icons.play_circle_outline_rounded;
+    if (t.contains('topic') || t.contains('book')) return Icons.menu_book_rounded;
+    if (t.contains('note') || t.contains('pdf')) return Icons.description_outlined;
+    if (t.contains('quiz')) return Icons.quiz_rounded;
+    if (t.contains('course')) return Icons.school_rounded;
+    if (t.contains('offer') || t.contains('discount')) return Icons.local_offer_rounded;
+    if (t.contains('alert') || t.contains('warning')) return Icons.warning_amber_rounded;
+    if (t.contains('system')) return Icons.workspace_premium_rounded;
+    return Icons.notifications_rounded;
   }
 
   Color _getIconBgColor(String type) {
-    switch (type) {
-      case 'NewLecture':
-        return Colors.purple.shade50;
-      case 'NewTopic':
-        return Colors.indigo.shade50;
-      case 'NewNotes':
-        return Colors.teal.shade50;
-      case 'Quiz':
-        return Colors.pink.shade50;
-      case 'Course':
-        return Colors.blue.shade50;
-      case 'Offer':
-        return Colors.green.shade50;
-      case 'Alert':
-        return Colors.red.shade50;
-      case 'System':
-        return Colors.amber.shade50;
-      default:
-        return AppColors.primaryColor.withOpacity(0.08);
-    }
+    String t = type.toLowerCase().replaceAll('_', '');
+    if (t.contains('lecture') || t.contains('video')) return AppColors.logoNavy.withOpacity(0.1);
+    if (t.contains('topic') || t.contains('book')) return Colors.indigo.shade50;
+    if (t.contains('note') || t.contains('pdf')) return Colors.teal.shade50;
+    if (t.contains('quiz')) return Colors.pink.shade50;
+    if (t.contains('course')) return Colors.blue.shade50;
+    if (t.contains('offer') || t.contains('discount')) return AppColors.logoGreen.withOpacity(0.1);
+    if (t.contains('alert') || t.contains('warning')) return Colors.red.shade50;
+    if (t.contains('system')) return AppColors.logoOrange.withOpacity(0.1);
+    return AppColors.primaryColor.withOpacity(0.08);
   }
 
   Color _getIconColor(String type) {
-    switch (type) {
-      case 'NewLecture':
-        return Colors.purple;
-      case 'NewTopic':
-        return Colors.indigo;
-      case 'NewNotes':
-        return Colors.teal;
-      case 'Quiz':
-        return Colors.pink;
-      case 'Course':
-        return Colors.blue;
-      case 'Offer':
-        return Colors.green;
-      case 'Alert':
-        return Colors.red;
-      case 'System':
-        return Colors.amber.shade700;
-      default:
-        return AppColors.primaryColor;
-    }
+    String t = type.toLowerCase().replaceAll('_', '');
+    if (t.contains('lecture') || t.contains('video')) return AppColors.logoNavy;
+    if (t.contains('topic') || t.contains('book')) return Colors.indigo;
+    if (t.contains('note') || t.contains('pdf')) return Colors.teal;
+    if (t.contains('quiz')) return Colors.pink;
+    if (t.contains('course')) return Colors.blue;
+    if (t.contains('offer') || t.contains('discount')) return AppColors.logoGreen;
+    if (t.contains('alert') || t.contains('warning')) return Colors.red;
+    if (t.contains('system')) return AppColors.logoOrange;
+    return AppColors.primaryColor;
   }
 
   // Grouping by date section label
@@ -183,7 +153,7 @@ class _NotificationPageState extends State<NotificationPage> {
         title: Text(
           'Notifications',
           style: TextStyle(
-            color: AppColors.textColor,
+            color: AppColors.logoNavy,
             fontSize: AppSizer.deviceSp20,
             fontWeight: FontWeight.bold,
           ),
@@ -191,7 +161,7 @@ class _NotificationPageState extends State<NotificationPage> {
         backgroundColor: AppColors.cardColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textColor),
+          icon: Icon(Icons.arrow_back, color: AppColors.logoNavy),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
@@ -298,7 +268,7 @@ class _NotificationPageState extends State<NotificationPage> {
               Text(
                 'No Notifications Yet',
                 style: TextStyle(
-                  color: AppColors.textColor,
+                  color: AppColors.logoNavy,
                   fontSize: AppSizer.deviceSp17,
                   fontWeight: FontWeight.bold,
                 ),
@@ -326,7 +296,7 @@ class _NotificationPageState extends State<NotificationPage> {
       child: Text(
         title,
         style: TextStyle(
-          color: AppColors.textColor,
+          color: AppColors.logoNavy,
           fontSize: AppSizer.deviceSp16,
           fontWeight: FontWeight.bold,
         ),
@@ -393,7 +363,7 @@ class _NotificationPageState extends State<NotificationPage> {
                           child: Text(
                             n.title,
                             style: TextStyle(
-                              color: AppColors.textColor,
+                              color: AppColors.logoNavy,
                               fontSize: AppSizer.deviceSp15,
                               fontWeight: n.isRead
                                   ? FontWeight.w500

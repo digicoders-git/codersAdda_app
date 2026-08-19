@@ -141,7 +141,7 @@ class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
                     '${category.name} (${category.ebookCount})',
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp14,
-                      color: isSelected ? Colors.white : AppColors.textColor,
+                      color: isSelected ? Colors.white : AppColors.logoNavy,
                     ),
                   ),
                   selected: isSelected,

@@ -207,7 +207,7 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                   icon: const Icon(Icons.workspace_premium, color: Colors.white),
                   label: const Text("Download Certificate"),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: AppColors.logoGreen,
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 40),
                     shape: RoundedRectangleBorder(
@@ -294,10 +294,10 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
         'razorpay_payment_id': response.paymentId,
         'razorpay_signature': response.signature,
       });
-      _showSnackBar('Payment successful! Lecture unlocked 🎉', Colors.green);
+      _showSnackBar('Payment successful! Lecture unlocked 🎉', AppColors.logoGreen);
       _fetchLectures(); // Reload to get video URL
     } catch (e) {
-      _showSnackBar('Verification failed: $e', Colors.orange);
+      _showSnackBar('Verification failed: $e', AppColors.logoOrange);
     }
   }
 
@@ -441,7 +441,7 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('This lecture is locked. Please purchase the course to access it.'),
-                        backgroundColor: Colors.orange,
+                        backgroundColor: AppColors.logoOrange,
                       ),
                     );
                     return;
@@ -521,7 +521,7 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('This resource is locked. Please purchase the course to access it.'),
-                          backgroundColor: Colors.orange,
+                          backgroundColor: AppColors.logoOrange,
                         ),
                       );
                       return;
@@ -547,7 +547,7 @@ class _TopicLecturesPageState extends State<TopicLecturesPage> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('This lecture is locked. Please purchase to access it.'),
-                          backgroundColor: Colors.orange,
+                          backgroundColor: AppColors.logoOrange,
                         ),
                       );
                       return;
@@ -609,7 +609,7 @@ class _LectureCardState extends State<_LectureCard> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('This resource is locked. Please purchase the course to access it.'),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.logoOrange,
         ),
       );
       return;
@@ -699,11 +699,7 @@ class _LectureCardState extends State<_LectureCard> {
                   Positioned.fill(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
-                        ),
+                        color: AppColors.primaryColor,
                       ),
                     ),
                   ),
@@ -728,7 +724,7 @@ class _LectureCardState extends State<_LectureCard> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: lecture.isLocked ? Colors.orange : Colors.green,
+                        color: lecture.isLocked ? AppColors.logoOrange : AppColors.logoGreen,
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
@@ -786,7 +782,7 @@ class _LectureCardState extends State<_LectureCard> {
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp16,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
+                            color: AppColors.logoNavy,
                           ),
                         ),
                       ),
@@ -794,13 +790,13 @@ class _LectureCardState extends State<_LectureCard> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
+                            color: AppColors.logoGreen.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: Colors.green),
+                            border: Border.all(color: AppColors.logoGreen),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Completed',
-                            style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold),
+                            style: TextStyle(color: AppColors.logoGreen, fontSize: 10, fontWeight: FontWeight.bold),
                           ),
                         ),
                     ],
@@ -869,10 +865,10 @@ class _LectureCardState extends State<_LectureCard> {
         actionLabel = 'Read PDF / Notes';
         btnColor = Colors.red;
       } else if (lecture.contentType == 'test' || lecture.contentType == 'subjective_test') {
-        typeColor = Colors.orange;
+        typeColor = AppColors.logoOrange;
         typeIcon = Icons.assignment;
         actionLabel = widget.isAttempted ? 'View Result (Completed)' : 'Attempt Test (Quiz)';
-        btnColor = widget.isAttempted ? Colors.green : Colors.orange;
+        btnColor = widget.isAttempted ? AppColors.logoGreen : AppColors.logoOrange;
       } else {
         typeColor = Colors.blue;
         typeIcon = Icons.launch;
@@ -926,7 +922,7 @@ class _LectureCardState extends State<_LectureCard> {
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp16,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
+                            color: AppColors.logoNavy,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -1034,7 +1030,7 @@ class _PlaceholderThumb extends StatelessWidget {
       width: double.infinity,
       height: 160,
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: pair, begin: Alignment.topLeft, end: Alignment.bottomRight),
+        color: AppColors.primaryColor,
       ),
       child: const Center(
         child: Icon(Icons.play_circle_outlined, size: 56, color: Colors.white54),

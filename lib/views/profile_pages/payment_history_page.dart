@@ -142,13 +142,13 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: isSuccess ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                                    color: isSuccess ? AppColors.logoGreen.withOpacity(0.1) : Colors.red.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     payment.status.toUpperCase(),
                                     style: TextStyle(
-                                      color: isSuccess ? Colors.green : Colors.red,
+                                      color: isSuccess ? AppColors.logoGreen : Colors.red,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
                                     ),
@@ -175,7 +175,7 @@ class _PaymentHistoryPageState extends State<PaymentHistoryPage> {
                                         fontSize: AppSizer.deviceSp18,
                                         fontWeight: FontWeight.bold,
                                         color: (payment.itemType == 'wallet_deposit' || payment.itemType == 'referral_reward')
-                                            ? Colors.green
+                                            ? AppColors.logoGreen
                                             : Colors.red,
                                       ),
                                     ),

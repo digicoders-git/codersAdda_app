@@ -146,14 +146,7 @@ class AllCourseDetailPage extends StatelessWidget {
         // Gradient Overlay
         Container(
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: [
-                Colors.black.withOpacity(0.7),
-                Colors.transparent,
-              ],
-            ),
+            color: AppColors.primaryColor,
           ),
         ),
         
@@ -210,7 +203,7 @@ class AllCourseDetailPage extends StatelessWidget {
               SizedBox(height: AppSizer.deviceHeight1),
               Row(
                 children: [
-                  Icon(Icons.star, color: Colors.amber, size: AppSizer.deviceSp16),
+                  Icon(Icons.star, color: AppColors.logoOrange, size: AppSizer.deviceSp16),
                   SizedBox(width: AppSizer.deviceWidth1),
                   Text('${course.rating}', style: TextStyle(fontSize: AppSizer.deviceSp14)),
                   SizedBox(width: AppSizer.deviceWidth3),
@@ -400,7 +393,7 @@ class AllCourseDetailPage extends StatelessWidget {
       leading: Icon(lesson.isFree ? Icons.play_circle_outline : Icons.lock_outline, color: lesson.isFree ? AppColors.primaryColor : Colors.grey),
       title: Text(lesson.title, style: TextStyle(fontSize: AppSizer.deviceSp13)),
       subtitle: Text(lesson.duration, style: TextStyle(fontSize: AppSizer.deviceSp11)),
-      trailing: lesson.isFree ? const Icon(Icons.play_circle_filled, color: AppColors.primaryColor) : const Icon(Icons.lock, size: 16),
+      trailing: lesson.isFree ? Icon(Icons.play_circle_filled, color: AppColors.primaryColor) : const Icon(Icons.lock, size: 16),
       onTap: () {
         if (lesson.isFree) {
           Navigator.push(
@@ -431,7 +424,7 @@ class AllCourseDetailPage extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('This lecture is locked. Please purchase the course to view it.'),
-              backgroundColor: Colors.orange,
+              backgroundColor: AppColors.logoOrange,
             ),
           );
         }
@@ -510,7 +503,7 @@ class AllCourseDetailPage extends StatelessWidget {
                         children: List.generate(5, (i) => Icon(
                           Icons.star,
                           size: AppSizer.deviceSp14,
-                          color: i < review.rating ? Colors.amber : Colors.grey[300],
+                          color: i < review.rating ? AppColors.logoOrange : Colors.grey[300],
                         )),
                       ),
                     ],

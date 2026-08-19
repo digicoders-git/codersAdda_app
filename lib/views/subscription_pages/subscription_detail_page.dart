@@ -76,9 +76,7 @@ class _SubscriptionDetailPageState extends State<SubscriptionDetailPage> {
       width: double.infinity,
       padding: EdgeInsets.all(AppSizer.deviceWidth6),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primaryColor, AppColors.primaryColor.withOpacity(0.7)],
-        ),
+        color: AppColors.primaryColor,
       ),
       child: Column(
         children: [
@@ -366,7 +364,7 @@ class _SubscriptionDetailPageState extends State<SubscriptionDetailPage> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.star, color: Colors.amber, size: 16),
+                              Icon(Icons.star, color: AppColors.logoOrange, size: 16),
                               SizedBox(width: AppSizer.deviceWidth1),
                               Expanded(
                                 child: Column(

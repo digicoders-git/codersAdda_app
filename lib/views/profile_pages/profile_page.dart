@@ -231,7 +231,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                              color: user.hasActiveSubscription ? Colors.amber : AppColors.primaryColor, 
+                              color: user.hasActiveSubscription ? AppColors.logoOrange : AppColors.primaryColor, 
                               width: user.hasActiveSubscription ? 4 : 3),
                           color: Colors.grey.shade200, // Background color for fallback
                         ),
@@ -254,7 +254,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              color: Colors.amber,
+                              color: AppColors.logoOrange,
                               shape: BoxShape.circle,
                               border: Border.all(color: Colors.white, width: 2),
                             ),
@@ -283,7 +283,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               style: TextStyle(
                                 fontSize: AppSizer.deviceSp20,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.textColor,
+                                color: AppColors.logoNavy,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -294,14 +294,14 @@ class _ProfilePageState extends State<ProfilePage> {
                               margin: const EdgeInsets.only(left: 8),
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: Colors.amber.withOpacity(0.2),
+                                color: AppColors.logoOrange.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.amber),
+                                border: Border.all(color: AppColors.logoOrange),
                               ),
                               child: Text(
                                   user.activeSubscriptionName.isNotEmpty ? user.activeSubscriptionName.toUpperCase() : 'PRO',
-                                  style: const TextStyle(
-                                    color: Colors.amber,
+                                  style: TextStyle(
+                                    color: AppColors.logoOrange,
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -446,13 +446,13 @@ class _ProfilePageState extends State<ProfilePage> {
                '${user.courseCount}',
               'Courses',
               Icons.play_circle_filled,
-              Colors.orange,
+              AppColors.logoOrange,
             ),
             _buildStatItem(
               viewModel.memberSince,
               'Member Since',
               Icons.calendar_today,
-              Colors.purple,
+              AppColors.logoNavy,
             ),
           ],
         ),
@@ -482,7 +482,7 @@ class _ProfilePageState extends State<ProfilePage> {
           style: TextStyle(
             fontSize: AppSizer.deviceSp18,
             fontWeight: FontWeight.bold,
-            color: AppColors.textColor,
+            color: AppColors.logoNavy,
           ),
         ),
         SizedBox(height: AppSizer.deviceHeight0_5),
@@ -640,14 +640,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     vertical: AppSizer.deviceHeight0_5,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.1),
+                    color: AppColors.logoOrange.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     '${achievements.length} Badges',
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp14,
-                      color: Colors.amber,
+                      color: AppColors.logoOrange,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -682,7 +682,7 @@ class _ProfilePageState extends State<ProfilePage> {
             width: AppSizer.deviceWidth12,
             height: AppSizer.deviceWidth12,
             decoration: BoxDecoration(
-              color: Colors.amber.withOpacity(0.1),
+              color: AppColors.logoOrange.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -729,65 +729,37 @@ class _ProfilePageState extends State<ProfilePage> {
         'icon': Icons.video_library,
         'title': 'My Courses',
         'color': AppColors.primaryColor,
-        'onTap': () {
-          NavigationService.navigateTo(context, MyLearningPage());
-        },
+        'onTap': () { NavigationService.navigateTo(context, MyLearningPage()); },
       },
       {
         'icon': Icons.history,
         'title': 'Payment History',
-        'color': Colors.blueAccent,
-        'onTap': () {
-          NavigationService.navigateTo(context, const PaymentHistoryPage());
-        },
+        'color': AppColors.accentColor,
+        'onTap': () { NavigationService.navigateTo(context, const PaymentHistoryPage()); },
       },
       {
         'icon': Icons.card_membership,
         'title': 'My Certificates',
-        'color': Colors.green,
-        'onTap': () {
-          NavigationService.navigateTo(context, const MyCertificatesPage());
-        },
+        'color': AppColors.successColor,
+        'onTap': () { NavigationService.navigateTo(context, const MyCertificatesPage()); },
       },
       {
         'icon': Icons.workspace_premium,
         'title': 'My Subscription',
-        'color': Colors.amber,
-        'onTap': () {
-          NavigationService.navigateTo(context, MySubscriptionsPage());
-        },
+        'color': AppColors.logoOrange,
+        'onTap': () { NavigationService.navigateTo(context, MySubscriptionsPage()); },
       },
-      // {
-      //   'icon': Icons.local_offer,
-      //   'title': 'Apply Coupon',
-      //   'color': Colors.green,
-      //   'onTap': () {
-      //     NavigationService.navigateTo(context, CouponPage());
-      //   }
-      // },
-      // {
-      //   'icon': Icons.settings,
-      //   'title': 'Settings',
-      //   'color': Colors.grey,
-      //   'onTap': () {
-      //     _showComingSoon(context);
-      //   },
-      // },
       {
         'icon': Icons.help,
         'title': 'Help & Support',
-        'color': Colors.blue,
-        'onTap': () {
-          NavigationService.navigateTo(context, const HelpSupportPage());
-        },
+        'color': AppColors.logoBlue,
+        'onTap': () { NavigationService.navigateTo(context, const HelpSupportPage()); },
       },
       {
         'icon': Icons.logout,
         'title': 'Logout',
         'color': Colors.red,
-        'onTap': () {
-          _showLogoutDialog(context);
-        },
+        'onTap': () { _showLogoutDialog(context); },
       },
     ];
 
@@ -796,39 +768,34 @@ class _ProfilePageState extends State<ProfilePage> {
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
-          children: menuItems.map((item) {
-            return ListTile(
-              leading: Container(
-                padding: EdgeInsets.all(AppSizer.deviceWidth2),
-                decoration: BoxDecoration(
-                  color: (item['color'] as Color).withOpacity(0.1),
-                  shape: BoxShape.circle,
+          children: [
+            ...menuItems.map((item) {
+              return ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(AppSizer.deviceWidth2),
+                  decoration: BoxDecoration(
+                    color: (item['color'] as Color).withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    item['icon'] as IconData,
+                    color: item['color'] as Color,
+                    size: AppSizer.deviceSp20,
+                  ),
                 ),
-                child: Icon(
-                  item['icon'] as IconData,
-                  color: item['color'] as Color,
-                  size: AppSizer.deviceSp20,
+                title: Text(
+                  item['title'] as String,
+                  style: TextStyle(fontSize: AppSizer.deviceSp16),
                 ),
-              ),
-              title: Text(
-                item['title'] as String,
-                style: TextStyle(fontSize: AppSizer.deviceSp16),
-              ),
-              trailing: Container(
-                padding: EdgeInsets.all(AppSizer.deviceWidth1),
-                decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
+                trailing: Icon(
                   Icons.arrow_forward_ios,
                   size: AppSizer.deviceSp14,
-                  color: AppColors.onSurfaceVariant,
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
                 ),
-              ),
-              onTap: item['onTap'] as VoidCallback,
-            );
-          }).toList(),
+                onTap: item['onTap'] as VoidCallback,
+              );
+            }).toList(),
+          ],
         ),
       ),
     );

@@ -94,7 +94,7 @@ class RegisterPage extends StatelessWidget {
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp14,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textColor,
+                            color: AppColors.logoNavy,
                           ),
                         ),
                         SizedBox(height: AppSizer.deviceHeight1),
@@ -130,7 +130,7 @@ class RegisterPage extends StatelessWidget {
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp14,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textColor,
+                            color: AppColors.logoNavy,
                           ),
                         ),
                         SizedBox(height: AppSizer.deviceHeight1),

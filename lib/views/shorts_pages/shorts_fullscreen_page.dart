@@ -340,7 +340,7 @@ class _ShortsFullscreenPageState extends State<ShortsFullscreenPage> {
                             ),
                           ),
                           IconButton(
-                            icon: const Icon(Icons.send, color: AppColors.primaryColor),
+                            icon: Icon(Icons.send, color: AppColors.primaryColor),
                             onPressed: () async {
                               if (commentController.text.trim().isNotEmpty) {
                                 final text = commentController.text;

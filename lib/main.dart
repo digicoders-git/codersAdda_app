@@ -1,4 +1,5 @@
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
+import 'package:provider/provider.dart';
 import 'package:coders_adda_app/views/navigation_class.dart';
 import 'package:coders_adda_app/views/shorts_pages/shorts_page.dart';
 import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
@@ -20,7 +21,7 @@ import 'package:coders_adda_app/veiw_model/notification_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/job_application_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/my_learning_viewmodel.dart';
 import 'package:coders_adda_app/veiw_model/wishlist_viewmodel.dart';
-import 'package:provider/provider.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:coders_adda_app/services/notification_service.dart';
 
@@ -111,10 +112,10 @@ class _LearningAppState extends State<LearningApp> {
     return ResponsiveSizer(
       builder: (context, orientation, screenType) {
         return MaterialApp(
-          title: 'Coders Adda',
+          title: 'Coders{Adda}',
           navigatorKey: navigatorKey,
           theme: AppTheme.lightTheme,
-          home: SplashScreen(), 
+          home: SplashScreen(),
           routes: {
             '/login': (context) => LoginPage(),
             '/home': (context) => MainNavigation(),

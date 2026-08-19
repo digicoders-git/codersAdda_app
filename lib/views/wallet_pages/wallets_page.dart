@@ -116,14 +116,7 @@ class _WalletsPageState extends State<WalletsPage> {
       width: double.infinity,
       padding: EdgeInsets.all(AppSizer.deviceWidth6),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF1565C0),
-            Color(0xFF42A5F5),
-          ],
-        ),
+        color: AppColors.primaryColor,
         borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
         boxShadow: [
           BoxShadow(
@@ -212,7 +205,7 @@ class _WalletsPageState extends State<WalletsPage> {
             style: TextStyle(
               fontSize: AppSizer.deviceSp18,
               fontWeight: FontWeight.bold,
-              color: AppColors.textColor,
+              color: AppColors.logoNavy,
             ),
           ),
           SizedBox(height: AppSizer.deviceHeight2),
@@ -288,7 +281,7 @@ class _WalletsPageState extends State<WalletsPage> {
             style: TextStyle(
               fontSize: AppSizer.deviceSp12,
               fontWeight: FontWeight.w500,
-              color: AppColors.textColor,
+              color: AppColors.logoNavy,
             ),
           ),
         ],
@@ -381,7 +374,7 @@ class _WalletsPageState extends State<WalletsPage> {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.chat, color: Colors.green),
+              leading: Icon(Icons.chat, color: AppColors.logoGreen),
               title: const Text("Contact Support (Official)"),
               subtitle: const Text("Official top-up via WhatsApp Support (+91 9369793688)"),
               onTap: () {
@@ -412,7 +405,7 @@ class _WalletsPageState extends State<WalletsPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(response['message'] ?? "Successfully added money!"),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.logoGreen,
             ),
           );
         }
@@ -535,7 +528,7 @@ class _WalletsPageState extends State<WalletsPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(response['message'] ?? "Withdrawal request submitted!"),
-              backgroundColor: Colors.green,
+              backgroundColor: AppColors.logoGreen,
             ),
           );
         }
@@ -607,7 +600,7 @@ class _WalletsPageState extends State<WalletsPage> {
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
+                  color: AppColors.logoNavy,
                 ),
               ),
               if (_transactions.length > 5)
@@ -695,7 +688,7 @@ class _WalletsPageState extends State<WalletsPage> {
         style: TextStyle(
           fontSize: AppSizer.deviceSp16,
           fontWeight: FontWeight.w600,
-          color: AppColors.textColor,
+          color: AppColors.logoNavy,
           overflow: TextOverflow.ellipsis,
         ),
       ),
@@ -766,7 +759,7 @@ class _WalletsPageState extends State<WalletsPage> {
               color: status == 'SUCCESS' 
                   ? AppColors.successColor.withOpacity(0.1)
                   : (status == 'CREATED' || status == 'PENDING') 
-                      ? Colors.orange.withOpacity(0.1)
+                      ? AppColors.logoOrange.withOpacity(0.1)
                       : AppColors.errorColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(AppSizer.deviceWidth1),
             ),
@@ -777,7 +770,7 @@ class _WalletsPageState extends State<WalletsPage> {
                 color: status == 'SUCCESS' 
                     ? AppColors.successColor
                     : (status == 'CREATED' || status == 'PENDING') 
-                        ? Colors.orange
+                        ? AppColors.logoOrange
                         : AppColors.errorColor,
                 fontWeight: FontWeight.w600,
               ),

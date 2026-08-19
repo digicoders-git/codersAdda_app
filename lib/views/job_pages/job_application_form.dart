@@ -263,7 +263,7 @@ class _JobApplicationFormState extends State<JobApplicationForm> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           title: Row(
             children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 30),
+              Icon(Icons.check_circle, color: AppColors.logoGreen, size: 30),
               SizedBox(width: 10),
               Text('Success!'),
             ],

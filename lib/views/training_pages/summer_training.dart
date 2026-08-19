@@ -123,7 +123,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
         title: Text(
           'Summer Training Program',
           style: TextStyle(
-            color: AppColors.textColor,
+            color: AppColors.logoNavy,
             fontSize: AppSizer.deviceSp20,
             fontWeight: FontWeight.bold,
           ),
@@ -132,11 +132,11 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
         elevation: 0,
         leading: Navigator.canPop(context)
             ? IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textColor),
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.logoNavy),
                 onPressed: () => Navigator.pop(context),
               )
             : IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textColor),
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.logoNavy),
                 onPressed: () => Navigator.pushReplacementNamed(context, '/'),
               ),
       ),
@@ -178,7 +178,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
                         Text(
                           'Job-oriented training in latest technologies. Available in Lucknow, Kanpur & Online.',
                           style: TextStyle(
-                            color: AppColors.textColor,
+                            color: AppColors.logoNavy,
                             fontSize: AppSizer.deviceSp14,
                           ),
                         ),
@@ -206,7 +206,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
                   Text(
                     'Fee Structure (sample)',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -220,7 +220,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
                   Text(
                     'What You Will Learn',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -236,7 +236,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
                   Text(
                     'Extra Curricular & Support',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -258,7 +258,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
                         Text(
                           'Contact & Registration',
                           style: TextStyle(
-                            color: AppColors.textColor,
+                            color: AppColors.logoNavy,
                             fontSize: AppSizer.deviceSp16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -426,7 +426,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
                   e.key,
                   style: TextStyle(
                     fontSize: AppSizer.deviceSp14,
-                    color: AppColors.textColor,
+                    color: AppColors.logoNavy,
                   ),
                 ),
                 Text(
@@ -455,7 +455,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
         Text(
           categoryName,
           style: TextStyle(
-            color: AppColors.textColor,
+            color: AppColors.logoNavy,
             fontSize: AppSizer.deviceSp16,
             fontWeight: FontWeight.w600,
           ),
@@ -504,7 +504,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
                     Text(
                       tech.name,
                       style: TextStyle(
-                        color: isSelected ? Colors.white : AppColors.textColor,
+                        color: isSelected ? Colors.white : AppColors.logoNavy,
                         fontSize: AppSizer.deviceSp14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -562,7 +562,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
             child: Text(
               name,
               style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textColor,
+                color: isSelected ? Colors.white : AppColors.logoNavy,
                 fontSize: AppSizer.deviceSp14,
               ),
             ),
@@ -588,7 +588,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
             child: Text(
               text,
               style: TextStyle(
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
                 fontSize: AppSizer.deviceSp14,
               ),
             ),
@@ -614,7 +614,7 @@ class _SummerTrainingPageState extends State<SummerTrainingPage> {
             child: Text(
               text,
               style: TextStyle(
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
                 fontSize: AppSizer.deviceSp14,
               ),
             ),

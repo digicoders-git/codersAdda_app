@@ -598,7 +598,7 @@ class _CoursePlayerPageState extends State<CoursePlayerPage> {
                               decoration: BoxDecoration(
                                 color: currentVideo.isCompleted 
                                     ? AppColors.successColor.withOpacity(0.1)
-                                    : Colors.orange.withOpacity(0.1),
+                                    : AppColors.logoOrange.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
@@ -609,7 +609,7 @@ class _CoursePlayerPageState extends State<CoursePlayerPage> {
                                         : Icons.play_circle_filled,
                                     color: currentVideo.isCompleted 
                                         ? AppColors.successColor
-                                        : Colors.orange,
+                                        : AppColors.logoOrange,
                                     size: AppSizer.deviceSp14,
                                   ),
                                   SizedBox(width: AppSizer.deviceWidth1),
@@ -620,7 +620,7 @@ class _CoursePlayerPageState extends State<CoursePlayerPage> {
                                       fontWeight: FontWeight.bold,
                                       color: currentVideo.isCompleted 
                                           ? AppColors.successColor
-                                          : Colors.orange,
+                                          : AppColors.logoOrange,
                                     ),
                                   ),
                                 ],

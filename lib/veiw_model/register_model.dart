@@ -1,3 +1,4 @@
+import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/models/login_model.dart';
 import 'package:flutter/material.dart';
 
@@ -41,7 +42,7 @@ class RegisterViewModel extends ChangeNotifier {
           children: [
             Icon(
               Icons.check_circle,
-              color: Colors.green,
+              color: AppColors.logoGreen,
               size: 24,
             ),
             SizedBox(width: 8),

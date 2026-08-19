@@ -196,7 +196,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.green, size: AppSizer.deviceSp24),
+                Icon(Icons.check_circle, color: AppColors.logoGreen, size: AppSizer.deviceSp24),
                 SizedBox(width: AppSizer.deviceWidth2),
                 Text('Ticket Submitted', style: TextStyle(fontSize: AppSizer.deviceSp18)),
               ],
@@ -221,7 +221,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
     } catch (e) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
-      _showSnackBar('Submitted ticket offline. We will review your message soon.', Colors.green);
+      _showSnackBar('Submitted ticket offline. We will review your message soon.', AppColors.logoGreen);
       _subjectController.clear();
       _messageController.clear();
     }
@@ -278,7 +278,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                   style: TextStyle(
                     fontSize: AppSizer.deviceSp18,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
+                    color: AppColors.logoNavy,
                   ),
                 ),
                 SizedBox(height: AppSizer.deviceHeight1_5),
@@ -315,7 +315,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                   style: TextStyle(
                     fontSize: AppSizer.deviceSp18,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textColor,
+                    color: AppColors.logoNavy,
                   ),
                 ),
                 IconButton(
@@ -350,7 +350,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                          color: AppColors.logoNavy,
                         ),
                       ),
                       SizedBox(height: AppSizer.deviceHeight0_5),
@@ -392,7 +392,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                               style: TextStyle(
                                 fontSize: AppSizer.deviceSp16,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.textColor,
+                                color: AppColors.logoNavy,
                               ),
                             ),
                           ],
@@ -441,11 +441,11 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
     required String adminReply,
     required String createdAt,
   }) {
-    Color statusColor = Colors.orange;
+    Color statusColor = AppColors.logoOrange;
     IconData statusIcon = Icons.hourglass_top;
 
     if (status == 'Resolved') {
-      statusColor = Colors.green;
+      statusColor = AppColors.logoGreen;
       statusIcon = Icons.check_circle;
     } else if (status == 'In Progress') {
       statusColor = Colors.blue;
@@ -530,7 +530,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
               style: TextStyle(
                 fontSize: AppSizer.deviceSp16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
               ),
             ),
 
@@ -562,23 +562,23 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 width: double.infinity,
                 padding: EdgeInsets.all(AppSizer.deviceWidth3),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade50,
+                  color: AppColors.logoGreen,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green.shade200),
+                  border: Border.all(color: AppColors.logoGreen),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.verified_user, color: Colors.green.shade700, size: AppSizer.deviceSp16),
+                        Icon(Icons.verified_user, color: AppColors.logoGreen, size: AppSizer.deviceSp16),
                         SizedBox(width: AppSizer.deviceWidth1_5),
                         Text(
                           'Admin Response / Solution',
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp13,
                             fontWeight: FontWeight.bold,
-                            color: Colors.green.shade900,
+                            color: AppColors.logoGreen,
                           ),
                         ),
                       ],
@@ -589,7 +589,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                       style: TextStyle(
                         fontSize: AppSizer.deviceSp13,
                         fontWeight: FontWeight.w500,
-                        color: Colors.green.shade900,
+                        color: AppColors.logoGreen,
                         height: 1.3,
                       ),
                     ),
@@ -601,20 +601,20 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 width: double.infinity,
                 padding: EdgeInsets.all(AppSizer.deviceWidth3),
                 decoration: BoxDecoration(
-                  color: Colors.amber.shade50,
+                  color: AppColors.logoOrange,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.amber.shade200),
+                  border: Border.all(color: AppColors.logoOrange),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.access_time_filled, color: Colors.amber.shade800, size: AppSizer.deviceSp16),
+                    Icon(Icons.access_time_filled, color: AppColors.logoOrange, size: AppSizer.deviceSp16),
                     SizedBox(width: AppSizer.deviceWidth2),
                     Expanded(
                       child: Text(
                         'Your query is under review by admin. Check back soon for resolution response!',
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp12,
-                          color: Colors.amber.shade900,
+                          color: AppColors.logoOrange,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -796,7 +796,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                       style: TextStyle(
                         fontSize: AppSizer.deviceSp15,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: AppColors.logoNavy,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -832,7 +832,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
           style: TextStyle(
             fontSize: AppSizer.deviceSp18,
             fontWeight: FontWeight.bold,
-            color: AppColors.textColor,
+            color: AppColors.logoNavy,
           ),
         ),
         SizedBox(height: AppSizer.deviceHeight1_5),
@@ -848,7 +848,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                   selected: isSelected,
                   selectedColor: AppColors.primaryColor,
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.textColor,
+                    color: isSelected ? Colors.white : AppColors.logoNavy,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     fontSize: AppSizer.deviceSp13,
                   ),
@@ -911,7 +911,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                     ),
                   ),
                   children: [
@@ -960,7 +960,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                     ),
                   ),
                 ],
@@ -979,7 +979,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textColor,
+                  color: AppColors.logoNavy,
                 ),
               ),
               SizedBox(height: AppSizer.deviceHeight0_5),
@@ -1005,7 +1005,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textColor,
+                  color: AppColors.logoNavy,
                 ),
               ),
               SizedBox(height: AppSizer.deviceHeight0_5),
@@ -1027,7 +1027,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textColor,
+                  color: AppColors.logoNavy,
                 ),
               ),
               SizedBox(height: AppSizer.deviceHeight0_5),

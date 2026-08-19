@@ -112,7 +112,7 @@ class CourseSyllabusPage extends StatelessWidget {
                             style: TextStyle(
                               fontSize: AppSizer.deviceSp16,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: AppColors.logoNavy,
                             ),
                           ),
                           subtitle: Text(

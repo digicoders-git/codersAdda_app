@@ -331,11 +331,11 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: AppColors.cardColor,
-        foregroundColor: AppColors.textColor,
+        foregroundColor: AppColors.logoNavy,
         elevation: 0,
         title: Text(
           _currentLecture.title,
-          style: TextStyle(color: AppColors.textColor, fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(color: AppColors.logoNavy, fontSize: 16, fontWeight: FontWeight.bold),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -442,7 +442,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                                     style: TextStyle(
                                       fontSize: AppSizer.deviceSp18,
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.textColor,
+                                      color: AppColors.logoNavy,
                                     ),
                                   ),
                                 ),
@@ -549,7 +549,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                       style: TextStyle(
                         fontSize: AppSizer.deviceSp16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: AppColors.logoNavy,
                       ),
                     ),
                     SizedBox(height: AppSizer.deviceHeight1),
@@ -557,7 +557,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                       _currentLecture.description,
                       style: TextStyle(
                         fontSize: AppSizer.deviceSp14,
-                        color: AppColors.textColor.withOpacity(0.8),
+                        color: AppColors.logoNavy.withOpacity(0.8),
                         height: 1.6,
                       ),
                     ),
@@ -573,7 +573,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                       style: TextStyle(
                         fontSize: AppSizer.deviceSp16,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textColor,
+                        color: AppColors.logoNavy,
                       ),
                     ),
                     SizedBox(height: AppSizer.deviceHeight1),
@@ -625,11 +625,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [AppColors.primaryColor, AppColors.primaryColor.withOpacity(0.8)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: AppColors.primaryColor,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(

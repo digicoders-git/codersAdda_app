@@ -131,13 +131,13 @@ class _MySubscriptionsPageState extends State<MySubscriptionsPage> with SingleTi
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                        color: isActive ? AppColors.logoGreen.withOpacity(0.1) : Colors.red.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         isActive ? 'ACTIVE' : 'EXPIRED',
                         style: TextStyle(
-                          color: isActive ? Colors.green : Colors.red,
+                          color: isActive ? AppColors.logoGreen : Colors.red,
                           fontSize: AppSizer.deviceSp12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -176,7 +176,7 @@ class _MySubscriptionsPageState extends State<MySubscriptionsPage> with SingleTi
                         Text('End Date', style: TextStyle(fontSize: AppSizer.deviceSp12, color: Colors.grey)),
                         Text(
                           endDate != null ? formatter.format(endDate) : 'N/A',
-                          style: TextStyle(fontSize: AppSizer.deviceSp14, fontWeight: FontWeight.bold, color: isActive ? Colors.amber[800] : Colors.red),
+                          style: TextStyle(fontSize: AppSizer.deviceSp14, fontWeight: FontWeight.bold, color: isActive ? AppColors.logoOrange : Colors.red),
                         ),
                       ],
                     ),

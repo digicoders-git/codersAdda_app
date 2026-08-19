@@ -82,7 +82,7 @@ class _MyCourseDetailPageState extends State<TrendingCourseDetailPage> {
             SizedBox(height: AppSizer.deviceHeight1),
             Row(
               children: [
-                Icon(Icons.star, color: Colors.amber, size: AppSizer.deviceSp16),
+                Icon(Icons.star, color: AppColors.logoOrange, size: AppSizer.deviceSp16),
                 SizedBox(width: AppSizer.deviceWidth1),
                 Text('${_course .rating}', style: TextStyle(fontSize: AppSizer.deviceSp14)),
                 SizedBox(width: AppSizer.deviceWidth4),
@@ -353,7 +353,7 @@ class _MyCourseDetailPageState extends State<TrendingCourseDetailPage> {
       padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight0_5),
       child: Row(
         children: [
-          Icon(Icons.check_circle, color: Colors.green, size: AppSizer.deviceSp16),
+          Icon(Icons.check_circle, color: AppColors.logoGreen, size: AppSizer.deviceSp16),
           SizedBox(width: AppSizer.deviceWidth2),
           Expanded(
             child: Text(

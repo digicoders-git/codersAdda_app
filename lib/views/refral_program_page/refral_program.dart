@@ -50,11 +50,7 @@
 //             padding: EdgeInsets.all(AppSizer.deviceWidth6),
 //             margin: EdgeInsets.only(bottom: AppSizer.deviceHeight4),
 //             decoration: BoxDecoration(
-//               gradient: LinearGradient(
-//                 colors: [AppColors.primaryColor, AppColors.accentColor],
-//                 begin: Alignment.topLeft,
-//                 end: Alignment.bottomRight,
-//               ),
+//               color: AppColors.primaryColor,
 //               borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
 //             ),
 //             child: Column(
@@ -120,7 +116,7 @@
 //                       style: TextStyle(
 //                         fontSize: AppSizer.deviceSp18,
 //                         fontWeight: FontWeight.bold,
-//                         color: AppColors.textColor,
+//                         color: AppColors.logoNavy,
 //                       ),
 //                     ),
 //                     SizedBox(height: AppSizer.deviceHeight3),
@@ -260,11 +256,7 @@
 //             padding: EdgeInsets.all(AppSizer.deviceWidth6),
 //             margin: EdgeInsets.only(bottom: AppSizer.deviceHeight4),
 //             decoration: BoxDecoration(
-//               gradient: LinearGradient(
-//                 colors: [AppColors.primaryColor, AppColors.accentColor],
-//                 begin: Alignment.topLeft,
-//                 end: Alignment.bottomRight,
-//               ),
+//               color: AppColors.primaryColor,
 //               borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
 //             ),
 //             child: Column(
@@ -528,7 +520,7 @@
 //               description,
 //               style: TextStyle(
 //                 fontSize: AppSizer.deviceSp14,
-//                 color: AppColors.textColor,
+//                 color: AppColors.logoNavy,
 //               ),
 //             ),
 //           ),
@@ -727,11 +719,7 @@ class _RefralProgramState extends State<RefralProgram> {
             padding: EdgeInsets.all(AppSizer.deviceWidth6),
             margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.primaryColor, AppColors.accentColor],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: AppColors.primaryColor,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -802,7 +790,7 @@ class _RefralProgramState extends State<RefralProgram> {
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp18,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textColor,
+                            color: AppColors.logoNavy,
                           ),
                         ),
                       ],
@@ -915,11 +903,7 @@ class _RefralProgramState extends State<RefralProgram> {
             padding: EdgeInsets.all(AppSizer.deviceWidth6),
             margin: EdgeInsets.only(bottom: AppSizer.deviceHeight4),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.primaryColor, AppColors.accentColor],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: AppColors.primaryColor,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -992,7 +976,7 @@ class _RefralProgramState extends State<RefralProgram> {
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp16,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textColor,
+                          color: AppColors.logoNavy,
                         ),
                       ),
                     ],
@@ -1004,11 +988,7 @@ class _RefralProgramState extends State<RefralProgram> {
                       vertical: AppSizer.deviceHeight3,
                     ),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [AppColors.primaryColor.withOpacity(0.1), AppColors.accentColor.withOpacity(0.1)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      color: AppColors.primaryColor,
                       borderRadius: BorderRadius.circular(15),
                       border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
                     ),
@@ -1090,9 +1070,9 @@ class _RefralProgramState extends State<RefralProgram> {
             mainAxisSpacing: AppSizer.deviceHeight3,
             padding: EdgeInsets.only(bottom: AppSizer.deviceHeight4),
             children: [
-              _buildStatCard('Status', _status.toUpperCase(), '⏳', Colors.orange),
-              _buildStatCard('Is Ambassador', _isAmbassadorReal ? 'Yes' : 'No', '🏆', Colors.purple),
-              _buildStatCard('Wallet Balance', '₹${_totalEarned.toStringAsFixed(0)}', '💰', Colors.green),
+              _buildStatCard('Status', _status.toUpperCase(), '⏳', AppColors.logoOrange),
+              _buildStatCard('Is Ambassador', _isAmbassadorReal ? 'Yes' : 'No', '🏆', AppColors.logoNavy),
+              _buildStatCard('Wallet Balance', '₹${_totalEarned.toStringAsFixed(0)}', '💰', AppColors.logoGreen),
               _buildStatCard('Referrals', '$_successfulReferrals', '👥', Colors.blue),
             ],
           ),
@@ -1257,11 +1237,7 @@ class _RefralProgramState extends State<RefralProgram> {
             width: AppSizer.deviceWidth8,
             height: AppSizer.deviceWidth8,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.primaryColor, AppColors.accentColor],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: AppColors.primaryColor,
               shape: BoxShape.circle,
             ),
             child: Center(
@@ -1281,7 +1257,7 @@ class _RefralProgramState extends State<RefralProgram> {
               description,
               style: TextStyle(
                 fontSize: AppSizer.deviceSp14,
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
                 height: 1.4,
               ),
             ),
@@ -1387,7 +1363,7 @@ class _RefralProgramState extends State<RefralProgram> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Wait for code to be generated!'),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.logoOrange,
         ),
       );
       return;
@@ -1403,7 +1379,7 @@ class _RefralProgramState extends State<RefralProgram> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('No referral code to copy!'),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.logoOrange,
         ),
       );
       return;

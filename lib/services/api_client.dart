@@ -1,3 +1,4 @@
+import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -276,7 +277,7 @@ class _UnblockRequestDialogState extends State<_UnblockRequestDialog> {
       if (mounted) {
         Navigator.pop(context); // Close dialog
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Unblock request submitted successfully. Admin will review it.'), backgroundColor: Colors.green),
+          const SnackBar(content: Text('Unblock request submitted successfully. Admin will review it.'), backgroundColor: AppColors.logoGreen),
         );
         // Navigate to login after submission
         Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);

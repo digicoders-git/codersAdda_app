@@ -363,7 +363,7 @@ class _CourseDetailScreenState extends State<MyLearningCoursePlayer>
                                 style: TextStyle(
                                   fontSize: AppSizer.deviceSp18,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textColor,
+                                  color: AppColors.logoNavy,
                                 ),
                               ),
                               SizedBox(height: AppSizer.deviceHeight1),
@@ -403,7 +403,7 @@ class _CourseDetailScreenState extends State<MyLearningCoursePlayer>
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: AppSizer.deviceSp16,
-                                    color: AppColors.textColor,
+                                    color: AppColors.logoNavy,
                                   ),
                                 ),
                                 SizedBox(height: AppSizer.deviceHeight1),
@@ -456,7 +456,7 @@ class _CourseDetailScreenState extends State<MyLearningCoursePlayer>
                                       course.description,
                                       style: TextStyle(
                                         fontSize: AppSizer.deviceSp14,
-                                        color: AppColors.textColor.withOpacity(0.8),
+                                        color: AppColors.logoNavy.withOpacity(0.8),
                                         height: 1.5,
                                       ),
                                       maxLines: 3,
@@ -484,7 +484,7 @@ class _CourseDetailScreenState extends State<MyLearningCoursePlayer>
                                       course.description,
                                       style: TextStyle(
                                         fontSize: AppSizer.deviceSp14,
-                                        color: AppColors.textColor.withOpacity(0.8),
+                                        color: AppColors.logoNavy.withOpacity(0.8),
                                         height: 1.5,
                                       ),
                                     ),
@@ -517,11 +517,7 @@ class _CourseDetailScreenState extends State<MyLearningCoursePlayer>
                                 Container(
                                   width: double.infinity,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [AppColors.primaryColor, AppColors.primaryColor.withOpacity(0.8)],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
+                                    color: AppColors.primaryColor,
                                     borderRadius: BorderRadius.circular(12),
                                     boxShadow: [
                                       BoxShadow(

@@ -60,10 +60,10 @@ class _CourseQuizzesTabState extends State<CourseQuizzesTab> {
     switch (difficulty.toLowerCase()) {
       case 'easy':
       case 'beginner':
-        return Colors.green;
+        return AppColors.logoGreen;
       case 'medium':
       case 'intermediate':
-        return Colors.orange;
+        return AppColors.logoOrange;
       case 'hard':
       case 'advanced':
         return Colors.red;
@@ -186,7 +186,7 @@ class _CourseQuizzesTabState extends State<CourseQuizzesTab> {
                             style: TextStyle(
                               fontSize: AppSizer.deviceSp18,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: AppColors.logoNavy,
                             ),
                           ),
                         ),

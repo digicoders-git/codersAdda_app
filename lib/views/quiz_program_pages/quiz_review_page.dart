@@ -1,3 +1,4 @@
+import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 
@@ -78,7 +79,7 @@ class QuizReviewPage extends StatelessWidget {
                       if (isUnattempted)
                         const Icon(Icons.help_outline, color: Colors.grey)
                       else if (isCorrect)
-                        const Icon(Icons.check_circle, color: Colors.green)
+                        Icon(Icons.check_circle, color: AppColors.logoGreen)
                       else
                         const Icon(Icons.cancel, color: Colors.red),
                     ],
@@ -95,9 +96,9 @@ class QuizReviewPage extends StatelessWidget {
                     Color textColor = Colors.white70;
 
                     if (isThisCorrect) {
-                      boxColor = Colors.green.withOpacity(0.2);
-                      borderColor = Colors.green;
-                      textColor = Colors.green;
+                      boxColor = AppColors.logoGreen.withOpacity(0.2);
+                      borderColor = AppColors.logoGreen;
+                      textColor = AppColors.logoGreen;
                     } else if (isThisSelected && !isThisCorrect) {
                       boxColor = Colors.red.withOpacity(0.2);
                       borderColor = Colors.red;
@@ -129,7 +130,7 @@ class QuizReviewPage extends StatelessWidget {
                             ),
                           ),
                           if (isThisCorrect)
-                            const Icon(Icons.check, color: Colors.green, size: 20)
+                            Icon(Icons.check, color: AppColors.logoGreen, size: 20)
                           else if (isThisSelected)
                             const Icon(Icons.close, color: Colors.red, size: 20)
                         ],

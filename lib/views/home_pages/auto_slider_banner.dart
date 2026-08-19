@@ -136,14 +136,7 @@ class _BannerSliderWidgetState extends State<BannerSliderWidget> {
                               padding: EdgeInsets.all(AppSizer.deviceWidth4),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent,
-                                    Colors.black.withOpacity(0.5),
-                                  ],
-                                ),
+                                color: AppColors.primaryColor,
                               ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.end,

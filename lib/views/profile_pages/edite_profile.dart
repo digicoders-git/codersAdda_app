@@ -131,7 +131,7 @@ class EditProfilePage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textColor,
+                  color: AppColors.logoNavy,
                 ),
               ),
             ),
@@ -197,7 +197,7 @@ class EditProfilePage extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppSizer.deviceSp16,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
               ),
             ),
             SizedBox(height: AppSizer.deviceHeight1),
@@ -230,7 +230,7 @@ class EditProfilePage extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppSizer.deviceSp18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
               ),
             ),
             SizedBox(height: AppSizer.deviceHeight3),
@@ -274,7 +274,7 @@ class EditProfilePage extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppSizer.deviceSp18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
               ),
             ),
             SizedBox(height: AppSizer.deviceHeight3),
@@ -361,7 +361,7 @@ class EditProfilePage extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppSizer.deviceSp18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
               ),
             ),
             SizedBox(height: AppSizer.deviceHeight3),
@@ -413,7 +413,7 @@ class EditProfilePage extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppSizer.deviceSp18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
               ),
             ),
             SizedBox(height: AppSizer.deviceHeight2),

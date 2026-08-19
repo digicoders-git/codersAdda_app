@@ -20,7 +20,7 @@ class TrainingCourses extends StatelessWidget {
           title: Text(
             'Training Programs',
             style: TextStyle(
-              color: AppColors.textColor,
+              color: AppColors.logoNavy,
               fontSize: AppSizer.deviceSp20,
               fontWeight: FontWeight.bold,
             ),
@@ -58,7 +58,7 @@ class TrainingCourses extends StatelessWidget {
                     child: Text(
                       'Choose Your Learning Path',
                       style: TextStyle(
-                        color: AppColors.textColor,
+                        color: AppColors.logoNavy,
                         fontSize: AppSizer.deviceSp18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -159,7 +159,7 @@ class TrainingCourses extends StatelessWidget {
                     Text(
                       course.title,
                       style: TextStyle(
-                        color: AppColors.textColor,
+                        color: AppColors.logoNavy,
                         fontSize: AppSizer.deviceSp18,
                         fontWeight: FontWeight.bold,
                       ),

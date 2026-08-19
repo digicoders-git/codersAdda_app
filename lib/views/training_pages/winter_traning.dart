@@ -70,7 +70,7 @@
 //         title: Text(
 //           'Winter Training Program',
 //           style: TextStyle(
-//             color: AppColors.textColor,
+//             color: AppColors.logoNavy,
 //             fontSize: AppSizer.deviceSp20,
 //             fontWeight: FontWeight.bold,
 //           ),
@@ -78,7 +78,7 @@
 //         backgroundColor: AppColors.cardColor,
 //         elevation: 0,
 //         leading: IconButton(
-//           icon: Icon(Icons.arrow_back, color: AppColors.textColor),
+//           icon: Icon(Icons.arrow_back, color: AppColors.logoNavy),
 //           onPressed: () => Navigator.pop(context),
 //         ),
 //       ),
@@ -114,7 +114,7 @@
 //                         Text(
 //                           'Hands-on projects & industry exposure to master your preferred technology',
 //                           style: TextStyle(
-//                             color: AppColors.textColor,
+//                             color: AppColors.logoNavy,
 //                             fontSize: AppSizer.deviceSp14,
 //                           ),
 //                         ),
@@ -139,7 +139,7 @@
 //                   Text(
 //                     'Select Your Technology',
 //                     style: TextStyle(
-//                       color: AppColors.textColor,
+//                       color: AppColors.logoNavy,
 //                       fontSize: AppSizer.deviceSp18,
 //                       fontWeight: FontWeight.bold,
 //                     ),
@@ -178,7 +178,7 @@
 //                   Text(
 //                     'What You Will Learn',
 //                     style: TextStyle(
-//                       color: AppColors.textColor,
+//                       color: AppColors.logoNavy,
 //                       fontSize: AppSizer.deviceSp18,
 //                       fontWeight: FontWeight.bold,
 //                     ),
@@ -196,7 +196,7 @@
 //                   Text(
 //                     'Program Benefits',
 //                     style: TextStyle(
-//                       color: AppColors.textColor,
+//                       color: AppColors.logoNavy,
 //                       fontSize: AppSizer.deviceSp18,
 //                       fontWeight: FontWeight.bold,
 //                     ),
@@ -257,7 +257,7 @@
 //             Text(
 //               title,
 //               style: TextStyle(
-//                 color: AppColors.textColor,
+//                 color: AppColors.logoNavy,
 //                 fontSize: AppSizer.deviceSp14,
 //                 fontWeight: FontWeight.bold,
 //               ),
@@ -282,7 +282,7 @@
 //         Text(
 //           categoryName,
 //           style: TextStyle(
-//             color: AppColors.textColor,
+//             color: AppColors.logoNavy,
 //             fontSize: AppSizer.deviceSp16,
 //             fontWeight: FontWeight.w600,
 //           ),
@@ -316,7 +316,7 @@
 //                     Text(
 //                       tech.name,
 //                       style: TextStyle(
-//                         color: isSelected ? Colors.white : AppColors.textColor,
+//                         color: isSelected ? Colors.white : AppColors.logoNavy,
 //                         fontSize: AppSizer.deviceSp14,
 //                         fontWeight: FontWeight.w500,
 //                       ),
@@ -340,7 +340,7 @@
 //           Icon(Icons.check_circle, color: AppColors.successColor, size: AppSizer.deviceSp16),
 //           SizedBox(width: AppSizer.deviceWidth2),
 //           Expanded(
-//             child: Text(text, style: TextStyle(color: AppColors.textColor, fontSize: AppSizer.deviceSp14)),
+//             child: Text(text, style: TextStyle(color: AppColors.logoNavy, fontSize: AppSizer.deviceSp14)),
 //           ),
 //         ],
 //       ),
@@ -356,7 +356,7 @@
 //           Icon(Icons.star, color: AppColors.accentColor, size: AppSizer.deviceSp16),
 //           SizedBox(width: AppSizer.deviceWidth2),
 //           Expanded(
-//             child: Text(text, style: TextStyle(color: AppColors.textColor, fontSize: AppSizer.deviceSp14)),
+//             child: Text(text, style: TextStyle(color: AppColors.logoNavy, fontSize: AppSizer.deviceSp14)),
 //           ),
 //         ],
 //       ),
@@ -488,7 +488,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
         title: Text(
           'Winter Training Program',
           style: TextStyle(
-            color: AppColors.textColor,
+            color: AppColors.logoNavy,
             fontSize: AppSizer.deviceSp20,
             fontWeight: FontWeight.bold,
           ),
@@ -497,11 +497,11 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
         elevation: 0,
         leading: Navigator.canPop(context)
             ? IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textColor),
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.logoNavy),
                 onPressed: () => Navigator.pop(context),
               )
             : IconButton(
-                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textColor),
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.logoNavy),
                 onPressed: () => Navigator.pushReplacementNamed(context, '/'),
               ),
       ),
@@ -537,7 +537,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
                         Text(
                           'Gain hands-on experience and boost your skills this winter with live projects & expert mentorship.',
                           style: TextStyle(
-                            color: AppColors.textColor,
+                            color: AppColors.logoNavy,
                             fontSize: AppSizer.deviceSp14,
                           ),
                         ),
@@ -565,7 +565,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
                   Text(
                     'Fee Structure',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -579,7 +579,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
                   Text(
                     'What You Will Learn',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -595,7 +595,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
                   Text(
                     'Extra Curricular & Support',
                     style: TextStyle(
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontSize: AppSizer.deviceSp18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -609,7 +609,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
                   // Text(
                   //   'Select Your Technology',
                   //   style: TextStyle(
-                  //     color: AppColors.textColor,
+                  //     color: AppColors.logoNavy,
                   //     fontSize: AppSizer.deviceSp18,
                   //     fontWeight: FontWeight.bold,
                   //   ),
@@ -647,7 +647,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
                   //               Text(
                   //                 _selectedTechnology!.name,
                   //                 style: TextStyle(
-                  //                   color: AppColors.textColor,
+                  //                   color: AppColors.logoNavy,
                   //                   fontSize: AppSizer.deviceSp16,
                   //                   fontWeight: FontWeight.bold,
                   //                 ),
@@ -686,7 +686,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
                         Text(
                           'Contact & Registration',
                           style: TextStyle(
-                            color: AppColors.textColor,
+                            color: AppColors.logoNavy,
                             fontSize: AppSizer.deviceSp16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -829,7 +829,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
             Text(
               title,
               style: TextStyle(
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
                 fontSize: AppSizer.deviceSp14,
                 fontWeight: FontWeight.bold,
               ),
@@ -865,7 +865,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
                   e.key,
                   style: TextStyle(
                     fontSize: AppSizer.deviceSp14,
-                    color: AppColors.textColor,
+                    color: AppColors.logoNavy,
                   ),
                 ),
                 Text(
@@ -900,7 +900,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
             child: Text(
               text,
               style: TextStyle(
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
                 fontSize: AppSizer.deviceSp14,
               ),
             ),
@@ -926,7 +926,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
             child: Text(
               text,
               style: TextStyle(
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
                 fontSize: AppSizer.deviceSp14,
               ),
             ),
@@ -977,7 +977,7 @@ class _WinterTrainingPageState extends State<WinterTrainingPage> {
             child: Text(
               name,
               style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textColor,
+                color: isSelected ? Colors.white : AppColors.logoNavy,
                 fontSize: AppSizer.deviceSp14,
               ),
             ),

@@ -75,7 +75,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
       _viewModel.verifyJobPayment(
         _viewModel.purchasingJobId!,
         response, 
-        onSuccess: (msg) => _showSnackBar(msg, Colors.green),
+        onSuccess: (msg) => _showSnackBar(msg, AppColors.logoGreen),
         onError: (msg) => _showSnackBar(msg, Colors.red),
       );
     }
@@ -143,14 +143,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
                       flexibleSpace: FlexibleSpaceBar(
                         background: Container(
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                AppColors.primaryColor.withOpacity(0.8),
-                                AppColors.primaryColor,
-                              ],
-                            ),
+                            color: AppColors.primaryColor,
                           ),
                           child: Stack(
                             children: [
@@ -257,7 +250,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           style: FilledButton.styleFrom(
-                            backgroundColor: _hasApplied ? Colors.grey : (!currentJobInList.locked ? AppColors.primaryColor : (currentJobInList.priceType == 'free' ? Colors.green : AppColors.primaryColor)),
+                            backgroundColor: _hasApplied ? Colors.grey : (!currentJobInList.locked ? AppColors.primaryColor : (currentJobInList.priceType == 'free' ? AppColors.logoGreen : AppColors.primaryColor)),
                             padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
                           ),
                         ),
@@ -637,7 +630,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
               children: [
                 Icon(
                   canUnlockFree ? Icons.lock_open : Icons.payment,
-                  color: canUnlockFree ? Colors.green : AppColors.primaryColor,
+                  color: canUnlockFree ? AppColors.logoGreen : AppColors.primaryColor,
                 ),
                 SizedBox(width: AppSizer.deviceWidth2),
                 Text(job.priceType == 'free' ? 'Enroll for Job' : 'Unlock Job Details'),
@@ -657,24 +650,24 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
                     Container(
                       padding: EdgeInsets.all(AppSizer.deviceWidth3),
                       decoration: BoxDecoration(
-                        color: freeUnlocksLeft > 0 ? Colors.green.shade50 : Colors.orange.shade50,
+                        color: freeUnlocksLeft > 0 ? AppColors.logoGreen : AppColors.logoOrange,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: freeUnlocksLeft > 0 ? Colors.green.shade200 : Colors.orange.shade200),
+                        border: Border.all(color: freeUnlocksLeft > 0 ? AppColors.logoGreen : AppColors.logoOrange),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             freeUnlocksLeft > 0 ? Icons.verified : Icons.warning_amber_rounded,
-                            color: freeUnlocksLeft > 0 ? Colors.green : Colors.orange,
+                            color: freeUnlocksLeft > 0 ? AppColors.logoGreen : AppColors.logoOrange,
                             size: 20,
                           ),
                           SizedBox(width: AppSizer.deviceWidth2),
                           Expanded(
                             child: freeUnlocksLeft > 0
                               ? Text('✅ You have $freeUnlocksLeft free unlock(s) left from your subscription!\nThis job will be unlocked for FREE.',
-                                  style: TextStyle(color: Colors.green.shade800, fontSize: AppSizer.deviceSp13))
+                                  style: TextStyle(color: AppColors.logoGreen, fontSize: AppSizer.deviceSp13))
                               : Text('⚠️ Your free unlocks ($totalFreeUnlocks) are used up.\nPayment required to unlock.',
-                                  style: TextStyle(color: Colors.orange.shade800, fontSize: AppSizer.deviceSp13)),
+                                  style: TextStyle(color: AppColors.logoOrange, fontSize: AppSizer.deviceSp13)),
                           ),
                         ],
                       ),
@@ -707,7 +700,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
                     if (job.price != null) ...[
                       Text('Price: ₹${job.price}', style: TextStyle(fontWeight: FontWeight.w500)),
                       if (_isCouponApplied) ...[
-                        Text('Discount: -₹$_discountAmount', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                        Text('Discount: -₹$_discountAmount', style: TextStyle(color: AppColors.logoGreen, fontWeight: FontWeight.bold)),
                         Text('Total: ₹$_finalAmount', style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppSizer.deviceSp16)),
                       ],
                       SizedBox(height: AppSizer.deviceHeight2),
@@ -846,7 +839,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
                                       Text(
                                         '${coupon['discountPercent']}% OFF',
                                         style: TextStyle(
-                                          color: Colors.green[700],
+                                          color: AppColors.logoGreen,
                                           fontSize: AppSizer.deviceSp11,
                                           fontWeight: FontWeight.w500,
                                         ),
@@ -862,7 +855,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
                     if (_isCouponApplied)
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
-                        child: Text('🎉 Coupon Applied!', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: AppSizer.deviceSp12)),
+                        child: Text('🎉 Coupon Applied!', style: TextStyle(color: AppColors.logoGreen, fontWeight: FontWeight.bold, fontSize: AppSizer.deviceSp12)),
                       ),
                   ],
                 ] else ...[
@@ -904,7 +897,7 @@ class _JobDetailsPageState extends State<JobDetailsPage> {
                       profileViewModel,
                       couponCode: _isCouponApplied ? coupon : null,
                       onSuccess: (msg) async {
-                        _showSnackBar(msg, Colors.green);
+                        _showSnackBar(msg, AppColors.logoGreen);
                         // Navigate to Application form after payment success
                         final applied = await Navigator.push(
                           context,

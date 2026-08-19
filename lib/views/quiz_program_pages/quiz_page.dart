@@ -284,7 +284,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(
                                             content: Text("Certificate not available for this quiz yet. Please ask admin to set certificate template."),
-                                            backgroundColor: Colors.orange,
+                                            backgroundColor: AppColors.logoOrange,
                                           ),
                                         );
                                       }
@@ -400,7 +400,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
             style: TextStyle(
               fontSize: AppSizer.deviceSp18,
               fontWeight: FontWeight.bold,
-              color: AppColors.textColor,
+              color: AppColors.logoNavy,
             ),
           ),
           content: Column(
@@ -558,14 +558,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
               margin: EdgeInsets.all(AppSizer.deviceWidth5),
               padding: EdgeInsets.all(AppSizer.deviceWidth5),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.primaryColor.withOpacity(0.9),
-                    AppColors.accentColor,
-                  ],
-                ),
+                color: AppColors.primaryColor,
                 borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
                 boxShadow: [
                   BoxShadow(
@@ -777,7 +770,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
                             style: TextStyle(
                               fontSize: AppSizer.deviceSp18,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: AppColors.logoNavy,
                             ),
                           ),
                         ),
@@ -959,7 +952,7 @@ class _QuizHomePageState extends State<QuizPage> with SingleTickerProviderStateM
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp18,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                          color: AppColors.logoNavy,
                         ),
                       ),
                     ),

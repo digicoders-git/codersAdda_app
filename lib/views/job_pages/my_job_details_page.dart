@@ -590,7 +590,7 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
               style: TextStyle(
                 fontSize: AppSizer.deviceSp20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
               ),
             ),
             SizedBox(height: AppSizer.deviceHeight2),
@@ -619,9 +619,9 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
   Color _getStatusColor(ApplicationStatus status) {
     switch (status) {
       case ApplicationStatus.underReview:
-        return Colors.orange;
+        return AppColors.logoOrange;
       case ApplicationStatus.shortlisted:
-        return Colors.green;
+        return AppColors.logoGreen;
       case ApplicationStatus.rejected:
         return Colors.red;
       default:

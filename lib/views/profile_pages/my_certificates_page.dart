@@ -162,7 +162,7 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> with SingleTick
                     'No $type certificates found',
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp18,
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

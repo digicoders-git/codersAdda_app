@@ -195,11 +195,7 @@ class _MyLearningPageState extends State<MyLearningPage> with SingleTickerProvid
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Colors.white, Colors.grey.shade50],
-            ),
+            color: AppColors.cardColor,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,14 +239,7 @@ class _MyLearningPageState extends State<MyLearningPage> with SingleTickerProvid
                         topLeft: Radius.circular(AppSizer.deviceWidth4),
                         topRight: Radius.circular(AppSizer.deviceWidth4),
                       ),
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.6),
-                          Colors.transparent,
-                        ],
-                      ),
+                      color: Colors.black.withOpacity(0.2),
                     ),
                   ),
 
@@ -669,15 +658,7 @@ class _MyLearningPageState extends State<MyLearningPage> with SingleTickerProvid
                           else
                             ShaderMask(
                               shaderCallback: (Rect bounds) {
-                                return LinearGradient(
-                                  colors: [
-                                    Colors.red,
-                                    Colors.orange,
-                                    Colors.yellow,
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ).createShader(bounds);
+                                return LinearGradient(colors: [AppColors.primaryColor, AppColors.primaryColor]).createShader(bounds);
                               },
                               child: Icon(
                                 Icons.local_fire_department,

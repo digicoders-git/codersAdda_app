@@ -137,7 +137,7 @@ class _InAppPdfViewerPageState extends State<InAppPdfViewerPage> {
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: AppColors.cardColor,
-        foregroundColor: AppColors.textColor,
+        foregroundColor: AppColors.logoNavy,
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +147,7 @@ class _InAppPdfViewerPageState extends State<InAppPdfViewerPage> {
               style: TextStyle(
                 fontSize: AppSizer.deviceSp16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

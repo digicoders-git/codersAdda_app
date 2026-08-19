@@ -248,7 +248,7 @@ class _GeneralTestsPageState extends State<GeneralTestsPage> with SingleTickerPr
                   icon: const Icon(Icons.workspace_premium, color: Colors.white),
                   label: const Text("Download Certificate"),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: AppColors.logoGreen,
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 40),
                     shape: RoundedRectangleBorder(
@@ -328,7 +328,7 @@ class _GeneralTestsPageState extends State<GeneralTestsPage> with SingleTickerPr
             style: TextStyle(
               fontSize: AppSizer.deviceSp18,
               fontWeight: FontWeight.bold,
-              color: AppColors.textColor,
+              color: AppColors.logoNavy,
             ),
           ),
           content: Column(
@@ -486,14 +486,7 @@ class _GeneralTestsPageState extends State<GeneralTestsPage> with SingleTickerPr
               margin: EdgeInsets.all(AppSizer.deviceWidth5),
               padding: EdgeInsets.all(AppSizer.deviceWidth5),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppColors.primaryColor.withOpacity(0.9),
-                    AppColors.accentColor,
-                  ],
-                ),
+                color: AppColors.primaryColor,
                 borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
                 boxShadow: [
                   BoxShadow(
@@ -724,7 +717,7 @@ class _GeneralTestsPageState extends State<GeneralTestsPage> with SingleTickerPr
                             style: TextStyle(
                               fontSize: AppSizer.deviceSp18,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textColor,
+                              color: AppColors.logoNavy,
                             ),
                           ),
                         ),
@@ -906,7 +899,7 @@ class _GeneralTestsPageState extends State<GeneralTestsPage> with SingleTickerPr
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp18,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
+                          color: AppColors.logoNavy,
                         ),
                       ),
                     ),

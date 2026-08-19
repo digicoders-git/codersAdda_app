@@ -140,7 +140,7 @@ class _CoursePageState extends State<AllCoursePage>
                     '${category.name} (${category.courseCount})',
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp14,
-                      color: isSelected ? Colors.white : AppColors.textColor,
+                      color: isSelected ? Colors.white : AppColors.logoNavy,
                     ),
                   ),
                   selected: isSelected,
@@ -232,11 +232,7 @@ class _CoursePageState extends State<AllCoursePage>
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppColors.cardColor, Colors.grey.shade50],
-            ),
+            color: AppColors.cardColor,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,7 +260,7 @@ class _CoursePageState extends State<AllCoursePage>
                         ? Center(
                             child: Icon(
                               Icons.play_circle_filled,
-                              color: AppColors.primaryColor,
+                              color: AppColors.cardColor,
                               size: AppSizer.deviceSp32,
                             ),
                           )
@@ -280,14 +276,7 @@ class _CoursePageState extends State<AllCoursePage>
                         topLeft: Radius.circular(AppSizer.deviceWidth4),
                         topRight: Radius.circular(AppSizer.deviceWidth4),
                       ),
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.4),
-                          Colors.transparent,
-                        ],
-                      ),
+                      color: Colors.black.withOpacity(0.2),
                     ),
                   ),
 
@@ -312,14 +301,7 @@ class _CoursePageState extends State<AllCoursePage>
                           if (!course.isFree)
                             ShaderMask(
                               shaderCallback: (Rect bounds) {
-                                return LinearGradient(
-                                  colors: [
-                                    Colors.deepOrange,
-                                    // Colors.yellow,
-                                    Colors.orange,
-                                  ],
-                                  stops: [0.0, 1.0],
-                                ).createShader(bounds);
+                                return LinearGradient(colors: [AppColors.primaryColor, AppColors.primaryColor]).createShader(bounds);
                               },
                               child: Icon(
                                 Icons.local_fire_department,
@@ -333,14 +315,7 @@ class _CoursePageState extends State<AllCoursePage>
                           if (course.isFree)
                             ShaderMask(
                               shaderCallback: (Rect bounds) {
-                                return LinearGradient(
-                                  colors: [
-                                    AppColors.successColor,
-                                    //Colors.lightGreen,
-                                    //Colors.greenAccent,
-                                  ],
-                                  stops: [1.0],
-                                ).createShader(bounds);
+                                return LinearGradient(colors: [AppColors.primaryColor, AppColors.primaryColor]).createShader(bounds);
                               },
                               child: Icon(
                                 Icons.lock_open,
@@ -563,7 +538,7 @@ class _CoursePageState extends State<AllCoursePage>
                                       style: TextStyle(
                                         fontSize: AppSizer.deviceSp14,
                                         fontWeight: FontWeight.w600,
-                                        color: AppColors.primaryColor,
+                                        color: AppColors.cardColor,
                                       ),
                                     ),
                                   ],

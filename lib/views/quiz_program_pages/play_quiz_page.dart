@@ -120,7 +120,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Time is up! Submitting your answers automatically..."),
-        backgroundColor: Colors.orange,
+        backgroundColor: AppColors.logoOrange,
       ),
     );
     _submitQuiz();
@@ -283,7 +283,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                                     ScaffoldMessenger.of(this.context).showSnackBar(
                                       const SnackBar(
                                         content: Text("Certificate not available for this quiz yet. Please contact admin."),
-                                        backgroundColor: Colors.orange,
+                                        backgroundColor: AppColors.logoOrange,
                                       ),
                                     );
                                   }

@@ -57,7 +57,7 @@ class _FAQsTabState extends State<FAQsTab> {
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp16,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textColor,
+                  color: AppColors.logoNavy,
                 ),
               ),
               trailing: Icon(
@@ -71,7 +71,7 @@ class _FAQsTabState extends State<FAQsTab> {
                     faq.answer,
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp14,
-                      color: AppColors.textColor,
+                      color: AppColors.logoNavy,
                       height: 1.5,
                     ),
                   ),

@@ -30,7 +30,7 @@ class CourseContentTab extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppSizer.deviceSp16,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textColor,
+                color: AppColors.logoNavy,
               ),
             ),
             trailing: Icon(Icons.keyboard_arrow_down, color: AppColors.primaryColor),
@@ -78,7 +78,7 @@ class CourseContentTab extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: AppSizer.deviceSp14,
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                    color: isSelected ? AppColors.primaryColor : AppColors.textColor,
+                                    color: isSelected ? AppColors.primaryColor : AppColors.logoNavy,
                                   ),
                                 ),
                                 SizedBox(height: AppSizer.deviceHeight1),
@@ -92,7 +92,7 @@ class CourseContentTab extends StatelessWidget {
                                     ),
                                     if (lesson.isLocked) ...[
                                       SizedBox(width: AppSizer.deviceWidth3),
-                                      Icon(Icons.lock, size: AppSizer.deviceSp12, color: Colors.orange),
+                                      Icon(Icons.lock, size: AppSizer.deviceSp12, color: AppColors.logoOrange),
                                     ],
                                   ],
                                 ),

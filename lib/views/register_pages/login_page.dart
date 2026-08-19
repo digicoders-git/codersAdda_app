@@ -156,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
           Text(
             'Welcome to',
             style: TextStyle(
-              color: AppColors.textColor,
+              color: AppColors.logoNavy,
               fontSize: AppSizer.deviceSp20,
               fontWeight: FontWeight.w300,
               letterSpacing: 0.5,
@@ -167,11 +167,7 @@ class _LoginPageState extends State<LoginPage> {
 
           ShaderMask(
             shaderCallback: (bounds) {
-              return LinearGradient(
-                colors: [AppColors.primaryColor, AppColors.accentColor],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ).createShader(bounds);
+              return LinearGradient(colors: [AppColors.primaryColor, AppColors.primaryColor]).createShader(bounds);
             },
             child: Text(
               'CodersAdda',
@@ -235,7 +231,7 @@ class _LoginPageState extends State<LoginPage> {
                     prefix: Text(
                       '+91 ',
                       style: TextStyle(
-                        color: AppColors.textColor,
+                        color: AppColors.logoNavy,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -514,11 +510,7 @@ class _LoginPageState extends State<LoginPage> {
               width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                gradient: LinearGradient(
-                  colors: [AppColors.primaryColor, AppColors.accentColor],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
+                color: AppColors.primaryColor,
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primaryColor.withOpacity(0.3),

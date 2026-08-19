@@ -108,11 +108,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
             padding: EdgeInsets.all(AppSizer.deviceWidth4),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: AppColors.primaryColor,
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFFFFD700).withOpacity(0.3),
