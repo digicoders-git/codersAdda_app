@@ -136,6 +136,17 @@ class AuthViewModel with ChangeNotifier {
       final response = await _authService.googleLogin(mobile, googleData, referralCode: referralCode);
       
       if (response['success'] == true) {
+        if (response['requireOtp'] == true) {
+          _isLoading = false;
+          notifyListeners();
+          return LoginResponse(
+            success: true,
+            requireOtp: true,
+            mobile: response['mobile'],
+            message: response['message'],
+          );
+        }
+
         final userData = response['user'];
         _currentUser = AppUser(
           id: userData?['id'] ?? userData?['_id'] ?? 'user_id',

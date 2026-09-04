@@ -2,8 +2,10 @@ class ApiUrls {
   // Use http://10.0.2.2:3900 for Android Emulator to connect to localhost
   // Use http://localhost:3900 for Web/Windows testing
   static const String baseUrl = 'https://api.codersadda.com';
-  // static const String baseUrl = 'http://192.168.29.234:3900';
-  // static const String baseUrl = 'http://10.0.2.2:3900';
+  // static const String baseUrl = 'http://192.168.29.234:3900'; // local ip
+  // static const String baseUrl = 'http://localhost:3900'; // for windows/web
+  // static const String baseUrl = 'http://10.0.2.2:3900'; // for android emulator
+  // static const String baseUrl = 'http://192.168.1.8:3900'; // old local ip
 
   // Auth Endpoints
   static const String requestOtp = '$baseUrl/users/request-otp';
@@ -93,6 +95,8 @@ class ApiUrls {
   static const String checkShortLike = '$baseUrl/short-likes/check'; // We'll append /id
   static const String getShortComments = '$baseUrl/short-comments/get'; // We'll append /id
   static const String addShortComment = '$baseUrl/short-comments/add'; // We'll append /id
+  static const String replyShortComment = '$baseUrl/short-comments/user-reply'; // We'll append /id
+  static const String editShortComment = '$baseUrl/short-comments/edit'; // We'll append /id
   static const String deleteShortComment = '$baseUrl/short-comments/delete'; // We'll append /id
   static const String addShortShare = '$baseUrl/short-shares/add'; // We'll append /id
 
@@ -119,6 +123,7 @@ class ApiUrls {
   static const String submitQuizAttempt = '$baseUrl/quiz/attempt/submit';
   static const String getMyQuizAttempts = '$baseUrl/quiz/my-quiz';
   static const String issueQuizCertificate = '$baseUrl/quiz/certificate/issue';
+  static const String generateCertificate = '$baseUrl/quiz/certificate/issue';
   static const String getMyQuizCertificates = '$baseUrl/quiz/certificate/my-certificates';
 
   // FAQs Endpoints

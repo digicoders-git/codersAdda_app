@@ -124,6 +124,18 @@ class ShortsViewModel with ChangeNotifier {
     }
   }
 
+  Future<void> replyToComment(String shortId, String parentCommentId, String text) async {
+    try {
+      final response = await _shortsService.replyToComment(parentCommentId, text);
+      if (response['success'] == true) {
+        await fetchComments(shortId); // Refresh nested comments
+      }
+    } catch (e) {
+      print('Error replying to comment in ViewModel: $e');
+      rethrow;
+    }
+  }
+
   Future<void> deleteComment(String shortId, String commentId) async {
     try {
       final response = await _shortsService.deleteComment(commentId);

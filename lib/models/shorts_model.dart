@@ -24,9 +24,13 @@ class ShortVideo {
   });
 
   factory ShortVideo.fromJson(Map<String, dynamic> json) {
+    String rawUrl = json['video']?['url'] ?? '';
+    if (rawUrl.contains('coders-adda-backend.onrender.com')) {
+      rawUrl = rawUrl.replaceAll('coders-adda-backend.onrender.com', 'api.codersadda.com');
+    }
     return ShortVideo(
       id: json['_id'] ?? '',
-      videoUrl: json['video']?['url'] ?? '',
+      videoUrl: rawUrl,
       publicId: json['video']?['public_id'] ?? '',
       instructorName: json['instructorName'] ?? 'Unknown',
       caption: json['caption'] ?? '',

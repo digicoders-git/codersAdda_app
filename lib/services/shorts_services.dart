@@ -74,11 +74,21 @@ class ShortsService {
     }
   }
 
+  Future<Map<String, dynamic>> replyToComment(String commentId, String commentText) async {
+    try {
+      final body = {'commentText': commentText};
+      final response = await _apiClient.post('${ApiUrls.replyShortComment}/$commentId', body);
+      return response;
+    } catch (e) {
+      print('Error replying to short comment: $e');
+      rethrow;
+    }
+  }
+
   Future<Map<String, dynamic>> editComment(String commentId, String commentText) async {
     try {
       final body = {'commentText': commentText};
-      // We hardcode the url path based on backend routes: /edit/:commentId
-      final response = await _apiClient.put('${ApiUrls.baseUrl}/short-comment/edit/$commentId', body);
+      final response = await _apiClient.put('${ApiUrls.editShortComment}/$commentId', body);
       return response;
     } catch (e) {
       print('Error editing short comment: $e');

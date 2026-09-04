@@ -51,8 +51,11 @@ class _CoursePageState extends State<AllCoursePage>
       create: (context) => widget.viewModel,
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF0B1033)),
             onPressed: () {
               if (Navigator.canPop(context)) {
                 Navigator.pop(context);
@@ -64,12 +67,10 @@ class _CoursePageState extends State<AllCoursePage>
               }
             },
           ),
-          title: Text(
-            'All Courses',
-            style: TextStyle(
-              fontSize: AppSizer.deviceSp20,
-              fontWeight: FontWeight.bold,
-            ),
+          title: Image.asset(
+            'assets/images/mainLogo.png',
+            height: AppSizer.deviceHeight10,
+            fit: BoxFit.contain,
           ),
           bottom: TabBar(
             controller: _tabController,

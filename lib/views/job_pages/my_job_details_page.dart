@@ -91,7 +91,7 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
         title: Text(
           'My Jobs',
           style: TextStyle(
-            fontSize: AppSizer.deviceSp20,
+            fontSize: AppSizer.deviceSp16,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -104,13 +104,13 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
           labelColor: AppColors.primaryColor,
           unselectedLabelColor: AppColors.onSurfaceVariant,
           indicatorColor: AppColors.primaryColor,
-          indicatorWeight: 3,
+          indicatorWeight: 2.5,
           labelStyle: TextStyle(
-            fontSize: AppSizer.deviceSp16,
+            fontSize: AppSizer.deviceSp13,
             fontWeight: FontWeight.w600,
           ),
           unselectedLabelStyle: TextStyle(
-            fontSize: AppSizer.deviceSp16,
+            fontSize: AppSizer.deviceSp13,
             fontWeight: FontWeight.w500,
           ),
           tabs: [
@@ -118,7 +118,7 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.lock_open, size: AppSizer.deviceSp18),
+                  Icon(Icons.lock_open, size: AppSizer.deviceSp15),
                   SizedBox(width: AppSizer.deviceWidth1),
                   Text('Unlocked'),
                 ],
@@ -128,7 +128,7 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.send, size: AppSizer.deviceSp18),
+                  Icon(Icons.send, size: AppSizer.deviceSp15),
                   SizedBox(width: AppSizer.deviceWidth1),
                   Text('Applied'),
                 ],
@@ -138,7 +138,7 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.bookmark, size: AppSizer.deviceSp18),
+                  Icon(Icons.bookmark, size: AppSizer.deviceSp15),
                   SizedBox(width: AppSizer.deviceWidth1),
                   Text('Saved'),
                 ],
@@ -174,16 +174,20 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
         }
 
         return ListView.separated(
-          padding: EdgeInsets.all(AppSizer.deviceWidth4),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSizer.deviceWidth4,
+            vertical: AppSizer.deviceHeight1_5,
+          ),
           itemCount: unlockedJobs.length,
-          separatorBuilder: (context, index) => SizedBox(height: AppSizer.deviceHeight2),
+          separatorBuilder: (context, index) => SizedBox(height: AppSizer.deviceHeight1_5),
           itemBuilder: (context, index) {
             final job = unlockedJobs[index];
             
             return Card(
-              elevation: 2,
+              elevation: 1.5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
-                padding: EdgeInsets.all(AppSizer.deviceWidth4),
+                padding: EdgeInsets.all(AppSizer.deviceWidth3_5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -196,16 +200,16 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
                               Text(
                                 job['jobTitle'] ?? 'Unknown Job',
                                 style: TextStyle(
-                                  fontSize: AppSizer.deviceSp16,
+                                  fontSize: AppSizer.deviceSp14,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(height: AppSizer.deviceHeight1),
+                              SizedBox(height: AppSizer.deviceHeight0_5),
                               Text(
                                 '${job['companyName'] ?? ''} • ${job['location'] ?? ''}',
                                 style: TextStyle(
                                   color: AppColors.onSurfaceVariant,
-                                  fontSize: AppSizer.deviceSp14,
+                                  fontSize: AppSizer.deviceSp12,
                                 ),
                               ),
                             ],
@@ -213,10 +217,10 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
                         ),
                       ],
                     ),
-                    SizedBox(height: AppSizer.deviceHeight2),
+                    SizedBox(height: AppSizer.deviceHeight1_5),
                     Wrap(
-                      spacing: AppSizer.deviceWidth4,
-                      runSpacing: AppSizer.deviceHeight1,
+                      spacing: AppSizer.deviceWidth3,
+                      runSpacing: AppSizer.deviceHeight0_5,
                       children: [
                         _buildJobDetailItem(Icons.currency_rupee, job['salaryPackage']?.toString() ?? ''),
                         _buildJobDetailItem(Icons.work, job['requiredExperience'] ?? ''),
@@ -225,16 +229,20 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
                         _buildJobDetailItem(Icons.people, '${job['numberOfOpenings'] ?? '0'} Openings'),
                       ],
                     ),
-                    SizedBox(height: AppSizer.deviceHeight2),
+                    SizedBox(height: AppSizer.deviceHeight1_5),
                     Row(
                       children: [
                         Expanded(
                           child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
                             onPressed: () {
                               final detail = JobDetail.fromJson(job).copyWith(hasApplied: false, companyIsHide: false, locked: false);
                               Navigator.push(context, MaterialPageRoute(builder: (context) => JobDetailsPage(job: detail)));
                             },
-                            child: Text('View Full Details'),
+                            child: Text('View Full Details', style: TextStyle(fontSize: AppSizer.deviceSp12)),
                           ),
                         ),
                       ],
@@ -268,9 +276,12 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
         }
 
         return ListView.separated(
-          padding: EdgeInsets.all(AppSizer.deviceWidth4),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSizer.deviceWidth4,
+            vertical: AppSizer.deviceHeight1_5,
+          ),
           itemCount: applications.length,
-          separatorBuilder: (context, index) => SizedBox(height: AppSizer.deviceHeight2),
+          separatorBuilder: (context, index) => SizedBox(height: AppSizer.deviceHeight1_5),
           itemBuilder: (context, index) {
             final app = applications[index];
             final job = app['jobId'];
@@ -290,9 +301,10 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
             String statusText = statusStr;
 
             return Card(
-              elevation: 2,
+              elevation: 1.5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
-                padding: EdgeInsets.all(AppSizer.deviceWidth4),
+                padding: EdgeInsets.all(AppSizer.deviceWidth3_5),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -305,16 +317,16 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
                               Text(
                                 job != null ? (job['jobTitle'] ?? 'Unknown Job') : 'Unknown Job',
                                 style: TextStyle(
-                                  fontSize: AppSizer.deviceSp16,
+                                  fontSize: AppSizer.deviceSp14,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(height: AppSizer.deviceHeight1),
+                              SizedBox(height: AppSizer.deviceHeight0_5),
                               Text(
                                 job != null ? '${job['companyName'] ?? ''} • ${job['location'] ?? ''}' : '',
                                 style: TextStyle(
                                   color: AppColors.onSurfaceVariant,
-                                  fontSize: AppSizer.deviceSp14,
+                                  fontSize: AppSizer.deviceSp12,
                                 ),
                               ),
                             ],
@@ -322,24 +334,24 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
                         ),
                         Container(
                           padding: EdgeInsets.symmetric(
-                            horizontal: AppSizer.deviceWidth3,
-                            vertical: AppSizer.deviceHeight1,
+                            horizontal: AppSizer.deviceWidth2_5,
+                            vertical: AppSizer.deviceHeight0_5,
                           ),
                           decoration: BoxDecoration(
                             color: statusColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: statusColor.withOpacity(0.3)),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(statusIcon, color: statusColor, size: AppSizer.deviceSp14),
+                              Icon(statusIcon, color: statusColor, size: AppSizer.deviceSp12),
                               SizedBox(width: AppSizer.deviceWidth1),
                               Text(
                                 statusText,
                                 style: TextStyle(
                                   color: statusColor,
-                                  fontSize: AppSizer.deviceSp12,
+                                  fontSize: AppSizer.deviceSp10,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -348,26 +360,30 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
                         ),
                       ],
                     ),
-                    SizedBox(height: AppSizer.deviceHeight2),
+                    SizedBox(height: AppSizer.deviceHeight1_5),
                     Row(
                       children: [
                         _buildJobDetailItem(Icons.currency_rupee, job != null ? (job['salaryPackage']?.toString() ?? '') : ''),
-                        SizedBox(width: AppSizer.deviceWidth4),
+                        SizedBox(width: AppSizer.deviceWidth3),
                         _buildJobDetailItem(Icons.work, job != null ? (job['requiredExperience'] ?? '') : ''),
                       ],
                     ),
-                    SizedBox(height: AppSizer.deviceHeight2),
+                    SizedBox(height: AppSizer.deviceHeight1_5),
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              visualDensity: VisualDensity.compact,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
                             onPressed: () {
                               if (job != null) {
                                 final detail = JobDetail.fromJson(job).copyWith(hasApplied: true);
                                 Navigator.push(context, MaterialPageRoute(builder: (context) => JobDetailsPage(job: detail)));
                               }
                             },
-                            child: Text('View Details'),
+                            child: Text('View Details', style: TextStyle(fontSize: AppSizer.deviceSp12)),
                           ),
                         ),
                       ],
@@ -392,29 +408,35 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
     }
 
     return SingleChildScrollView(
-      padding: EdgeInsets.all(AppSizer.deviceWidth4),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSizer.deviceWidth4,
+        vertical: AppSizer.deviceHeight1_5,
+      ),
       child: Column(
         children: [
           // Info Card
           Container(
             width: double.infinity,
-            padding: EdgeInsets.all(AppSizer.deviceWidth4),
-            margin: EdgeInsets.only(bottom: AppSizer.deviceHeight4),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSizer.deviceWidth3_5,
+              vertical: AppSizer.deviceHeight1_5,
+            ),
+            margin: EdgeInsets.only(bottom: AppSizer.deviceHeight1_5),
             decoration: BoxDecoration(
               color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Colors.blue.shade100),
             ),
             child: Row(
               children: [
-                Icon(Icons.info, color: Colors.blue, size: AppSizer.deviceSp20),
-                SizedBox(width: AppSizer.deviceWidth3),
+                Icon(Icons.info, color: Colors.blue, size: AppSizer.deviceSp16),
+                SizedBox(width: AppSizer.deviceWidth2_5),
                 Expanded(
                   child: Text(
                     'You have ${_savedJobs.length} saved jobs. Apply before they expire!',
                     style: TextStyle(
                       color: Colors.blue[800],
-                      fontSize: AppSizer.deviceSp14,
+                      fontSize: AppSizer.deviceSp12,
                     ),
                   ),
                 ),
@@ -427,7 +449,7 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
             physics: NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             itemCount: _savedJobs.length,
-            separatorBuilder: (context, index) => SizedBox(height: AppSizer.deviceHeight2),
+            separatorBuilder: (context, index) => SizedBox(height: AppSizer.deviceHeight1_5),
             itemBuilder: (context, index) {
               final job = _savedJobs[index];
               return _buildSavedJobCard(job);
@@ -440,9 +462,10 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
 
   Widget _buildSavedJobCard(SavedJob job) {
     return Card(
-      elevation: 2,
+      elevation: 1.5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
+        padding: EdgeInsets.all(AppSizer.deviceWidth3_5),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -455,57 +478,67 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
                       Text(
                         job.title,
                         style: TextStyle(
-                          fontSize: AppSizer.deviceSp16,
+                          fontSize: AppSizer.deviceSp14,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: AppSizer.deviceHeight1),
+                      SizedBox(height: AppSizer.deviceHeight0_5),
                       Text(
                         '${job.company} • ${job.location}',
                         style: TextStyle(
                           color: AppColors.onSurfaceVariant,
-                          fontSize: AppSizer.deviceSp14,
+                          fontSize: AppSizer.deviceSp12,
                         ),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.bookmark, color: AppColors.primaryColor),
+                  icon: Icon(Icons.bookmark, color: AppColors.primaryColor, size: AppSizer.deviceSp18),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                   onPressed: () {
                     _removeFromSaved(job.id);
                   },
                 ),
               ],
             ),
-            SizedBox(height: AppSizer.deviceHeight2),
+            SizedBox(height: AppSizer.deviceHeight1_5),
             Row(
               children: [
                 _buildJobDetailItem(Icons.currency_rupee, job.salary),
-                SizedBox(width: AppSizer.deviceWidth4),
+                SizedBox(width: AppSizer.deviceWidth3),
                 _buildJobDetailItem(Icons.work, job.experience),
-                SizedBox(width: AppSizer.deviceWidth4),
+                SizedBox(width: AppSizer.deviceWidth3),
                 _buildJobDetailItem(Icons.calendar_today, 'Saved: ${job.savedDate}'),
               ],
             ),
-            SizedBox(height: AppSizer.deviceHeight2),
+            SizedBox(height: AppSizer.deviceHeight1_5),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
                     onPressed: () {
                       _viewJobDetails(job);
                     },
-                    child: Text('View Details'),
+                    child: Text('View Details', style: TextStyle(fontSize: AppSizer.deviceSp12)),
                   ),
                 ),
                 SizedBox(width: AppSizer.deviceWidth2),
                 Expanded(
                   child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
                     onPressed: () {
                       _viewJobDetails(job);
                     },
-                    child: Text('Apply Now'),
+                    child: Text('Apply Now', style: TextStyle(fontSize: AppSizer.deviceSp12)),
                   ),
                 ),
               ],
@@ -520,12 +553,12 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: AppSizer.deviceSp14, color: AppColors.onSurfaceVariant),
+        Icon(icon, size: AppSizer.deviceSp12, color: AppColors.onSurfaceVariant),
         SizedBox(width: AppSizer.deviceWidth1),
         Text(
           text,
           style: TextStyle(
-            fontSize: AppSizer.deviceSp12,
+            fontSize: AppSizer.deviceSp11,
             color: AppColors.onSurfaceVariant,
           ),
         ),
@@ -568,47 +601,51 @@ class _MyJobDetailsPageState extends State<MyJobDetailsPage> with SingleTickerPr
   Widget _buildEmptyState({required IconData icon, required String title, required String description}) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth8),
+        padding: EdgeInsets.all(AppSizer.deviceWidth6),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.all(AppSizer.deviceWidth6),
+              padding: EdgeInsets.all(AppSizer.deviceWidth4),
               decoration: BoxDecoration(
                 color: AppColors.primaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                size: AppSizer.deviceSp40,
+                size: AppSizer.deviceSp30,
                 color: AppColors.primaryColor,
-              ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight4),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.logoNavy,
               ),
             ),
             SizedBox(height: AppSizer.deviceHeight2),
             Text(
+              title,
+              style: TextStyle(
+                fontSize: AppSizer.deviceSp16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.logoNavy,
+              ),
+            ),
+            SizedBox(height: AppSizer.deviceHeight1),
+            Text(
               description,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
+                fontSize: AppSizer.deviceSp13,
                 color: AppColors.onSurfaceVariant,
-                height: 1.5,
+                height: 1.4,
               ),
             ),
-            SizedBox(height: AppSizer.deviceHeight4),
+            SizedBox(height: AppSizer.deviceHeight2_5),
             FilledButton(
+              style: FilledButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => JobsPage()));
               },
-              child: Text('Browse Jobs'),
+              child: Text('Browse Jobs', style: TextStyle(fontSize: AppSizer.deviceSp12)),
             ),
           ],
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
+import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/veiw_model/job_application_viewmodel.dart';
 import 'package:intl/intl.dart';
 
@@ -65,10 +66,15 @@ class _MyApplicationsPageState extends State<MyApplicationsPage> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text('My Job Applications', style: TextStyle(color: Colors.black, fontSize: 18.sp, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        title: Image.asset(
+          'assets/images/mainLogo.png',
+          height: AppSizer.deviceHeight10,
+          fit: BoxFit.contain,
+        ),
         backgroundColor: Colors.white,
-        elevation: 1,
-        iconTheme: IconThemeData(color: Colors.black),
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF0B1033)),
       ),
       body: Consumer<JobApplicationViewModel>(
         builder: (context, viewModel, child) {

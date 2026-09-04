@@ -9,7 +9,6 @@ import 'package:coders_adda_app/veiw_model/auth_viewmodel.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_page.dart';
 import 'package:coders_adda_app/views/profile_pages/edite_profile.dart';
 import 'package:coders_adda_app/views/profile_pages/my_certificates_page.dart';
-import 'package:coders_adda_app/views/subscription_pages/subscrption_page.dart';
 import 'package:coders_adda_app/views/subscription_pages/my_subscriptions_page.dart';
 import 'package:coders_adda_app/views/common/help_support_page.dart';
 import 'package:coders_adda_app/views/profile_pages/payment_history_page.dart';
@@ -33,8 +32,11 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: const Color(0xFFF5F7FF),
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF0B1033),
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -48,29 +50,28 @@ class _ProfilePageState extends State<ProfilePage> {
             }
           },
         ),
-        title: Text(
+        title: const Text(
           'My Profile',
           style: TextStyle(
-            fontSize: AppSizer.deviceSp20,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
+            color: Color(0xFF0B1033),
           ),
         ),
         actions: [
           Consumer<ProfileViewModel>(
             builder: (context, viewModel, child) {
-              if (viewModel.user == null) return SizedBox();
+              if (viewModel.user == null) return const SizedBox();
               return IconButton(
-                icon: Icon(Icons.edit),
+                icon: const Icon(Icons.edit, color: Color(0xFF0033CC)),
                 onPressed: () async {
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EditProfilePage(
-                        user: viewModel.user!,
-                      ),
+                      builder: (context) => EditProfilePage(user: viewModel.user!),
                     ),
                   );
-                  viewModel.fetchUserProfile(); // Refresh after edit
+                  viewModel.fetchUserProfile();
                 },
               );
             },
@@ -80,7 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
       body: Consumer<ProfileViewModel>(
         builder: (context, viewModel, child) {
           if (viewModel.isLoading) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator(color: Color(0xFF0033CC)));
           }
 
           if (viewModel.errorMessage != null) {
@@ -92,13 +93,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   SizedBox(height: MediaQuery.of(context).size.height * 0.3),
                   Center(
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Error: ${viewModel.errorMessage}', style: TextStyle(color: Colors.red)),
-                        SizedBox(height: 16),
+                        Text('Error: ${viewModel.errorMessage}', style: const TextStyle(color: Colors.red)),
+                        const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () => viewModel.fetchUserProfile(),
-                          child: Text('Retry'),
+                          child: const Text('Retry'),
                         ),
                       ],
                     ),
@@ -115,7 +115,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 children: [
                   SizedBox(height: MediaQuery.of(context).size.height * 0.4),
-                  Center(child: Text('No profile data found')),
+                  const Center(child: Text('No profile data found')),
                 ],
               ),
             );
@@ -124,23 +124,23 @@ class _ProfilePageState extends State<ProfilePage> {
           final user = viewModel.user!;
 
           return RefreshIndicator(
+            color: const Color(0xFF0033CC),
             onRefresh: () => viewModel.fetchUserProfile(),
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.all(AppSizer.deviceWidth4),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSizer.deviceWidth4,
+                vertical: AppSizer.deviceHeight1_5,
+              ),
               child: Column(
                 children: [
                   _buildProfileCompletionWidget(user),
                   _buildProfileHeader(user),
-                  SizedBox(height: AppSizer.deviceHeight1),
+                  SizedBox(height: AppSizer.deviceHeight1_5),
                   _buildLearningStats(viewModel, user),
-                  SizedBox(height: AppSizer.deviceHeight1),
+                  SizedBox(height: AppSizer.deviceHeight1_5),
                   _buildStudentDetails(user),
-                  SizedBox(height: AppSizer.deviceHeight1),
-                  _buildSkillsSection(user),
-                  SizedBox(height: AppSizer.deviceHeight1),
-                  _buildAchievementsSection(viewModel.achievements),
-                  SizedBox(height: AppSizer.deviceHeight1),
+                  SizedBox(height: AppSizer.deviceHeight1_5),
                   _buildMenuItems(context),
                   SizedBox(height: AppSizer.deviceHeight4),
                 ],
@@ -157,12 +157,19 @@ class _ProfilePageState extends State<ProfilePage> {
     if (percentage == 100) return const SizedBox.shrink();
 
     return Container(
-      margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
+      margin: EdgeInsets.only(bottom: AppSizer.deviceHeight1_5),
       padding: EdgeInsets.all(AppSizer.deviceWidth4),
       decoration: BoxDecoration(
-        color: AppColors.primaryColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
-        border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,35 +180,37 @@ class _ProfilePageState extends State<ProfilePage> {
               Text(
                 'Profile Completion',
                 style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primaryColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: AppSizer.deviceSp13,
+                  color: const Color(0xFF0B1033),
                 ),
               ),
               Text(
                 '$percentage%',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryColor,
+                  fontSize: AppSizer.deviceSp13,
+                  color: const Color(0xFF0033CC),
                 ),
               ),
             ],
           ),
           SizedBox(height: AppSizer.deviceHeight1),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(
               value: percentage / 100,
-              backgroundColor: Colors.grey[300],
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
-              minHeight: 8,
+              backgroundColor: Colors.grey.shade200,
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0033CC)),
+              minHeight: 7,
             ),
           ),
-          SizedBox(height: AppSizer.deviceHeight1),
+          SizedBox(height: AppSizer.deviceHeight0_5),
           Text(
-            'Complete your profile to unlock all features and recommendations.',
+            'Complete your profile to unlock all features.',
             style: TextStyle(
-              fontSize: AppSizer.deviceSp12,
-              color: Colors.grey[700],
+              fontSize: AppSizer.deviceSp11,
+              color: Colors.grey.shade600,
             ),
           ),
         ],
@@ -210,287 +219,207 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildProfileHeader(UserProfile user) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSizer.deviceWidth4),
+    return Container(
+      padding: EdgeInsets.all(AppSizer.deviceWidth4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          children: [
-            // Profile Image and Basic Info
-            Row(
-              children: [
-                  // Profile Image
-                  Stack(
-                    children: [
-                      Container(
-                        width: AppSizer.deviceWidth20,
-                        height: AppSizer.deviceWidth20,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                              color: user.hasActiveSubscription ? AppColors.logoOrange : AppColors.primaryColor, 
-                              width: user.hasActiveSubscription ? 4 : 3),
-                          color: Colors.grey.shade200, // Background color for fallback
-                        ),
-                        child: ClipOval(
-                          child: Image.network(
-                            user.profilePicture.isNotEmpty 
-                                ? user.profilePicture 
-                                : "https://via.placeholder.com/150",
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.person, size: AppSizer.deviceWidth10, color: Colors.grey);
-                            },
-                          ),
-                        ),
-                      ),
-                      if (user.hasActiveSubscription)
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: AppColors.logoOrange,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                            child: const Icon(
-                              Icons.workspace_premium,
-                              color: Colors.white,
-                              size: 14,
-                            ),
-                          ),
-                        ),
-                    ],
+      child: Row(
+        children: [
+          // Avatar
+          Stack(
+            children: [
+              Container(
+                width: AppSizer.deviceWidth18,
+                height: AppSizer.deviceWidth18,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF0033CC),
+                  border: Border.all(
+                    color: user.hasActiveSubscription
+                        ? AppColors.logoOrange
+                        : const Color(0xFF0033CC),
+                    width: 2,
                   ),
-
-                SizedBox(width: AppSizer.deviceWidth4),
-
-                // Basic Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              user.name,
-                              style: TextStyle(
-                                fontSize: AppSizer.deviceSp20,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.logoNavy,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (user.hasActiveSubscription)
-                            Container(
-                              margin: const EdgeInsets.only(left: 8),
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: AppColors.logoOrange.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppColors.logoOrange),
-                              ),
+                ),
+                child: ClipOval(
+                  child: user.profilePicture.isNotEmpty
+                      ? Image.network(
+                          user.profilePicture,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
                               child: Text(
-                                  user.activeSubscriptionName.isNotEmpty ? user.activeSubscriptionName.toUpperCase() : 'PRO',
-                                  style: TextStyle(
-                                    color: AppColors.logoOrange,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                user.name.isNotEmpty
+                                    ? user.name[0].toUpperCase()
+                                    : 'P',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: AppSizer.deviceSp24,
+                                  fontWeight: FontWeight.bold,
                                 ),
+                              ),
+                            );
+                          },
+                        )
+                      : Center(
+                          child: Text(
+                            user.name.isNotEmpty ? user.name[0].toUpperCase() : 'P',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: AppSizer.deviceSp24,
+                              fontWeight: FontWeight.bold,
                             ),
-                        ],
-                      ),
-                      SizedBox(height: AppSizer.deviceHeight0_5),
-                      Text(
-                        user.email,
-                        style: TextStyle(
-                          color: AppColors.onSurfaceVariant,
-                          fontSize: AppSizer.deviceSp16,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: AppSizer.deviceHeight0_5),
-                      Text(
-                        user.mobile,
-                        style: TextStyle(
-                          color: AppColors.onSurfaceVariant,
-                          fontSize: AppSizer.deviceSp16,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-
-                // Verification Badge
-                Container(
-                  padding: EdgeInsets.all(AppSizer.deviceWidth2),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.verified,
-                    color: Colors.blue,
-                    size: AppSizer.deviceSp20,
-                  ),
-                ),
-              ],
-            ),
-
-            SizedBox(height: AppSizer.deviceHeight2),
-
-            // Bio
-            Text(
-              user.about,
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp14,
-                color: AppColors.onSurfaceVariant,
-                fontStyle: FontStyle.italic,
               ),
-              textAlign: TextAlign.center,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
+              if (user.hasActiveSubscription)
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: AppColors.logoOrange,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: const Icon(Icons.workspace_premium, color: Colors.white, size: 10),
+                  ),
+                ),
+            ],
+          ),
+          SizedBox(width: AppSizer.deviceWidth4),
 
-            SizedBox(height: AppSizer.deviceHeight2),
-
-            // Social Links
-            Wrap(
-              alignment: WrapAlignment.center,
-              spacing: AppSizer.deviceWidth3,
-              runSpacing: AppSizer.deviceHeight1,
+          // Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (user.github.isNotEmpty)
-                  _buildSocialButton(Icons.code, 'GitHub', () {
-                    _launchUrl(user.github);
-                  }),
-                if (user.linkedin.isNotEmpty)
-                  _buildSocialButton(Icons.work, 'LinkedIn', () {
-                    _launchUrl(user.linkedin);
-                  }),
-                if (user.portfolio.isNotEmpty)
-                  _buildSocialButton(Icons.public, 'Portfolio', () {
-                    _launchUrl(user.portfolio);
-                  }),
+                Text(
+                  user.name,
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0B1033),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: AppSizer.deviceHeight0_5),
+                Text(
+                  user.email,
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                SizedBox(height: AppSizer.deviceHeight0_5),
+                Text(
+                  user.mobile,
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
+          ),
 
-  Widget _buildSocialButton(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSizer.deviceWidth3,
-          vertical: AppSizer.deviceHeight1,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.primaryColor.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: AppColors.primaryColor,
-              size: AppSizer.deviceSp16,
+          // Verified badge
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0033CC).withOpacity(0.1),
+              shape: BoxShape.circle,
             ),
-            SizedBox(width: AppSizer.deviceWidth1),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp14,
-                color: AppColors.primaryColor,
-                fontWeight: FontWeight.w600,
-              ),
+            child: const Icon(
+              Icons.verified,
+              color: Color(0xFF0033CC),
+              size: 20,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildLearningStats(ProfileViewModel viewModel, UserProfile user) {
-    return Card(
-      elevation: 3,
-      child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildStatItem(
-              '${user.walletBalance}',
-              'Wallet',
-              Icons.account_balance_wallet,
-              AppColors.successColor,
-            ),
-            _buildStatItem(
-              '${user.referralCount}',
-              'Referrals',
-              Icons.group,
-              AppColors.primaryColor,
-            ),
-            _buildStatItem(
-               '${user.courseCount}',
-              'Courses',
-              Icons.play_circle_filled,
-              AppColors.logoOrange,
-            ),
-            _buildStatItem(
-              viewModel.memberSince,
-              'Member Since',
-              Icons.calendar_today,
-              AppColors.logoNavy,
-            ),
-          ],
-        ),
+    return Container(
+      padding: EdgeInsets.symmetric(
+        vertical: AppSizer.deviceHeight2,
+        horizontal: AppSizer.deviceWidth2,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildStatItem('₹${user.walletBalance}', 'Wallet', Icons.account_balance_wallet_rounded, Colors.green.shade600),
+          _buildDivider(),
+          _buildStatItem('${user.referralCount}', 'Referrals', Icons.people_rounded, const Color(0xFF0033CC)),
+          _buildDivider(),
+          _buildStatItem('${user.courseCount}', 'Courses', Icons.play_circle_filled, Colors.orange),
+          _buildDivider(),
+          _buildStatItem(viewModel.memberSince, 'Member Since', Icons.calendar_today_rounded, Colors.blueGrey),
+        ],
       ),
     );
   }
 
-  Widget _buildStatItem(
-    String value,
-    String label,
-    IconData icon,
-    Color color,
-  ) {
+  Widget _buildDivider() {
+    return Container(
+      height: 40,
+      width: 1,
+      color: Colors.grey.shade200,
+    );
+  }
+
+  Widget _buildStatItem(String value, String label, IconData icon, Color color) {
     return Column(
       children: [
         Container(
           padding: EdgeInsets.all(AppSizer.deviceWidth2),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
-            shape: BoxShape.circle,
+            borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: color, size: AppSizer.deviceSp20),
-        ),
-        SizedBox(height: AppSizer.deviceHeight1),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: AppSizer.deviceSp18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.logoNavy,
-          ),
+          child: Icon(icon, color: color, size: AppSizer.deviceSp18),
         ),
         SizedBox(height: AppSizer.deviceHeight0_5),
         Text(
+          value,
+          style: TextStyle(
+            fontSize: AppSizer.deviceSp13,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF0B1033),
+          ),
+        ),
+        Text(
           label,
           style: TextStyle(
-            fontSize: AppSizer.deviceSp14,
-            color: AppColors.onSurfaceVariant,
+            fontSize: AppSizer.deviceSp10,
+            color: Colors.grey.shade500,
           ),
           textAlign: TextAlign.center,
         ),
@@ -499,395 +428,246 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildStudentDetails(UserProfile user) {
-    return Card(
-      elevation: 3,
-      child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              AppSizer.deviceWidth4,
+              AppSizer.deviceHeight2,
+              AppSizer.deviceWidth4,
+              AppSizer.deviceHeight1,
+            ),
+            child: Text(
               'Student Details',
               style: TextStyle(
-                fontSize: AppSizer.deviceSp20,
+                fontSize: AppSizer.deviceSp15,
                 fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            _buildDetailRow('College', user.college, Icons.school),
-            _buildDetailRow('Course', user.course, Icons.menu_book),
-            _buildDetailRow('Branch', user.branch, Icons.account_tree),
-            _buildDetailRow('Semester', user.semester, Icons.timeline),
-            _buildDetailRow('Technology', user.technology.join(", "), Icons.computer),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value, IconData icon) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.primaryColor, size: AppSizer.deviceSp20),
-          SizedBox(width: AppSizer.deviceWidth3),
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.onSurfaceVariant,
+                color: const Color(0xFF0B1033),
               ),
             ),
           ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp14,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.right,
-            ),
-          ),
+          _buildDetailRow('College', user.college, Icons.school_rounded, Colors.blue.shade700),
+          _buildDetailRow('Course', user.course, Icons.menu_book_rounded, Colors.indigo),
+          _buildDetailRow('Branch', user.branch, Icons.account_tree_rounded, Colors.teal),
+          _buildDetailRow('Semester', user.semester, Icons.timeline_rounded, Colors.deepOrange),
+          _buildDetailRow('Technology', user.technology.join(', '), Icons.computer_rounded, Colors.purple),
+          SizedBox(height: AppSizer.deviceHeight1),
         ],
       ),
     );
   }
 
-  Widget _buildSkillsSection(UserProfile user) {
-    final skills = user.skills;
-
-    return Container(
-      //height: ,
-      width: double.infinity,
-      child: Card(
-        elevation: 3,
-        child: Padding(
-          padding: EdgeInsets.all(AppSizer.deviceWidth4),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildDetailRow(String label, String value, IconData icon, Color iconColor) {
+    final bool isEmpty = value.trim().isEmpty || value == 'null';
+    return Column(
+      children: [
+        Divider(height: 1, color: Colors.grey.shade100),
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppSizer.deviceWidth4,
+            vertical: AppSizer.deviceHeight1_5,
+          ),
+          child: Row(
             children: [
-              Text(
-                'Skills & Technologies',
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp20,
-                  fontWeight: FontWeight.bold,
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: iconColor, size: AppSizer.deviceSp16),
+              ),
+              SizedBox(width: AppSizer.deviceWidth3),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp13,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF0B1033),
+                  ),
                 ),
               ),
-              SizedBox(height: AppSizer.deviceHeight2),
-              Wrap(
-                spacing: AppSizer.deviceWidth2,
-                runSpacing: AppSizer.deviceHeight1,
-                children: skills
-                    .map(
-                      (skill) => Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSizer.deviceWidth3,
-                          vertical: AppSizer.deviceHeight1,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: AppColors.primaryColor.withOpacity(0.3),
-                          ),
-                        ),
-                        child: Text(
-                          skill.trim(),
-                          style: TextStyle(
-                            fontSize: AppSizer.deviceSp14,
-                            color: AppColors.primaryColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    )
-                    .toList(),
+              Text(
+                isEmpty ? 'Not Added' : value,
+                style: TextStyle(
+                  fontSize: AppSizer.deviceSp13,
+                  fontWeight: FontWeight.w500,
+                  color: isEmpty ? const Color(0xFF0033CC) : Colors.grey.shade700,
+                ),
+              ),
+              SizedBox(width: AppSizer.deviceWidth1),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: AppSizer.deviceSp16,
+                color: Colors.grey.shade400,
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAchievementsSection(List<Achievement> achievements) {
-    return Card(
-      elevation: 3,
-      child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Text(
-                  'Achievements',
-                  style: TextStyle(
-                    fontSize: AppSizer.deviceSp20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Spacer(),
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppSizer.deviceWidth2,
-                    vertical: AppSizer.deviceHeight0_5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.logoOrange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${achievements.length} Badges',
-                    style: TextStyle(
-                      fontSize: AppSizer.deviceSp14,
-                      color: AppColors.logoOrange,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            Column(
-              children: achievements
-                  .map((achievement) => _buildAchievementItem(achievement))
-                  .toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAchievementItem(Achievement achievement) {
-    return Container(
-      margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
-      padding: EdgeInsets.all(AppSizer.deviceWidth3),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
-        border: Border.all(color: AppColors.outline),
-      ),
-      child: Row(
-        children: [
-          // Achievement Icon
-          Container(
-            width: AppSizer.deviceWidth12,
-            height: AppSizer.deviceWidth12,
-            decoration: BoxDecoration(
-              color: AppColors.logoOrange.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                achievement.icon,
-                style: TextStyle(fontSize: AppSizer.deviceSp18),
-              ),
-            ),
-          ),
-
-          SizedBox(width: AppSizer.deviceWidth3),
-
-          // Achievement Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  achievement.title,
-                  style: TextStyle(
-                    fontSize: AppSizer.deviceSp16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: AppSizer.deviceHeight0_5),
-                Text(
-                  achievement.description,
-                  style: TextStyle(
-                    fontSize: AppSizer.deviceSp14,
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+      ],
     );
   }
 
   Widget _buildMenuItems(BuildContext context) {
     final menuItems = [
       {
-        'icon': Icons.video_library,
+        'icon': Icons.play_lesson_rounded,
         'title': 'My Courses',
-        'color': AppColors.primaryColor,
+        'color': const Color(0xFF0033CC),
         'onTap': () { NavigationService.navigateTo(context, MyLearningPage()); },
       },
       {
-        'icon': Icons.history,
+        'icon': Icons.receipt_long_rounded,
         'title': 'Payment History',
-        'color': AppColors.accentColor,
+        'color': Colors.orange,
         'onTap': () { NavigationService.navigateTo(context, const PaymentHistoryPage()); },
       },
       {
-        'icon': Icons.card_membership,
+        'icon': Icons.workspace_premium_rounded,
         'title': 'My Certificates',
-        'color': AppColors.successColor,
+        'color': Colors.green.shade600,
         'onTap': () { NavigationService.navigateTo(context, const MyCertificatesPage()); },
       },
       {
-        'icon': Icons.workspace_premium,
+        'icon': Icons.card_membership_rounded,
         'title': 'My Subscription',
-        'color': AppColors.logoOrange,
+        'color': Colors.deepOrange,
         'onTap': () { NavigationService.navigateTo(context, MySubscriptionsPage()); },
       },
       {
-        'icon': Icons.help,
+        'icon': Icons.help_rounded,
         'title': 'Help & Support',
-        'color': AppColors.logoBlue,
+        'color': Colors.blue,
         'onTap': () { NavigationService.navigateTo(context, const HelpSupportPage()); },
       },
       {
-        'icon': Icons.logout,
+        'icon': Icons.logout_rounded,
         'title': 'Logout',
         'color': Colors.red,
         'onTap': () { _showLogoutDialog(context); },
       },
     ];
 
-    return Card(
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            ...menuItems.map((item) {
-              return ListTile(
-                leading: Container(
-                  padding: EdgeInsets.all(AppSizer.deviceWidth2),
-                  decoration: BoxDecoration(
-                    color: (item['color'] as Color).withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    item['icon'] as IconData,
-                    color: item['color'] as Color,
-                    size: AppSizer.deviceSp20,
-                  ),
-                ),
-                title: Text(
-                  item['title'] as String,
-                  style: TextStyle(fontSize: AppSizer.deviceSp16),
-                ),
-                trailing: Icon(
-                  Icons.arrow_forward_ios,
-                  size: AppSizer.deviceSp14,
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-                ),
-                onTap: item['onTap'] as VoidCallback,
-              );
-            }).toList(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _editProfile(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Edit Profile'),
-        content: Text('Edit profile feature will be available soon.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
+        ],
+      ),
+      child: Column(
+        children: [
+          ...menuItems.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            final color = item['color'] as Color;
+            return Column(
+              children: [
+                if (index > 0) Divider(height: 1, color: Colors.grey.shade100),
+                ListTile(
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: AppSizer.deviceWidth4,
+                    vertical: AppSizer.deviceHeight0_5,
+                  ),
+                  leading: Container(
+                    padding: EdgeInsets.all(AppSizer.deviceWidth2),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      item['icon'] as IconData,
+                      color: color,
+                      size: AppSizer.deviceSp18,
+                    ),
+                  ),
+                  title: Text(
+                    item['title'] as String,
+                    style: TextStyle(
+                      fontSize: AppSizer.deviceSp14,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF0B1033),
+                    ),
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right_rounded,
+                    size: AppSizer.deviceSp20,
+                    color: Colors.grey.shade400,
+                  ),
+                  onTap: item['onTap'] as VoidCallback,
+                ),
+              ],
+            );
+          }).toList(),
         ],
       ),
     );
   }
 
   Future<void> _launchUrl(String urlString) async {
-    if (urlString.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Link not provided')),
-      );
-      return;
-    }
-    
-    // Ensure the URL has a scheme
+    if (urlString.isEmpty) return;
     String finalUrl = urlString;
     if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
       finalUrl = 'https://$finalUrl';
     }
-
     final Uri url = Uri.parse(finalUrl);
     try {
       if (await canLaunchUrl(url)) {
         await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not launch $urlString')),
-          );
-        }
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Invalid link format')),
+          const SnackBar(content: Text('Invalid link format')),
         );
       }
     }
-  }
-
-  void _showComingSoon(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Coming Soon'),
-        content: Text('This feature is under development.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Logout'),
-        content: Text('Are you sure you want to logout?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Logout'),
+        content: const Text('Are you sure you want to logout?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
-              Navigator.pop(context); // Close dialog
+              Navigator.pop(context);
               await context.read<AuthViewModel>().signOut();
               if (context.mounted) {
                 context.read<ProfileViewModel>().clearProfile();
                 Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
               }
             },
-            child: Text('Logout'),
+            child: const Text('Logout'),
           ),
         ],
       ),

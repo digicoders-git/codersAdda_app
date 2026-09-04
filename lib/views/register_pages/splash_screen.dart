@@ -45,28 +45,37 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: AppSizer.deviceWidth80,
-              padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth5),
-              child: Image.asset(
-                "assets/images/mainLogo.png",
-                fit: BoxFit.contain,
+      body: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFFEAF4FF),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: AppSizer.deviceWidth90,
+                padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth2),
+                child: Image.asset(
+                  "assets/images/mainLogo.png",
+                  fit: BoxFit.contain,
+                ),
               ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            Text(
-              'Learn • Grow • Succeed',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: AppSizer.deviceSp16,
+              SizedBox(height: AppSizer.deviceHeight2),
+              Text(
+                'Learn • Grow • Succeed',
+                style: TextStyle(
+                  color: AppColors.logoNavy,
+                  fontSize: AppSizer.deviceSp16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: AppSizer.deviceHeight5),
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.logoOrange),
+              ),
+            ],
+          ),
         ),
       ),
     );

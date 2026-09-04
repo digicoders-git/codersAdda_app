@@ -65,12 +65,11 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Search Courses",
-          style: TextStyle(
-            fontSize: AppSizer.deviceSp20,
-            fontWeight: FontWeight.bold,
-          ),
+        centerTitle: true,
+        title: Image.asset(
+          'assets/images/mainLogo.png',
+          height: AppSizer.deviceHeight10,
+          fit: BoxFit.contain,
         ),
         backgroundColor: Colors.white,
         elevation: 0,

@@ -80,13 +80,14 @@ class _MyCertificatesPageState extends State<MyCertificatesPage> with SingleTick
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: Text(
-          'My Certificates',
-          style: TextStyle(
-            fontSize: AppSizer.deviceSp20,
-            fontWeight: FontWeight.bold,
-          ),
+        centerTitle: true,
+        title: Image.asset(
+          'assets/images/mainLogo.png',
+          height: AppSizer.deviceHeight10,
+          fit: BoxFit.contain,
         ),
+        backgroundColor: Colors.white,
+        elevation: 0,
         leading: Navigator.canPop(context)
             ? IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new_rounded),

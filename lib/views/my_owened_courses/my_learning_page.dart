@@ -2,9 +2,10 @@ import 'package:coders_adda_app/models/my_learning_model.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
 import 'package:coders_adda_app/utils/app_sizer/app_sizer.dart';
 import 'package:coders_adda_app/veiw_model/my_learning_viewmodel.dart';
+import 'package:coders_adda_app/views/buy_new_pdf_pages/pdf_page.dart';
+import 'package:coders_adda_app/views/home_pages/all_cource_page.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_pdf_page.dart';
 import 'package:coders_adda_app/views/my_owened_courses/my_learning_player_page.dart';
-import 'package:coders_adda_app/views/my_owened_pdf/offline_pdfs_page.dart' as coders_adda_app_offline_pdfs;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:coders_adda_app/views/navigation_class.dart';
@@ -53,9 +54,14 @@ class _MyLearningPageState extends State<MyLearningPage> with SingleTickerProvid
       child: Consumer<MyLearningViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
+            backgroundColor: const Color(0xFFFFFFFF),
             appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              scrolledUnderElevation: 0,
+              centerTitle: true,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF0F172A)),
                 onPressed: () {
                   if (Navigator.canPop(context)) {
                     Navigator.pop(context);
@@ -67,56 +73,86 @@ class _MyLearningPageState extends State<MyLearningPage> with SingleTickerProvid
                   }
                 },
               ),
-              title: Text(
-                'My Learning',
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp20,
-                  fontWeight: FontWeight.bold,
+              title: Image.asset(
+                'assets/images/mainLogo.png',
+                height: AppSizer.deviceHeight10,
+                fit: BoxFit.contain,
+              ),
+              bottom: PreferredSize(
+                preferredSize: Size.fromHeight(AppSizer.deviceHeight7),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TabBar(
+                      controller: _tabController,
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.center,
+                      labelColor: const Color(0xFF0052FF),
+                      unselectedLabelColor: const Color(0xFF64748B),
+                      indicatorSize: TabBarIndicatorSize.label,
+                      indicator: const UnderlineTabIndicator(
+                        borderSide: BorderSide(width: 3.5, color: Color(0xFF0052FF)),
+                        borderRadius: BorderRadius.all(Radius.circular(3)),
+                      ),
+                      labelStyle: TextStyle(
+                        fontSize: AppSizer.deviceSp12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      unselectedLabelStyle: TextStyle(
+                        fontSize: AppSizer.deviceSp12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      labelPadding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth3),
+                      tabs: const [
+                        Tab(icon: Icon(Icons.school, size: 24), text: 'Free Courses'),
+                        Tab(icon: Icon(Icons.workspace_premium, size: 24), text: 'Premium Courses'),
+                        Tab(icon: Icon(Icons.menu_book, size: 24), text: 'Free E-Books'),
+                        Tab(icon: Icon(Icons.library_books, size: 24), text: 'Premium E-Books'),
+                      ],
+                    ),
+                    const Divider(height: 1, thickness: 1, color: Color(0xFFF1F5F9)),
+                  ],
                 ),
               ),
-              bottom: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                labelColor: AppColors.primaryColor,
-                unselectedLabelColor: AppColors.onSurfaceVariant,
-                indicatorColor: AppColors.primaryColor,
-                tabs: const [
-                  Tab(text: 'Free Courses', icon: Icon(Icons.school)),
-                  Tab(text: 'Premium Courses', icon: Icon(Icons.workspace_premium)),
-                  Tab(text: 'Free E-Books', icon: Icon(Icons.menu_book)),
-                  Tab(text: 'Premium E-Books', icon: Icon(Icons.library_books)),
-                ],
-              ),
-              actions: [
-                // IconButton(
-                //   icon: Icon(Icons.download_done, color: AppColors.primaryColor),
-                //   onPressed: () {
-                //     Navigator.push(
-                //       context,
-                //       MaterialPageRoute(builder: (context) => coders_adda_app_offline_pdfs.OfflinePdfsPage()),
-                //     );
-                //   },
-                // ),
-              ],
             ),
             body: TabBarView(
               controller: _tabController,
               children: [
                 RefreshIndicator(
                   onRefresh: () => viewModel.fetchMyLibrary(),
-                  child: _buildCoursesList(context, viewModel.freeCourses, 'Free Courses'),
+                  child: _buildCoursesList(
+                    context,
+                    viewModel.freeCourses,
+                    'Free Courses',
+                    tabType: 0,
+                  ),
                 ),
                 RefreshIndicator(
                   onRefresh: () => viewModel.fetchMyLibrary(),
-                  child: _buildCoursesList(context, viewModel.premiumCourses, 'Premium Courses'),
+                  child: _buildCoursesList(
+                    context,
+                    viewModel.premiumCourses,
+                    'Premium Courses',
+                    tabType: 1,
+                  ),
                 ),
                 RefreshIndicator(
                   onRefresh: () => viewModel.fetchMyLibrary(),
-                  child: _buildPdfsList(context, viewModel.freePdfs, 'Free E-Books'),
+                  child: _buildPdfsList(
+                    context,
+                    viewModel.freePdfs,
+                    'Free E-Books',
+                    tabType: 2,
+                  ),
                 ),
                 RefreshIndicator(
                   onRefresh: () => viewModel.fetchMyLibrary(),
-                  child: _buildPdfsList(context, viewModel.premiumPdfs, 'Premium E-Books'),
+                  child: _buildPdfsList(
+                    context,
+                    viewModel.premiumPdfs,
+                    'Premium E-Books',
+                    tabType: 3,
+                  ),
                 ),
               ],
             ),
@@ -131,15 +167,39 @@ class _MyLearningPageState extends State<MyLearningPage> with SingleTickerProvid
   Widget _buildCoursesList(
     BuildContext context,
     List<MyLearningCourse> courses,
-    String title,
-  ) {
+    String title, {
+    required int tabType,
+  }) {
     if (courses.isEmpty) {
-      return _buildEmptyState(
-        context: context,
-        icon: Icons.video_library,
-        title: 'No $title',
-        message: 'Explore our courses and start learning!',
-      );
+      if (tabType == 0) {
+        return _buildEmptyState(
+          context: context,
+          icon: Icons.school,
+          title: 'No Free Courses Yet',
+          message: 'Looks like you haven\'t enrolled in any\nfree courses yet.',
+          buttonText: 'Explore Free Courses',
+          onExplore: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AllCoursePage(initialIndex: 0)),
+            );
+          },
+        );
+      } else {
+        return _buildEmptyState(
+          context: context,
+          icon: Icons.workspace_premium,
+          title: 'No Premium Courses Yet',
+          message: 'Looks like you haven\'t enrolled in any\npremium courses yet.',
+          buttonText: 'Explore Premium Courses',
+          onExplore: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => AllCoursePage(initialIndex: 1)),
+            );
+          },
+        );
+      }
     }
 
     return SingleChildScrollView(
@@ -541,15 +601,39 @@ class _MyLearningPageState extends State<MyLearningPage> with SingleTickerProvid
   Widget _buildPdfsList(
     BuildContext context,
     List<MyLearningPdf> pdfs,
-    String title,
-  ) {
+    String title, {
+    required int tabType,
+  }) {
     if (pdfs.isEmpty) {
-      return _buildEmptyState(
-        context: context,
-        icon: Icons.picture_as_pdf,
-        title: 'No $title',
-        message: 'No PDFs available in this category',
-      );
+      if (tabType == 2) {
+        return _buildEmptyState(
+          context: context,
+          icon: Icons.menu_book,
+          title: 'No Free E-Books Yet',
+          message: 'Looks like you haven\'t accessed any\nfree e-books yet.',
+          buttonText: 'Explore Free E-Books',
+          onExplore: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PdfPage(initialTabIndex: 0)),
+            );
+          },
+        );
+      } else {
+        return _buildEmptyState(
+          context: context,
+          icon: Icons.library_books,
+          title: 'No Premium E-Books Yet',
+          message: 'Looks like you haven\'t purchased any\npremium e-books yet.',
+          buttonText: 'Explore Premium E-Books',
+          onExplore: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PdfPage(initialTabIndex: 1)),
+            );
+          },
+        );
+      }
     }
 
     return SingleChildScrollView(
@@ -807,36 +891,120 @@ class _MyLearningPageState extends State<MyLearningPage> with SingleTickerProvid
     required IconData icon,
     required String title,
     required String message,
+    required String buttonText,
+    required VoidCallback onExplore,
   }) {
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: AppSizer.deviceSp64, color: Colors.grey),
-            SizedBox(height: AppSizer.deviceHeight3),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp18,
-                color: Colors.grey,
-                fontWeight: FontWeight.w600,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
+            ),
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Large Circular Icon Background
+                    Container(
+                      width: 140,
+                      height: 140,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEBF3FE), // Soft sky blue
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Icon(
+                          icon,
+                          size: 64,
+                          color: const Color(0xFF0052FF), // Vibrant Blue
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight4),
+
+                    // Title
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: AppSizer.deviceSp22,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF0F172A),
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight1_5),
+
+                    // Subtitle / Description
+                    Text(
+                      message,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: AppSizer.deviceSp15,
+                        color: const Color(0xFF64748B),
+                        height: 1.4,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight3_5),
+
+                    // Explore Button
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onExplore,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppSizer.deviceWidth6,
+                            vertical: AppSizer.deviceHeight1_5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0052FF),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF0052FF).withOpacity(0.25),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.explore_outlined,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                buttonText,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: AppSizer.deviceSp15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight3),
+                  ],
+                ),
               ),
             ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            Text(
-              message,
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp14,
-                color: Colors.grey.shade400,
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -41,11 +41,11 @@ class _MainNavigationState extends State<MainNavigation> {
       bottomNavigationBar: Container(
         margin: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: const Color(0xFFFFFFFF),
           borderRadius: BorderRadius.circular(25),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withOpacity(0.12),
               blurRadius: 20,
               offset: Offset(0, 5),
             ),
@@ -108,13 +108,17 @@ class _MainNavigationState extends State<MainNavigation> {
         margin: EdgeInsets.symmetric(horizontal: 4),
         decoration: isActive
             ? BoxDecoration(
-                color: AppColors.primaryColor,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF2563EB), Color(0xFF6366F1)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primaryColor.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: Offset(0, 2),
+                    color: const Color(0xFF2563EB).withOpacity(0.35),
+                    blurRadius: 10,
+                    offset: Offset(0, 3),
                   ),
                 ],
               )
@@ -163,7 +167,7 @@ class _MainNavigationState extends State<MainNavigation> {
                       else
                         Icon(
                           isActive ? activeIcon : icon,
-                          color: isActive ? Colors.white : AppColors.logoNavy,
+                          color: isActive ? Colors.white : const Color(0xFF172554),
                           size: isSpecial ? 22 : 20,
                         ),
                       
@@ -189,7 +193,7 @@ class _MainNavigationState extends State<MainNavigation> {
                     child: Text(
                       label,
                       style: TextStyle(
-                        color: isActive ? Colors.white : AppColors.logoNavy,
+                        color: isActive ? Colors.white : const Color(0xFF64748B),
                         fontSize: 11,
                         fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                       ),

@@ -230,19 +230,23 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: const Color(0xFFF5F7FF),
       appBar: AppBar(
-        title: const Text('Help & Support'),
+        title: const Text(
+          'Help & Support',
+          style: TextStyle(color: Color(0xFF0B1033), fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF0B1033),
         elevation: 0,
-        backgroundColor: AppColors.primaryColor,
-        foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
+          indicatorColor: const Color(0xFF0033CC),
           indicatorWeight: 3,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          labelStyle: TextStyle(fontSize: AppSizer.deviceSp14, fontWeight: FontWeight.bold),
+          labelColor: const Color(0xFF0033CC),
+          unselectedLabelColor: Colors.grey.shade500,
+          labelStyle: TextStyle(fontSize: AppSizer.deviceSp13, fontWeight: FontWeight.bold),
+          unselectedLabelStyle: TextStyle(fontSize: AppSizer.deviceSp13),
           tabs: const [
             Tab(icon: Icon(Icons.help_outline), text: 'Help & Contact'),
             Tab(icon: Icon(Icons.message_outlined), text: 'My Queries & Responses'),
@@ -252,10 +256,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
       body: TabBarView(
         controller: _tabController,
         children: [
-          // Tab 1: Help & Contact
           _buildHelpTab(),
-
-          // Tab 2: My Queries & Responses
           _buildMyTicketsTab(),
         ],
       ),
@@ -276,7 +277,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 Text(
                   'Quick Contact Options',
                   style: TextStyle(
-                    fontSize: AppSizer.deviceSp18,
+                    fontSize: AppSizer.deviceSp15,
                     fontWeight: FontWeight.bold,
                     color: AppColors.logoNavy,
                   ),
@@ -300,6 +301,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
 
   Widget _buildMyTicketsTab() {
     return RefreshIndicator(
+      color: const Color(0xFF0033CC),
       onRefresh: _fetchMyTickets,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -313,15 +315,15 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 Text(
                   'My Support Tickets',
                   style: TextStyle(
-                    fontSize: AppSizer.deviceSp18,
+                    fontSize: AppSizer.deviceSp16,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.logoNavy,
+                    color: const Color(0xFF0B1033),
                   ),
                 ),
                 IconButton(
                   onPressed: _fetchMyTickets,
                   icon: const Icon(Icons.refresh),
-                  color: AppColors.primaryColor,
+                  color: const Color(0xFF0033CC),
                   tooltip: 'Refresh Responses',
                 ),
               ],
@@ -332,38 +334,71 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(32.0),
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(color: Color(0xFF0033CC)),
                 ),
               )
             else if (_myTickets.isEmpty)
-              Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: EdgeInsets.all(AppSizer.deviceWidth6),
-                  child: Column(
-                    children: [
-                      Icon(Icons.inbox_outlined, size: 54, color: Colors.grey.shade400),
-                      SizedBox(height: AppSizer.deviceHeight1_5),
-                      Text(
-                        'No Support Tickets Yet',
-                        style: TextStyle(
-                          fontSize: AppSizer.deviceSp16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.logoNavy,
-                        ),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(AppSizer.deviceWidth6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Column(
+                  children: [
+                    // Inbox Illustration
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                      SizedBox(height: AppSizer.deviceHeight0_5),
-                      Text(
-                        'If you have any questions or issues, submit a query from the "Help & Contact" tab above.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: AppSizer.deviceSp13,
-                          color: AppColors.onSurfaceVariant,
-                        ),
+                      child: const Icon(
+                        Icons.inbox_outlined,
+                        size: 64,
+                        color: Color(0xFF0033CC),
                       ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight2),
+                    Text(
+                      'No Support Tickets Yet',
+                      style: TextStyle(
+                        fontSize: AppSizer.deviceSp16,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0B1033),
+                      ),
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight0_5),
+                    Text(
+                      'If you have any questions or issues, submit a query from the "Help & Contact" tab above.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: AppSizer.deviceSp13,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight2),
+                    ElevatedButton(
+                      onPressed: () => _tabController.animateTo(0),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0033CC),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSizer.deviceWidth6,
+                          vertical: AppSizer.deviceHeight1_5,
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Go to Help & Contact',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: AppSizer.deviceSp14),
+                      ),
+                    ),
+                  ],
                 ),
               )
             else ...[
@@ -378,25 +413,26 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                   }).toList();
 
                   if (filteredTickets.isEmpty) {
-                    return Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      child: Padding(
-                        padding: EdgeInsets.all(AppSizer.deviceWidth6),
-                        child: Column(
-                          children: [
-                            Icon(Icons.search_off, size: 54, color: Colors.grey.shade400),
-                            SizedBox(height: AppSizer.deviceHeight1_5),
-                            Text(
-                              'No matching queries found',
-                              style: TextStyle(
-                                fontSize: AppSizer.deviceSp16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.logoNavy,
-                              ),
+                    return Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(AppSizer.deviceWidth6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(Icons.search_off, size: 54, color: Colors.grey.shade400),
+                          SizedBox(height: AppSizer.deviceHeight1_5),
+                          Text(
+                            'No matching queries found',
+                            style: TextStyle(
+                              fontSize: AppSizer.deviceSp16,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0B1033),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     );
                   }
@@ -441,14 +477,14 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
     required String adminReply,
     required String createdAt,
   }) {
-    Color statusColor = AppColors.logoOrange;
+    Color statusColor = const Color(0xFFF59E0B);
     IconData statusIcon = Icons.hourglass_top;
 
     if (status == 'Resolved') {
-      statusColor = AppColors.logoGreen;
+      statusColor = Colors.green.shade600;
       statusIcon = Icons.check_circle;
     } else if (status == 'In Progress') {
-      statusColor = Colors.blue;
+      statusColor = const Color(0xFF0033CC);
       statusIcon = Icons.sync;
     } else if (status == 'Closed') {
       statusColor = Colors.grey;
@@ -463,16 +499,25 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
       }
     } catch (_) {}
 
-    return Card(
-      elevation: 2,
+    return Container(
       margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Padding(
         padding: EdgeInsets.all(AppSizer.deviceWidth4),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Header Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -482,7 +527,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                     vertical: AppSizer.deviceHeight0_5,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.1),
+                    color: const Color(0xFFEFF6FF),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -490,7 +535,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                     style: TextStyle(
                       fontSize: AppSizer.deviceSp12,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primaryColor,
+                      color: const Color(0xFF0033CC),
                     ),
                   ),
                 ),
@@ -500,7 +545,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                     vertical: AppSizer.deviceHeight0_5,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.12),
+                    color: statusColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: statusColor.withOpacity(0.3)),
                   ),
@@ -524,24 +569,22 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
 
             SizedBox(height: AppSizer.deviceHeight1_5),
 
-            // Subject
             Text(
               subject,
               style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
+                fontSize: AppSizer.deviceSp15,
                 fontWeight: FontWeight.bold,
-                color: AppColors.logoNavy,
+                color: const Color(0xFF0B1033),
               ),
             ),
 
             SizedBox(height: AppSizer.deviceHeight1),
 
-            // Student Message
             Text(
               message,
               style: TextStyle(
                 fontSize: AppSizer.deviceSp13,
-                color: AppColors.onSurfaceVariant,
+                color: Colors.grey.shade600,
                 height: 1.3,
               ),
             ),
@@ -550,35 +593,34 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
               SizedBox(height: AppSizer.deviceHeight1),
               Text(
                 'Submitted: $formattedDate',
-                style: TextStyle(fontSize: AppSizer.deviceSp11, color: Colors.grey.shade500),
+                style: TextStyle(fontSize: AppSizer.deviceSp11, color: Colors.grey.shade400),
               ),
             ],
 
             SizedBox(height: AppSizer.deviceHeight2),
 
-            // Admin Response Section
             if (adminReply.isNotEmpty)
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.all(AppSizer.deviceWidth3),
                 decoration: BoxDecoration(
-                  color: AppColors.logoGreen,
+                  color: Colors.green.shade50,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.logoGreen),
+                  border: Border.all(color: Colors.green.shade200),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.verified_user, color: AppColors.logoGreen, size: AppSizer.deviceSp16),
+                        Icon(Icons.verified_user, color: Colors.green.shade600, size: AppSizer.deviceSp16),
                         SizedBox(width: AppSizer.deviceWidth1_5),
                         Text(
-                          'Admin Response / Solution',
+                          'Admin Response',
                           style: TextStyle(
                             fontSize: AppSizer.deviceSp13,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.logoGreen,
+                            color: Colors.green.shade700,
                           ),
                         ),
                       ],
@@ -588,8 +630,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                       adminReply,
                       style: TextStyle(
                         fontSize: AppSizer.deviceSp13,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.logoGreen,
+                        color: Colors.green.shade800,
                         height: 1.3,
                       ),
                     ),
@@ -601,20 +642,20 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 width: double.infinity,
                 padding: EdgeInsets.all(AppSizer.deviceWidth3),
                 decoration: BoxDecoration(
-                  color: AppColors.logoOrange,
+                  color: Colors.amber.shade50,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.logoOrange),
+                  border: Border.all(color: Colors.amber.shade200),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.access_time_filled, color: AppColors.logoOrange, size: AppSizer.deviceSp16),
+                    Icon(Icons.access_time_filled, color: Colors.amber.shade700, size: AppSizer.deviceSp16),
                     SizedBox(width: AppSizer.deviceWidth2),
                     Expanded(
                       child: Text(
-                        'Your query is under review by admin. Check back soon for resolution response!',
+                        'Your query is under review. Check back soon!',
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp12,
-                          color: AppColors.logoOrange,
+                          color: Colors.amber.shade800,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -631,23 +672,21 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
   Widget _buildHeaderBanner() {
     return Container(
       width: double.infinity,
+      margin: EdgeInsets.symmetric(
+        horizontal: AppSizer.deviceWidth4,
+        vertical: AppSizer.deviceHeight1,
+      ),
       decoration: BoxDecoration(
-        color: AppColors.primaryColor,
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
+        color: const Color(0xFFEEF2FF),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF0033CC).withOpacity(0.1)),
       ),
-      padding: EdgeInsets.fromLTRB(
-        AppSizer.deviceWidth4,
-        AppSizer.deviceHeight1,
-        AppSizer.deviceWidth4,
-        AppSizer.deviceHeight1_5,
-      ),
+      padding: EdgeInsets.all(AppSizer.deviceWidth3_5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
@@ -656,47 +695,56 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                     Text(
                       'Hello! 👋',
                       style: TextStyle(
-                        fontSize: AppSizer.deviceSp16,
-                        color: Colors.white70,
+                        fontSize: AppSizer.deviceSp13,
+                        color: const Color(0xFF0033CC),
                       ),
                     ),
                     SizedBox(height: AppSizer.deviceHeight0_5),
                     Text(
                       'How can we help you?',
                       style: TextStyle(
-                        fontSize: AppSizer.deviceSp22,
+                        fontSize: AppSizer.deviceSp16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: const Color(0xFF0B1033),
+                        height: 1.2,
+                      ),
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight0_5),
+                    Text(
+                      'We are here to assist you 24/7',
+                      style: TextStyle(
+                        fontSize: AppSizer.deviceSp11,
+                        color: Colors.grey.shade600,
                       ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: EdgeInsets.all(AppSizer.deviceWidth3),
+                padding: EdgeInsets.all(AppSizer.deviceWidth2_5),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: const Color(0xFF0033CC).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.support_agent,
-                  size: AppSizer.deviceSp32,
-                  color: Colors.white,
+                  size: AppSizer.deviceSp22,
+                  color: const Color(0xFF0033CC),
                 ),
               ),
             ],
           ),
-          SizedBox(height: AppSizer.deviceHeight2),
+          SizedBox(height: AppSizer.deviceHeight1_5),
           TextField(
             controller: _searchController,
-            style: TextStyle(fontSize: AppSizer.deviceSp14),
+            style: TextStyle(fontSize: AppSizer.deviceSp13),
             decoration: InputDecoration(
               hintText: 'Search queries or keywords...',
-              hintStyle: TextStyle(color: Colors.grey.shade500),
-              prefixIcon: Icon(Icons.search, color: AppColors.primaryColor),
+              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: AppSizer.deviceSp12),
+              prefixIcon: Icon(Icons.search, color: Colors.grey.shade500, size: 20),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.clear, color: Colors.grey),
+                      icon: const Icon(Icons.clear, color: Colors.grey, size: 18),
                       onPressed: () => _searchController.clear(),
                     )
                   : null,
@@ -704,10 +752,14 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
               fillColor: Colors.white,
               contentPadding: EdgeInsets.symmetric(
                 vertical: AppSizer.deviceHeight1,
-                horizontal: AppSizer.deviceWidth4,
+                horizontal: AppSizer.deviceWidth3_5,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(24),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(24),
                 borderSide: BorderSide.none,
               ),
             ),
@@ -768,19 +820,30 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
-      elevation: 2,
-      shadowColor: color.withOpacity(0.15),
+      elevation: 0,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
           padding: EdgeInsets.all(AppSizer.deviceWidth3),
           child: Row(
             children: [
               Container(
                 padding: EdgeInsets.all(AppSizer.deviceWidth2_5),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
+                  color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: AppSizer.deviceSp22),
@@ -794,9 +857,9 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                     Text(
                       title,
                       style: TextStyle(
-                        fontSize: AppSizer.deviceSp15,
+                        fontSize: AppSizer.deviceSp14,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.logoNavy,
+                        color: const Color(0xFF0B1033),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -805,13 +868,25 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                     Text(
                       subtitle,
                       style: TextStyle(
-                        fontSize: AppSizer.deviceSp12,
-                        color: AppColors.onSurfaceVariant,
+                        fontSize: AppSizer.deviceSp11,
+                        color: Colors.grey.shade500,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.arrow_forward,
+                  size: 14,
+                  color: Color(0xFF0033CC),
                 ),
               ),
             ],
@@ -830,9 +905,9 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
         Text(
           'Frequently Asked Questions',
           style: TextStyle(
-            fontSize: AppSizer.deviceSp18,
+            fontSize: AppSizer.deviceSp16,
             fontWeight: FontWeight.bold,
-            color: AppColors.logoNavy,
+            color: const Color(0xFF0B1033),
           ),
         ),
         SizedBox(height: AppSizer.deviceHeight1_5),
@@ -843,37 +918,59 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
               final isSelected = _faqFilterCategory == cat;
               return Padding(
                 padding: EdgeInsets.only(right: AppSizer.deviceWidth2),
-                child: ChoiceChip(
-                  label: Text(cat),
-                  selected: isSelected,
-                  selectedColor: AppColors.primaryColor,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.logoNavy,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    fontSize: AppSizer.deviceSp13,
-                  ),
-                  backgroundColor: Colors.white,
-                  onSelected: (selected) {
-                    if (selected) {
-                      setState(() {
-                        _faqFilterCategory = cat;
-                        _filterFaqs();
-                      });
-                    }
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _faqFilterCategory = cat;
+                      _filterFaqs();
+                    });
                   },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppSizer.deviceWidth3,
+                      vertical: AppSizer.deviceHeight0_5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFF0033CC) : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFF0033CC) : Colors.grey.shade300,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        if (isSelected) ...[
+                          const Icon(Icons.check, color: Colors.white, size: 12),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(
+                          cat,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : const Color(0xFF0B1033),
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: AppSizer.deviceSp12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               );
             }).toList(),
           ),
         ),
         SizedBox(height: AppSizer.deviceHeight2),
-        if (_filteredFaqs.isEmpty)
+        if (_isLoadingFaqs)
+          const Center(child: CircularProgressIndicator(color: Color(0xFF0033CC)))
+        else if (_filteredFaqs.isEmpty)
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(AppSizer.deviceWidth6),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
             ),
             child: Column(
               children: [
@@ -881,7 +978,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 SizedBox(height: AppSizer.deviceHeight1),
                 Text(
                   'No matching FAQs found',
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: AppSizer.deviceSp14),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: AppSizer.deviceSp13),
                 ),
               ],
             ),
@@ -893,27 +990,31 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
             itemCount: _filteredFaqs.length,
             itemBuilder: (context, index) {
               final faq = _filteredFaqs[index];
-              return Card(
-                elevation: 1,
+              return Container(
                 margin: EdgeInsets.only(bottom: AppSizer.deviceHeight1_5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
                 child: ExpansionTile(
                   leading: Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryColor.withOpacity(0.08),
+                      color: const Color(0xFFEFF6FF),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(Icons.help_outline, color: AppColors.primaryColor, size: AppSizer.deviceSp18),
+                    child: Icon(Icons.help_outline, color: const Color(0xFF0033CC), size: AppSizer.deviceSp16),
                   ),
                   title: Text(
                     faq['question']?.toString() ?? '',
                     style: TextStyle(
-                      fontSize: AppSizer.deviceSp14,
+                      fontSize: AppSizer.deviceSp13,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.logoNavy,
+                      color: const Color(0xFF0B1033),
                     ),
                   ),
+                  iconColor: const Color(0xFF0033CC),
                   children: [
                     Padding(
                       padding: EdgeInsets.fromLTRB(
@@ -926,7 +1027,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                         faq['answer']?.toString() ?? '',
                         style: TextStyle(
                           fontSize: AppSizer.deviceSp13,
-                          color: AppColors.onSurfaceVariant,
+                          color: Colors.grey.shade600,
                           height: 1.4,
                         ),
                       ),
@@ -941,11 +1042,21 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
   }
 
   Widget _buildTicketForm() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth3),
+        padding: EdgeInsets.all(AppSizer.deviceWidth4),
         child: Form(
           key: _formKey,
           child: Column(
@@ -953,24 +1064,32 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
             children: [
               Row(
                 children: [
-                  Icon(Icons.confirmation_number_outlined, color: AppColors.primaryColor),
-                  SizedBox(width: AppSizer.deviceWidth2),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(Icons.confirmation_number_outlined,
+                        color: const Color(0xFF0033CC), size: AppSizer.deviceSp20),
+                  ),
+                  SizedBox(width: AppSizer.deviceWidth3),
                   Text(
                     'Raise a Support Ticket',
                     style: TextStyle(
-                      fontSize: AppSizer.deviceSp18,
+                      fontSize: AppSizer.deviceSp16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.logoNavy,
+                      color: const Color(0xFF0B1033),
                     ),
                   ),
                 ],
               ),
               SizedBox(height: AppSizer.deviceHeight0_5),
               Text(
-                'Can\'t find an answer? Send us a direct message and our team will resolve it.',
+                "Can't find an answer? Send us a direct message.",
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp12,
-                  color: AppColors.onSurfaceVariant,
+                  color: Colors.grey.shade500,
                 ),
               ),
               SizedBox(height: AppSizer.deviceHeight2),
@@ -979,14 +1098,21 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.logoNavy,
+                  color: const Color(0xFF0B1033),
                 ),
               ),
               SizedBox(height: AppSizer.deviceHeight0_5),
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: AppSizer.deviceWidth3,
                     vertical: AppSizer.deviceHeight1,
@@ -1005,7 +1131,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.logoNavy,
+                  color: const Color(0xFF0B1033),
                 ),
               ),
               SizedBox(height: AppSizer.deviceHeight0_5),
@@ -1014,7 +1140,15 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 validator: (val) => val == null || val.trim().isEmpty ? 'Please enter a subject' : null,
                 decoration: InputDecoration(
                   hintText: 'Brief topic of your issue...',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  hintStyle: TextStyle(color: Colors.grey.shade400),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
                   contentPadding: EdgeInsets.symmetric(
                     horizontal: AppSizer.deviceWidth3,
                     vertical: AppSizer.deviceHeight1,
@@ -1023,11 +1157,11 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
               ),
               SizedBox(height: AppSizer.deviceHeight1_5),
               Text(
-                'Description / Message',
+                'Description',
                 style: TextStyle(
                   fontSize: AppSizer.deviceSp13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.logoNavy,
+                  color: const Color(0xFF0B1033),
                 ),
               ),
               SizedBox(height: AppSizer.deviceHeight0_5),
@@ -1037,19 +1171,29 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                 validator: (val) => val == null || val.trim().isEmpty ? 'Please describe your query' : null,
                 decoration: InputDecoration(
                   hintText: 'Explain your question or problem in detail...',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  hintStyle: TextStyle(color: Colors.grey.shade400),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
                   contentPadding: EdgeInsets.all(AppSizer.deviceWidth3),
                 ),
               ),
-              SizedBox(height: AppSizer.deviceHeight1_5),
+              SizedBox(height: AppSizer.deviceHeight2),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton(
+                child: ElevatedButton(
                   onPressed: _isSubmitting ? null : _submitSupportTicket,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0033CC),
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
                   ),
                   child: _isSubmitting
                       ? const SizedBox(
@@ -1060,7 +1204,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
                       : Text(
                           'Submit Query',
                           style: TextStyle(
-                            fontSize: AppSizer.deviceSp15,
+                            fontSize: AppSizer.deviceSp14,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -1078,33 +1222,42 @@ class _HelpSupportPageState extends State<HelpSupportPage> with SingleTickerProv
       width: double.infinity,
       padding: EdgeInsets.all(AppSizer.deviceWidth4),
       decoration: BoxDecoration(
-        color: AppColors.primaryColor.withOpacity(0.06),
+        color: const Color(0xFFEFF6FF),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primaryColor.withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFF0033CC).withOpacity(0.15)),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.access_time, color: AppColors.primaryColor, size: AppSizer.deviceSp18),
-              SizedBox(width: AppSizer.deviceWidth2),
-              Text(
-                'Support Hours: Mon - Sat (10:00 AM - 7:00 PM)',
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primaryColor,
-                ),
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0033CC),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.headset_mic_outlined, color: Colors.white, size: AppSizer.deviceSp22),
           ),
-          SizedBox(height: AppSizer.deviceHeight1),
-          Text(
-            'CodersAdda • Learn, Grow & Succeed',
-            style: TextStyle(
-              fontSize: AppSizer.deviceSp12,
-              color: AppColors.onSurfaceVariant,
+          SizedBox(width: AppSizer.deviceWidth3),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Can't find what you're looking for?",
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp14,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0033CC),
+                  ),
+                ),
+                SizedBox(height: AppSizer.deviceHeight0_5),
+                Text(
+                  'Our support team is here to help you 24/7.',
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

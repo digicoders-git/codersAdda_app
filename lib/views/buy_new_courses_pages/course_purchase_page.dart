@@ -157,19 +157,21 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
     final double totalAmount = _finalAmount ?? basePrice;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundColor,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
           'Checkout',
           style: TextStyle(
-            fontSize: AppSizer.deviceSp20,
+            fontSize: AppSizer.deviceSp18,
             fontWeight: FontWeight.bold,
+            color: const Color(0xFF1E293B), // Dark text
           ),
         ),
-        backgroundColor: AppColors.cardColor,
+        backgroundColor: Colors.white,
+        centerTitle: true,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -213,327 +215,400 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
     );
   }
 
+  Widget _buildSectionHeader(int number, String title) {
+    return Row(
+      children: [
+        Container(
+          width: 24,
+          height: 24,
+          decoration: const BoxDecoration(color: Color(0xFF1E3A8A), shape: BoxShape.circle),
+          child: Center(
+            child: Text(number.toString(), style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+      ],
+    );
+  }
+
   Widget _buildCourseDetailsCard() {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Course Details',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Course Image
-                Container(
-                  width: AppSizer.deviceWidth20,
-                  height: AppSizer.deviceWidth15,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: AppColors.primaryColor.withOpacity(0.1),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(1, 'Course Details'),
+        const SizedBox(height: 16),
+        Container(
+          padding: EdgeInsets.all(AppSizer.deviceWidth4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Course Image (Square)
+                  Container(
+                    width: AppSizer.deviceWidth20,
+                    height: AppSizer.deviceWidth20,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: const Color(0xFF0F172A),
+                      image: widget.course.thumbnail.isNotEmpty
+                          ? DecorationImage(
+                              image: NetworkImage(widget.course.thumbnail),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
+                    ),
                   ),
-                  child: widget.course.thumbnail.isNotEmpty
-                      ? Image.network(widget.course.thumbnail, fit: BoxFit.cover)
-                      : Icon(
-                          Icons.school,
-                          color: AppColors.primaryColor,
-                          size: AppSizer.deviceSp24,
-                        ),
-                ),
-                SizedBox(width: AppSizer.deviceWidth3),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.course.title,
-                        style: TextStyle(
-                          fontSize: AppSizer.deviceSp16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: AppSizer.deviceHeight1),
-                      Text(
-                        'By ${widget.course.instructor}',
-                        style: TextStyle(
-                          fontSize: AppSizer.deviceSp14,
-                          color: AppColors.onSurfaceVariant,
-                        ),
-                      ),
-                      SizedBox(height: AppSizer.deviceHeight1),
-                      Row(
-                        children: [
-                          Icon(Icons.schedule, size: AppSizer.deviceSp14, color: Colors.grey),
-                          SizedBox(width: AppSizer.deviceWidth1),
-                          Text(
-                            '${widget.course.duration} • ${widget.course.totalLessons} lessons',
-                            style: TextStyle(
-                              fontSize: AppSizer.deviceSp12,
-                              color: Colors.grey,
-                            ),
+                  SizedBox(width: AppSizer.deviceWidth3),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.course.title,
+                          style: TextStyle(
+                            fontSize: AppSizer.deviceSp15,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1E293B),
                           ),
-                        ],
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: AppSizer.deviceHeight1),
+                        Text(
+                          'By ${widget.course.instructor}',
+                          style: TextStyle(
+                            fontSize: AppSizer.deviceSp12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        SizedBox(height: AppSizer.deviceHeight1),
+                        Row(
+                          children: [
+                            const Icon(Icons.schedule, size: 14, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${widget.course.duration.isNotEmpty ? widget.course.duration : '0h'}  •  ${widget.course.totalLessons} Lessons',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Divider(color: Color(0xFFF1F5F9)),
+              const SizedBox(height: 16),
+              // Features Grid
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildFeatureItem('Lifetime access'),
+                        _buildFeatureItem('Certificate of completion'),
+                        _buildFeatureItem('Downloadable resources'),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: AppSizer.deviceWidth2),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildFeatureItem('Project files included'),
+                        _buildFeatureItem('Q&A support'),
+                        _buildFeatureItem('Access on mobile & TV'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCouponSection(double amount) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(2, 'Apply Coupon'),
+        const SizedBox(height: 16),
+        Container(
+          padding: EdgeInsets.all(AppSizer.deviceWidth4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _couponController,
+                      decoration: InputDecoration(
+                        hintText: 'Enter coupon code',
+                        hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC), // Very light grey blue
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Color(0xFF2563EB)),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: AppSizer.deviceWidth4,
+                          vertical: 0,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: AppSizer.deviceWidth2),
+                  ElevatedButton(
+                    onPressed: _isValidatingCoupon ? null : () => _applyCoupon(amount),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F172A),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: _isValidatingCoupon 
+                      ? const SizedBox(height: 16, width: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : const Text(
+                          'Apply',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                  ),
+                ],
+              ),
+              if (_couponErrorMessage != null) ...[
+                SizedBox(height: AppSizer.deviceHeight1),
+                Text(
+                  _couponErrorMessage!,
+                  style: TextStyle(color: Colors.red, fontSize: AppSizer.deviceSp12),
+                ),
+              ],
+              if (!_isCouponApplied && _isLoadingCoupons)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  child: Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+                )
+              else if (!_isCouponApplied && _activeCoupons.isNotEmpty) ...[
+                SizedBox(height: AppSizer.deviceHeight2),
+                Text(
+                  'Available Coupons:',
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
+                SizedBox(height: AppSizer.deviceHeight1),
+                SizedBox(
+                  height: 80,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _activeCoupons.length,
+                    separatorBuilder: (context, index) => SizedBox(width: AppSizer.deviceWidth3),
+                    itemBuilder: (context, index) {
+                      final coupon = _activeCoupons[index];
+                      return GestureDetector(
+                        onTap: () {
+                          _couponController.text = coupon['code'];
+                          _applyCoupon(amount);
+                        },
+                        child: Container(
+                          width: 200,
+                          padding: EdgeInsets.all(AppSizer.deviceWidth3),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    coupon['code'],
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF1E293B),
+                                      fontSize: AppSizer.deviceSp14,
+                                    ),
+                                  ),
+                                  if (coupon['discountPercent'] != null)
+                                    Text(
+                                      'Save ${coupon['discountPercent']}%',
+                                      style: TextStyle(
+                                        color: const Color(0xFF16A34A),
+                                        fontSize: AppSizer.deviceSp12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+              if (_isCouponApplied) ...[
+                SizedBox(height: AppSizer.deviceHeight2),
+                Container(
+                  padding: EdgeInsets.all(AppSizer.deviceWidth3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF86EFAC)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: Color(0xFF16A34A), size: 20),
+                      SizedBox(width: AppSizer.deviceWidth2),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Coupon Applied!',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF166534),
+                              ),
+                            ),
+                            Text(
+                              'You saved ₹$_discountAmount with $_selectedCoupon',
+                              style: TextStyle(
+                                color: const Color(0xFF166534),
+                                fontSize: AppSizer.deviceSp12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _removeCoupon,
+                        child: const Text(
+                          'Remove',
+                          style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            Divider(),
-            SizedBox(height: AppSizer.deviceHeight2),
-            _buildFeatureItem('✓ Lifetime access'),
-            _buildFeatureItem('✓ Certificate of completion'),
-            _buildFeatureItem('✓ Downloadable resources'),
-            _buildFeatureItem('✓ Project files included'),
-            _buildFeatureItem('✓ Q&A support'),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildCouponSection(double amount) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Apply Coupon',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _couponController,
-                    decoration: InputDecoration(
-                      hintText: 'Enter coupon code',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: AppSizer.deviceWidth2,
-                        vertical: AppSizer.deviceHeight1_5,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(width: AppSizer.deviceWidth2),
-                ElevatedButton(
-                  onPressed: _isValidatingCoupon ? null : () => _applyCoupon(amount),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: _isValidatingCoupon 
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : Text(
-                        'Apply',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                ),
-              ],
-            ),
-            if (_couponErrorMessage != null) ...[
-              SizedBox(height: AppSizer.deviceHeight1),
-              Text(
-                _couponErrorMessage!,
-                style: TextStyle(color: Colors.red, fontSize: AppSizer.deviceSp12),
-              ),
-            ],
-            if (!_isCouponApplied && _isLoadingCoupons)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: const Center(child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))),
-              )
-            else if (!_isCouponApplied && _activeCoupons.isNotEmpty) ...[
-              SizedBox(height: AppSizer.deviceHeight2),
-              Text(
-                'Available Coupons:',
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.logoNavy.withOpacity(0.8),
-                ),
-              ),
-              SizedBox(height: AppSizer.deviceHeight1),
-              SizedBox(
-                height: 80,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _activeCoupons.length,
-                  separatorBuilder: (context, index) => SizedBox(width: AppSizer.deviceWidth3),
-                  itemBuilder: (context, index) {
-                    final coupon = _activeCoupons[index];
-                    return GestureDetector(
-                      onTap: () {
-                        _couponController.text = coupon['code'];
-                        _applyCoupon(amount);
-                      },
-                      child: Container(
-                        width: 200,
-                        padding: EdgeInsets.all(AppSizer.deviceWidth2),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.primaryColor.withOpacity(0.3)),
-                          borderRadius: BorderRadius.circular(8),
-                          color: AppColors.primaryColor.withOpacity(0.05),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              coupon['code'],
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primaryColor,
-                                fontSize: AppSizer.deviceSp14,
-                              ),
-                            ),
-                            if (coupon['discountPercent'] != null)
-                              Text(
-                                '${coupon['discountPercent']}% OFF',
-                                style: TextStyle(
-                                  color: AppColors.logoGreen,
-                                  fontSize: AppSizer.deviceSp12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-            if (_isCouponApplied) ...[
-              SizedBox(height: AppSizer.deviceHeight2),
-              Container(
-                padding: EdgeInsets.all(AppSizer.deviceWidth3),
-                decoration: BoxDecoration(
-                  color: AppColors.logoGreen,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.logoGreen),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.check_circle, color: AppColors.logoGreen, size: AppSizer.deviceSp18),
-                    SizedBox(width: AppSizer.deviceWidth2),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Coupon Applied!',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.logoGreen,
-                            ),
-                          ),
-                          Text(
-                            'You saved ₹$_discountAmount with $_selectedCoupon',
-                            style: TextStyle(
-                              color: AppColors.logoGreen,
-                              fontSize: AppSizer.deviceSp12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: _removeCoupon,
-                      child: Text(
-                        'Remove',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
+      ],
     );
   }
 
   Widget _buildAvailableCoupons() {
-    return SizedBox.shrink();
+    return const SizedBox.shrink();
   }
 
   Widget _buildPriceBreakdown(double basePrice, double totalAmount) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Price Details',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight3),
-            _buildPriceRow('Original Price', '₹${basePrice.toStringAsFixed(2)}'),
-            if (_discountAmount > 0)
-              _buildPriceRow('Coupon Discount', '-₹${_discountAmount.toStringAsFixed(2)}', isDiscount: true),
-            Divider(),
-            SizedBox(height: AppSizer.deviceHeight2),
-            _buildPriceRow(
-              'Total To Pay',
-              '₹${totalAmount.toStringAsFixed(2)}',
-              isTotal: true,
-            ),
-            if (_discountAmount > 0) ...[
-              SizedBox(height: AppSizer.deviceHeight2),
-              Container(
-                padding: EdgeInsets.all(AppSizer.deviceWidth3),
-                decoration: BoxDecoration(
-                  color: AppColors.logoGreen,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.savings, color: AppColors.logoGreen, size: AppSizer.deviceSp16),
-                    SizedBox(width: AppSizer.deviceWidth2),
-                    Text(
-                      'You save ₹${_discountAmount.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: AppColors.logoGreen,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(3, 'Price Details'),
+        const SizedBox(height: 16),
+        Container(
+          padding: EdgeInsets.all(AppSizer.deviceWidth4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
             ],
-          ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildPriceRow('Original Price', '₹${basePrice.toStringAsFixed(2)}'),
+              if (_discountAmount > 0)
+                _buildPriceRow('Coupon Discount', '-₹${_discountAmount.toStringAsFixed(2)}', isDiscount: true),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Divider(color: Color(0xFFE2E8F0)),
+              ),
+              _buildPriceRow(
+                'Total To Pay',
+                '₹${totalAmount.toStringAsFixed(2)}',
+                isTotal: true,
+              ),
+              if (_discountAmount > 0) ...[
+                SizedBox(height: AppSizer.deviceHeight2),
+                Container(
+                  padding: EdgeInsets.all(AppSizer.deviceWidth3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FDF4),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.savings, color: Color(0xFF16A34A), size: 16),
+                      SizedBox(width: AppSizer.deviceWidth2),
+                      Text(
+                        'You save ₹${_discountAmount.toStringAsFixed(2)} on this order!',
+                        style: const TextStyle(
+                          color: Color(0xFF166534),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -543,64 +618,62 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
 
   Widget _buildPaymentSection(double totalAmount) {
     return Container(
-      padding: EdgeInsets.all(AppSizer.deviceWidth4),
-      decoration: BoxDecoration(
+      padding: EdgeInsets.fromLTRB(AppSizer.deviceWidth4, AppSizer.deviceHeight2, AppSizer.deviceWidth4, MediaQuery.of(context).padding.bottom + 8),
+      decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade300)),
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
             blurRadius: 10,
-            offset: Offset(0, -2),
+            offset: Offset(0, -4),
           ),
         ],
       ),
       child: SafeArea(
+        top: false,
         child: Row(
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Total Amount',
-                    style: TextStyle(
-                      fontSize: AppSizer.deviceSp12,
-                      color: AppColors.onSurfaceVariant,
-                    ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '₹${totalAmount.toStringAsFixed(0)}',
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp20,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1E293B),
                   ),
-                  Text(
-                    '₹${totalAmount.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontSize: AppSizer.deviceSp18,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primaryColor,
-                    ),
+                ),
+                Text(
+                  'one-time payment',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+            SizedBox(width: AppSizer.deviceWidth4),
             Expanded(
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: _isProcessing ? null : _proceedToPayment,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
                   padding: EdgeInsets.symmetric(
-                    horizontal: AppSizer.deviceWidth6,
-                    vertical: AppSizer.deviceHeight2,
+                    vertical: AppSizer.deviceHeight1_5,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 child: _isProcessing 
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                   : Text(
-                      'Proceed to Pay',
+                      'PROCEED TO PAY',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: AppSizer.deviceSp16,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -613,17 +686,24 @@ class _CourseCheckoutPageState extends State<CourseCheckoutPage> {
   }
 
   Widget _buildFeatureItem(String text) {
+    final cleanText = text.replaceFirst(RegExp(r'^[✓\s]+'), '');
     return Padding(
       padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight0_5),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.check, color: AppColors.logoGreen, size: AppSizer.deviceSp16),
-          SizedBox(width: AppSizer.deviceWidth2),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: AppSizer.deviceSp14,
-              color: AppColors.onSurfaceVariant,
+          Icon(Icons.check, color: AppColors.logoGreen, size: AppSizer.deviceSp15),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              cleanText,
+              style: TextStyle(
+                fontSize: AppSizer.deviceSp12,
+                color: AppColors.onSurfaceVariant,
+                height: 1.25,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

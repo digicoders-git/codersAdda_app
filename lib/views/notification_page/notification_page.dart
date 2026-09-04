@@ -150,13 +150,11 @@ class _NotificationPageState extends State<NotificationPage> {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: Text(
-          'Notifications',
-          style: TextStyle(
-            color: AppColors.logoNavy,
-            fontSize: AppSizer.deviceSp20,
-            fontWeight: FontWeight.bold,
-          ),
+        centerTitle: true,
+        title: Image.asset(
+          'assets/images/mainLogo.png',
+          height: AppSizer.deviceHeight10,
+          fit: BoxFit.contain,
         ),
         backgroundColor: AppColors.cardColor,
         elevation: 0,

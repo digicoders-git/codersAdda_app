@@ -1,4 +1,5 @@
 import 'package:coders_adda_app/models/home_model.dart';
+import 'package:coders_adda_app/widgets/custom_loader.dart';
 import 'package:coders_adda_app/models/course_model.dart';
 import 'package:coders_adda_app/services/navigation_service.dart';
 import 'package:coders_adda_app/utils/app_colors/app_theme.dart';
@@ -52,25 +53,37 @@ class _HomePageState extends State<HomePage> {
           return Scaffold(
             drawer: _buildDrawer(context),
             appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
               centerTitle: true,
-              title: RichText(
-                text: TextSpan(
-                  style: TextStyle(
-                    fontSize: AppSizer.deviceSp20,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Roboto', // Default fallback font
-                  ),
-                  children: [
-                    TextSpan(text: 'Coders', style: TextStyle(color: AppColors.logoNavy)),
-                    TextSpan(text: '{', style: TextStyle(color: AppColors.logoOrange)),
-                    TextSpan(text: 'Adda', style: TextStyle(color: AppColors.primaryColor)),
-                    TextSpan(text: '}', style: TextStyle(color: AppColors.logoGreen)),
-                  ],
-                ),
+              leading: Builder(
+                builder: (context) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: InkWell(
+                      onTap: () => Scaffold.of(context).openDrawer(),
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F4F6),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.menu, color: AppColors.logoNavy),
+                      ),
+                    ),
+                  );
+                }
+              ),
+              iconTheme: const IconThemeData(color: AppColors.logoNavy),
+              actionsIconTheme: const IconThemeData(color: AppColors.logoNavy),
+              title: Image.asset(
+                'assets/images/mainLogo.png',
+                height: AppSizer.deviceHeight10, 
+                fit: BoxFit.contain,
               ),
               actions: [
                 IconButton(
-                  icon: Icon(Icons.search),
+                  icon: const Icon(Icons.search, color: AppColors.logoNavy),
                   onPressed: () {
                     NavigationService.navigateTo(context, SearchPage());
                   },
@@ -94,7 +107,7 @@ class _HomePageState extends State<HomePage> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            const Icon(Icons.notifications_outlined),
+                            const Icon(Icons.notifications_outlined, color: AppColors.logoNavy),
                             if (notifVm.unreadCount > 0)
                               Positioned(
                                 top: 4,
@@ -103,7 +116,7 @@ class _HomePageState extends State<HomePage> {
                                   width: 16,
                                   height: 16,
                                   decoration: BoxDecoration(
-                                    color: AppColors.errorColor,
+                                    color: AppColors.logoOrange,
                                     shape: BoxShape.circle,
                                   ),
                                   child: Center(
@@ -152,126 +165,106 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             Container(
-              height: AppSizer.deviceHeight18,
               width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppColors.primaryColor,
+              decoration: const BoxDecoration(
+                color: AppColors.backgroundColor,
               ),
-              child: Stack(
-                children: [
-                  Positioned(
-                    top: -20,
-                    right: -20,
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: -30,
-                    left: -30,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                  Consumer<ProfileViewModel>(
-                    builder: (context, profileVM, child) {
-                      final user = profileVM.user;
-                      return Padding(
-                        padding: EdgeInsets.all(AppSizer.deviceWidth4),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Welcome Back!',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: AppSizer.deviceSp18,
-                                fontWeight: FontWeight.w500,
-                              ),
+              child: SafeArea(
+                bottom: false,
+                child: Consumer<ProfileViewModel>(
+                  builder: (context, profileVM, child) {
+                    final user = profileVM.user;
+                    return Padding(
+                      padding: EdgeInsets.all(AppSizer.deviceWidth4),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Image.asset(
+                            'assets/images/mainLogo.png',
+                            height: AppSizer.deviceHeight5,
+                            fit: BoxFit.contain,
+                          ),
+                          SizedBox(height: AppSizer.deviceHeight1_5),
+                          Text(
+                            'Welcome Back!',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: AppSizer.deviceSp12,
+                              fontWeight: FontWeight.w500,
                             ),
-                            SizedBox(height: AppSizer.deviceHeight1),
-                            Row(
-                              children: [
-                                Container(
-                                  width: AppSizer.deviceWidth12,
-                                  height: AppSizer.deviceWidth12,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2,
-                                    ),
-                                    color: AppColors.onSurfaceVariant,
-                                  ),
-                                  child: ClipOval(
-                                    child: Image.network(
-                                      user?.profilePicture ?? 'https://via.placeholder.com/150',
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Icon(Icons.person, size: AppSizer.deviceWidth6, color: AppColors.onSurfaceVariant);
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: AppSizer.deviceWidth3),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        user?.name ?? 'Student',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: AppSizer.deviceSp18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      SizedBox(height: AppSizer.deviceHeight0_5),
-                                      Text(
-                                        user?.email ?? 'student@email.com',
-                                        style: TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: AppSizer.deviceSp14,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: EdgeInsets.all(AppSizer.deviceWidth1),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Icon(
-                                    Icons.verified,
+                          ),
+                          SizedBox(height: AppSizer.deviceHeight0_5),
+                          Row(
+                            children: [
+                              Container(
+                                width: AppSizer.deviceWidth10,
+                                height: AppSizer.deviceWidth10,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
                                     color: Colors.white,
-                                    size: AppSizer.deviceSp16,
+                                    width: 2,
+                                  ),
+                                  color: AppColors.onSurfaceVariant,
+                                ),
+                                child: ClipOval(
+                                  child: Image.network(
+                                    user?.profilePicture ?? 'https://via.placeholder.com/150',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Icon(Icons.person, size: AppSizer.deviceWidth5, color: AppColors.onSurfaceVariant);
+                                    },
                                   ),
                                 ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
+                              ),
+                              SizedBox(width: AppSizer.deviceWidth2),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      user?.name ?? 'Student',
+                                      style: TextStyle(
+                                        color: AppColors.logoNavy,
+                                        fontSize: AppSizer.deviceSp14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    SizedBox(height: AppSizer.deviceHeight0_5),
+                                    Text(
+                                      user?.email ?? 'student@email.com',
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: AppSizer.deviceSp11,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.all(AppSizer.deviceWidth1),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.logoBlue,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.verified,
+                                  color: Colors.white,
+                                  size: AppSizer.deviceSp13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
             Expanded(
@@ -287,7 +280,7 @@ class _HomePageState extends State<HomePage> {
                     Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: AppSizer.deviceWidth4,
-                        vertical: AppSizer.deviceHeight1,
+                        vertical: AppSizer.deviceHeight0_5,
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -359,6 +352,18 @@ class _HomePageState extends State<HomePage> {
                       Navigator.pop(context);
                       NavigationService.navigateTo(context, MyJobDetailsPage());
                     }),
+                    _drawerItem(
+                      Icons.campaign_rounded,
+                      'Campus Ambassador',
+                      AppColors.logoBlue,
+                      () {
+                        Navigator.pop(context);
+                        NavigationService.navigateTo(
+                          context,
+                          const RefralProgram(),
+                        );
+                      },
+                    ),
                     Divider(
                       height: AppSizer.deviceHeight2,
                       thickness: 1,
@@ -393,7 +398,29 @@ class _HomePageState extends State<HomePage> {
                         Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
                       }
                     }),
+                    SizedBox(height: AppSizer.deviceHeight2),
                   ],
+                ),
+              ),
+            ),
+            // Fixed bottom logo
+            SafeArea(
+              top: false,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    left: AppSizer.deviceWidth4, 
+                    top: AppSizer.deviceHeight2, 
+                    bottom: AppSizer.deviceHeight2
+                  ),
+                  child: Image.asset(
+                    'assets/images/mainLogo.png',
+                    height: AppSizer.deviceHeight8, // Made logo bigger
+                    fit: BoxFit.contain,
+                    color: Colors.grey.withOpacity(0.5),
+                    colorBlendMode: BlendMode.srcATop,
+                  ),
                 ),
               ),
             ),
@@ -409,7 +436,7 @@ class _HomePageState extends State<HomePage> {
         Text(
           value,
           style: TextStyle(
-            fontSize: AppSizer.deviceSp16,
+            fontSize: AppSizer.deviceSp14,
             fontWeight: FontWeight.bold,
             color: AppColors.primaryColor,
           ),
@@ -418,7 +445,7 @@ class _HomePageState extends State<HomePage> {
         Text(
           label,
           style: TextStyle(
-            fontSize: AppSizer.deviceSp12,
+            fontSize: AppSizer.deviceSp10,
             color: AppColors.onSurfaceVariant,
           ),
         ),
@@ -433,39 +460,34 @@ class _HomePageState extends State<HomePage> {
     VoidCallback onTap,
   ) {
     return ListTile(
+      dense: true,
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -2),
       leading: Container(
-        width: AppSizer.deviceWidth10,
-        height: AppSizer.deviceWidth10,
+        width: AppSizer.deviceWidth8,
+        height: AppSizer.deviceWidth8,
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
         ),
-        child: Icon(icon, color: color, size: AppSizer.deviceSp18),
+        child: Icon(icon, color: color, size: AppSizer.deviceSp15),
       ),
       title: Text(
         title,
         style: TextStyle(
-          fontSize: AppSizer.deviceSp16,
+          fontSize: AppSizer.deviceSp13,
           fontWeight: FontWeight.w500,
           color: AppColors.logoNavy,
         ),
       ),
-      trailing: Container(
-        padding: EdgeInsets.all(AppSizer.deviceWidth1),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceVariant,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          Icons.arrow_forward_ios,
-          size: AppSizer.deviceSp12,
-          color: AppColors.onSurfaceVariant,
-        ),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: AppSizer.deviceSp11,
+        color: AppColors.onSurfaceVariant,
       ),
       onTap: onTap,
       contentPadding: EdgeInsets.symmetric(
         horizontal: AppSizer.deviceWidth4,
-        vertical: AppSizer.deviceHeight1,
+        vertical: AppSizer.deviceHeight0_5,
       ),
     );
   }
@@ -480,31 +502,32 @@ class _HomePageState extends State<HomePage> {
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(AppSizer.deviceWidth4),
-      child: Column(
-        children: [
-          _buildWelcomeSection(),
-          SizedBox(height: AppSizer.deviceHeight3),
-          _buildPageCards(context),
-          SizedBox(height: AppSizer.deviceHeight3),
+        child: Column(
+          children: [
+            SizedBox(height: AppSizer.deviceHeight1),
+            _buildWelcomeSection(),
+            SizedBox(height: AppSizer.deviceHeight1_5),
+            _buildPageCards(context),
+          SizedBox(height: AppSizer.deviceHeight1_5),
           _buildBannerSlider(context, viewModel),
-          SizedBox(height: AppSizer.deviceHeight3),
+          SizedBox(height: AppSizer.deviceHeight1_5),
           _buildContinueWatching(context, viewModel),
           _buildProfileCompletionWidget(),
-          SizedBox(height: AppSizer.deviceHeight3),
+          SizedBox(height: AppSizer.deviceHeight1_5),
           _buildCouponsSlider(context, viewModel),
-          SizedBox(height: AppSizer.deviceHeight3),
+          SizedBox(height: AppSizer.deviceHeight1_5),
           if (viewModel.isLoading && viewModel.homeData.coursesOnSale.isEmpty)
-            Center(child: CircularProgressIndicator())
+            const Center(child: CustomLoader())
           else ...[
             _buildCoursesOnSale(context, viewModel.homeData.coursesOnSale),
-            SizedBox(height: AppSizer.deviceHeight3),
+            SizedBox(height: AppSizer.deviceHeight1_5),
             _buildFreeCourses(context, viewModel.homeData.freeCourses),
-            SizedBox(height: AppSizer.deviceHeight3),
+            SizedBox(height: AppSizer.deviceHeight1_5),
           ],
           _buildQuizzesAmbassadorSection(context),
-          SizedBox(height: AppSizer.deviceHeight3),
-        ],
-      ),
+            SizedBox(height: AppSizer.deviceHeight2),
+          ],
+        ),
       ),
     );
   }
@@ -547,16 +570,19 @@ class _HomePageState extends State<HomePage> {
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              gradient: const LinearGradient(
+                colors: [AppColors.logoNavy, AppColors.logoBlue],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: AppColors.logoNavy.withOpacity(0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 )
               ],
-              border: Border.all(color: AppColors.onSurfaceVariant),
             ),
             child: Row(
               children: [
@@ -564,10 +590,10 @@ class _HomePageState extends State<HomePage> {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(Icons.play_circle_fill, color: AppColors.primaryColor, size: 30),
+                  child: const Icon(Icons.play_circle_fill, color: Colors.white, size: 30),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -576,26 +602,42 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Text(
                         courseTitle,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         lectureTitle,
-                        style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 12),
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 8),
                       LinearProgressIndicator(
                         value: percent,
-                        backgroundColor: AppColors.onSurfaceVariant,
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
+                        backgroundColor: Colors.white30,
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.logoOrange),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(
+                      color: AppColors.logoBlue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                )
               ],
             ),
           ),
@@ -610,104 +652,94 @@ class _HomePageState extends State<HomePage> {
     return Consumer<ProfileViewModel>(
       builder: (context, profileVM, child) {
         final userName = profileVM.user?.name ?? 'Alex';
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(AppSizer.deviceWidth5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: const LinearGradient(
+              colors: [
+                Color(0xFF1E50FF),
+                Color(0xFF0033E0),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        'Hello, $userName!',
-                        style: TextStyle(
-                          fontSize: AppSizer.deviceSp20,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.logoNavy,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                  Flexible(
+                    child: Text(
+                      'Hello, $userName!',
+                      style: TextStyle(
+                        fontSize: AppSizer.deviceSp20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(width: AppSizer.deviceWidth1),
-                    Icon(
-                      Icons.verified,
-                      color: AppColors.logoBlue,
-                      size: AppSizer.deviceSp18,
-                    ),
-                  ],
-                ),
-                SizedBox(height: AppSizer.deviceHeight0_5),
-                Text(
-                  'What would you like to learn today?',
-                  style: TextStyle(
-                    fontSize: AppSizer.deviceSp16,
-                    color: AppColors.onSurfaceVariant,
                   ),
-                ),
+                  SizedBox(width: AppSizer.deviceWidth1),
+                  Icon(
+                    Icons.verified,
+                    color: Colors.amber, 
+                    size: AppSizer.deviceSp18,
+                  ),
                 ],
               ),
-            ),
-            Builder(
-              builder: (buildContext) => InkWell(
-                onTap: () {
-                  NavigationService.navigateTo(buildContext, SubscriptionPage());
-                },
-                borderRadius: BorderRadius.circular(50),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.logoBlue.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  padding: EdgeInsets.all(AppSizer.deviceWidth2),
-                  child: Icon(
-                    Icons.credit_card_rounded,
-                    color: AppColors.logoBlue,
-                    size: AppSizer.deviceSp22,
-                  ),
+              SizedBox(height: AppSizer.deviceHeight1),
+              Text(
+                'What would you like to learn today?',
+                style: TextStyle(
+                  fontSize: AppSizer.deviceSp14,
+                  color: Colors.white.withOpacity(0.9),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );
   }
 
-  // ===================== Page Cards =====================
   Widget _buildPageCards(BuildContext context) {
     final pages = [
       {
         'name': 'COURSES',
+        'subtitle': 'Explore best courses',
         'icon': Icons.school,
-        'color': AppColors.logoBlue,
+        'color': const Color(0xFF1E50FF),
         'onTap': () {
           NavigationService.navigateToCoursePage(context);
         },
       },
       {
         'name': 'E-BOOKS',
+        'subtitle': 'Read & learn anytime',
         'icon': Icons.picture_as_pdf,
-        'color': AppColors.logoOrange,
+        'color': const Color(0xFFFF7A00),
         'onTap': () {
           NavigationService.navigateToPdfPage(context);
         },
       },
       {
         'name': 'JOBS',
+        'subtitle': 'Find best opportunities',
         'icon': Icons.work,
-        'color': AppColors.logoGreen,
+        'color': const Color(0xFF00B050),
         'onTap': () {
           NavigationService.navigateTo(context, JobsPage());
         },
       },
       {
         'name': 'PROFILE',
+        'subtitle': 'Manage your account',
         'icon': Icons.person,
-        'color': AppColors.logoNavy,
+        'color': const Color(0xFF8A2BE2),
         'onTap': () {
           NavigationService.navigateTo(context, ProfilePage());
         },
@@ -716,12 +748,12 @@ class _HomePageState extends State<HomePage> {
 
     return GridView.builder(
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: AppSizer.deviceHeight2,
-        crossAxisSpacing: AppSizer.deviceWidth2,
-        childAspectRatio: 3 / 2,
+        crossAxisSpacing: AppSizer.deviceWidth3,
+        childAspectRatio: 1.2, // Increased to make cards shorter
       ),
       itemCount: pages.length,
       itemBuilder: (context, index) {
@@ -729,37 +761,67 @@ class _HomePageState extends State<HomePage> {
         final cardColor = item['color'] as Color;
         return GestureDetector(
           onTap: item['onTap'] as VoidCallback,
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
-              side: BorderSide(color: cardColor.withOpacity(0.3), width: 1),
+          child: Container(
+            decoration: BoxDecoration(
+              color: cardColor.withOpacity(0.04), // Very light tint of the theme color
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: cardColor.withOpacity(0.1), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            elevation: 3,
-            child: Container(
-              padding: EdgeInsets.all(AppSizer.deviceWidth3),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
-                color: cardColor.withOpacity(0.05),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    item['icon'] as IconData,
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  item['icon'] as IconData,
+                  color: cardColor,
+                  size: AppSizer.deviceSp32,
+                ),
+                const Spacer(),
+                Text(
+                  item['name'] as String,
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp16,
+                    fontWeight: FontWeight.bold,
                     color: cardColor,
-                    size: AppSizer.deviceSp28,
                   ),
-                  SizedBox(height: AppSizer.deviceHeight1),
-                  Text(
-                    item['name'] as String,
-                    style: TextStyle(
-                      fontSize: AppSizer.deviceSp14,
-                      fontWeight: FontWeight.bold,
-                      color: cardColor,
+                ),
+                SizedBox(height: AppSizer.deviceHeight0_5),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item['subtitle'] as String,
+                        style: TextStyle(
+                          fontSize: AppSizer.deviceSp12,
+                          color: Colors.grey.shade600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: cardColor.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_forward_ios,
+                        size: 12,
+                        color: cardColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         );
@@ -781,49 +843,88 @@ class _HomePageState extends State<HomePage> {
             NavigationService.navigateTo(context, EditProfilePage(user: profileVM.user!));
           },
           child: Container(
-            padding: EdgeInsets.all(AppSizer.deviceWidth4),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primaryColor.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.primaryColor.withOpacity(0.2)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.withOpacity(0.2)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // Circular Progress Indicator
+                Stack(
+                  alignment: Alignment.center,
                   children: [
-                    Expanded(
-                      child: Text(
+                    SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: CircularProgressIndicator(
+                        value: percentage / 100,
+                        backgroundColor: AppColors.logoBlue.withOpacity(0.1),
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.logoBlue),
+                        strokeWidth: 4,
+                      ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.person, size: 16, color: AppColors.logoBlue),
+                        Text(
+                          '$percentage%',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.logoBlue,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                // Texts & Linear Progress
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
                         'Complete your profile ($percentage%)',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primaryColor,
+                          color: Colors.black87,
                           fontSize: AppSizer.deviceSp14,
                         ),
                       ),
-                    ),
-                    Icon(Icons.arrow_forward_ios, size: 12, color: AppColors.primaryColor),
-                  ],
-                ),
-                SizedBox(height: AppSizer.deviceHeight1),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: percentage / 100,
-                    backgroundColor: AppColors.onSurfaceVariant,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
-                    minHeight: 8,
+                      const SizedBox(height: 4),
+                      Text(
+                        'Tap here to add missing details.',
+                        style: TextStyle(
+                          fontSize: AppSizer.deviceSp12,
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: percentage / 100,
+                          backgroundColor: Colors.grey.withOpacity(0.2),
+                          valueColor: const AlwaysStoppedAnimation<Color>(AppColors.logoBlue),
+                          minHeight: 6,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                SizedBox(height: AppSizer.deviceHeight0_5),
-                Text(
-                  'Tap here to add missing details.',
-                  style: TextStyle(
-                    fontSize: AppSizer.deviceSp12,
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
+                const SizedBox(width: 12),
+                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.black87),
               ],
             ),
           ),
@@ -970,239 +1071,135 @@ Widget _buildBannerSlider(BuildContext context, HomeViewModel viewModel) {
 ////////////////////////////////////////////////////////////////////////////
 Widget _buildCoursesOnSale(BuildContext context, List<Course> courses) {
   if (courses.isEmpty) return SizedBox();
+
+  final List<List<Color>> gradients = [
+    [const Color(0xFF6366F1), const Color(0xFF8B5CF6)],
+    [const Color(0xFF2563EB), const Color(0xFF0EA5E9)],
+    [const Color(0xFF059669), const Color(0xFF10B981)],
+    [const Color(0xFFDC2626), const Color(0xFFF97316)],
+    [const Color(0xFF7C3AED), const Color(0xFFDB2777)],
+    [const Color(0xFF0F172A), const Color(0xFF1E3A5F)],
+  ];
+
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Trending Courses',
-            style: TextStyle(
-              fontSize: AppSizer.deviceSp18,
-              fontWeight: FontWeight.bold,
-            ),
+          Text('Trending Courses',
+            style: TextStyle(fontSize: AppSizer.deviceSp18, fontWeight: FontWeight.bold, color: const Color(0xFF172554))),
+          InkWell(
+            onTap: () => NavigationService.navigateToCoursePage(context, initialIndex: 1),
+            child: Row(children: [
+              Text('View More', style: TextStyle(color: const Color(0xFF2563EB), fontSize: AppSizer.deviceSp14, fontWeight: FontWeight.bold)),
+              Icon(Icons.arrow_forward_ios, color: const Color(0xFF2563EB), size: AppSizer.deviceSp13),
+            ]),
           ),
         ],
       ),
       SizedBox(height: AppSizer.deviceHeight1),
-      SizedBox(
-        height: AppSizer.deviceHeight33,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: courses.length,
-          itemBuilder: (context, index) {
-            final course = courses[index];
-            return GestureDetector(
-              onTap: () {
-                NavigationService.navigateToCourseDetail(context, course);
-              },
-              child: Container(
-                width: AppSizer.deviceWidth43,
-                margin: EdgeInsets.only(right: AppSizer.deviceWidth1),
-                child: Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Image Container with Badge
-                      Stack(
-                        children: [
-                         Container(
-  height: AppSizer.deviceHeight13,
-  decoration: BoxDecoration(
-    color: AppColors.onSurfaceVariant,
-    borderRadius: BorderRadius.only(
-      topLeft: Radius.circular(AppSizer.deviceWidth3),
-      topRight: Radius.circular(AppSizer.deviceWidth3),
-    ),
-    image: DecorationImage(
-      image: NetworkImage(course.thumbnail), 
-      fit: BoxFit.cover,
-    ),
-  ),
-),
-                          // Trending Badge
-                          Positioned(
-                            //top: AppSizer.deviceHeight1,
-                            //left: AppSizer.deviceWidth0_5,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: AppSizer.deviceWidth2,
-                                vertical: AppSizer.deviceHeight0_5,
-                              ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  ShaderMask(
-                                    shaderCallback: (Rect bounds) {
-                                      return LinearGradient(colors: [AppColors.primaryColor, AppColors.primaryColor]).createShader(bounds);
-                                    },
-                                    child: Icon(
-                                      Icons.local_fire_department,
-                                      size: AppSizer.deviceSp20,
-                                      color: Colors
-                                          .white, // ye color base hota hai jisme gradient apply hota hai
-                                    ),
-                                  ),
-                                  
-                                ],
-                              ),
-                            ),
+      GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: AppSizer.deviceWidth3,
+          mainAxisSpacing: AppSizer.deviceWidth3,
+          childAspectRatio: 0.65,
+        ),
+        itemCount: courses.length > 6 ? 6 : courses.length,
+        itemBuilder: (context, index) {
+          final course = courses[index];
+          final grad = gradients[index % gradients.length];
+          return GestureDetector(
+            onTap: () => NavigationService.navigateToCourseDetail(context, course),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 10, offset: const Offset(0, 3))],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Thumbnail with gradient fallback
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(topLeft: Radius.circular(14), topRight: Radius.circular(14)),
+                    child: Stack(
+                      children: [
+                        // Gradient background always shown
+                        Container(
+                          height: AppSizer.deviceHeight13,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: grad, begin: Alignment.topLeft, end: Alignment.bottomRight),
                           ),
+                          child: Center(
+                            child: Icon(Icons.play_lesson, color: Colors.white.withOpacity(0.4), size: 36),
+                          ),
+                        ),
+                        // Network image on top
+                        Image.network(
+                          course.thumbnail,
+                          height: AppSizer.deviceHeight13,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        ),
+                        // TRENDING badge
+                        Positioned(
+                          top: 7, left: 7,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(color: const Color(0xFFF97316), borderRadius: BorderRadius.circular(20)),
+                            child: Row(mainAxisSize: MainAxisSize.min, children: [
+                              const Icon(Icons.local_fire_department, color: Colors.white, size: 10),
+                              const SizedBox(width: 2),
+                              Text('TRENDING', style: TextStyle(color: Colors.white, fontSize: AppSizer.deviceSp10, fontWeight: FontWeight.bold)),
+                            ]),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Content
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(course.title, maxLines: 2, overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: AppSizer.deviceSp15, fontWeight: FontWeight.bold, color: const Color(0xFF172554), height: 1.2)),
+                          SizedBox(height: AppSizer.deviceHeight0_5),
+                          Text(course.instructor, maxLines: 1, overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: AppSizer.deviceSp12, color: const Color(0xFF64748B))),
+                          const Spacer(),
+                          // Rating row
+                          Row(children: [
+                            const Icon(Icons.star, color: Color(0xFFF97316), size: 14),
+                            const SizedBox(width: 2),
+                            Text('${course.rating > 0 ? course.rating.toStringAsFixed(1) : "0.0"}(${course.reviews.length})',
+                              style: TextStyle(fontSize: AppSizer.deviceSp11, fontWeight: FontWeight.bold, color: const Color(0xFFF97316))),
+                            const SizedBox(width: 5),
+                            const Icon(Icons.access_time, color: Color(0xFF2563EB), size: 12),
+                            const SizedBox(width: 2),
+                            Flexible(child: Text(course.duration.isNotEmpty ? course.duration : '—', maxLines: 1, overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: AppSizer.deviceSp11, color: const Color(0xFF2563EB), fontWeight: FontWeight.w600))),
+                          ]),
+                          SizedBox(height: AppSizer.deviceHeight0_5),
+                          Text('₹${course.price}',
+                            style: TextStyle(fontSize: AppSizer.deviceSp17, fontWeight: FontWeight.bold, color: const Color(0xFF2563EB))),
                         ],
                       ),
-
-                      // Content
-                      Padding(
-                        padding: EdgeInsets.all(AppSizer.deviceWidth3),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Title
-                            Text(
-                              course.title,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: AppSizer.deviceSp16,
-                                fontWeight: FontWeight.bold,
-                                height: 1.2,
-                              ),
-                            ),
-                            SizedBox(height: AppSizer.deviceHeight0_5),
-
-                            // Instructor
-                            Text(
-                              course.instructor,
-                              style: TextStyle(
-                                fontSize: AppSizer.deviceSp14,
-                                color: AppColors.onSurfaceVariant,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            SizedBox(height: AppSizer.deviceHeight1),
-
-                            // Rating and Duration Row
-                            Row(
-                              children: [
-                                // Rating
-                                Flexible(
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: AppSizer.deviceWidth1_5,
-                                      vertical: AppSizer.deviceHeight0_5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.buttonColor.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.star,
-                                          color: AppColors.primaryColor,
-                                          size: AppSizer.deviceSp16,
-                                        ),
-                                        SizedBox(width: 2),
-                                        Flexible(
-                                          child: Text(
-                                            course.rating > 0 ? course.rating.toStringAsFixed(1) : '0.0',
-                                            style: TextStyle(
-                                              fontSize: AppSizer.deviceSp14,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.primaryColor,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        SizedBox(width: 2),
-                                        Text(
-                                          '(${course.reviews.length})',
-                                          style: TextStyle(
-                                            fontSize: AppSizer.deviceSp12,
-                                            color: AppColors.onSurfaceVariant,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(width: AppSizer.deviceWidth2),
-
-                                // Duration
-                                Flexible(
-                                  child: Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: AppSizer.deviceWidth1_5,
-                                      vertical: AppSizer.deviceHeight0_5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.buttonColor.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.access_time_filled_outlined,
-                                          color: AppColors.primaryColor,
-                                          size: AppSizer.deviceSp12,
-                                        ),
-                                        SizedBox(width: 2),
-                                        Flexible(
-                                          child: Text(
-                                            course.duration.isNotEmpty ? course.duration : '0h',
-                                            style: TextStyle(
-                                              fontSize: AppSizer.deviceSp14,
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColors.primaryColor,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: AppSizer.deviceHeight1),
-
-                            // Price Row
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  '₹${course.price}',
-                                  style: TextStyle(
-                                    fontSize: AppSizer.deviceSp14,
-                                    color: AppColors.primaryColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     ],
   );
@@ -1211,47 +1208,125 @@ Widget _buildCoursesOnSale(BuildContext context, List<Course> courses) {
 //////////////////////////////////////////////////////////////////////////////
 Widget _buildFreeCourses(BuildContext context, List<Course> courses) {
   if (courses.isEmpty) return SizedBox();
+
+  final List<List<Color>> gradients = [
+    [const Color(0xFF059669), const Color(0xFF10B981)],
+    [const Color(0xFF2563EB), const Color(0xFF6366F1)],
+    [const Color(0xFF7C3AED), const Color(0xFFDB2777)],
+    [const Color(0xFF0F172A), const Color(0xFF1E3A5F)],
+  ];
+
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Free Courses',
-            style: TextStyle(
-              fontSize: AppSizer.deviceSp18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
+          Text('Free Courses',
+            style: TextStyle(fontSize: AppSizer.deviceSp18, fontWeight: FontWeight.bold, color: const Color(0xFF172554))),
           InkWell(
-            onTap: () {
-              NavigationService.navigateToCoursePage(context, initialIndex: 0);
-            },
-            child: Row(
-              children: [
-                Text(
-                  'View More',
-                  style: TextStyle(
-                    color: AppColors.buttonColor,
-                    fontSize: AppSizer.deviceSp14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Icon(Icons.arrow_forward_ios,
-                color: AppColors.primaryColor,
-                 size: AppSizer.deviceSp14,
-                )
-              ],
-            ),
+            onTap: () => NavigationService.navigateToCoursePage(context, initialIndex: 0),
+            child: Row(children: [
+              Text('View More', style: TextStyle(color: const Color(0xFF2563EB), fontSize: AppSizer.deviceSp14, fontWeight: FontWeight.bold)),
+              Icon(Icons.arrow_forward_ios, color: const Color(0xFF2563EB), size: AppSizer.deviceSp13),
+            ]),
           ),
         ],
       ),
       SizedBox(height: AppSizer.deviceHeight1),
       SizedBox(
-        height: AppSizer.deviceHeight33,
-        child: AutoSlidingCourseList(courses: courses),
+        height: AppSizer.deviceHeight15,
+        child: PageView.builder(
+          itemCount: courses.length,
+          controller: PageController(viewportFraction: 0.97),
+          itemBuilder: (context, index) {
+            final course = courses[index];
+            final grad = gradients[index % gradients.length];
+            return GestureDetector(
+              onTap: () => NavigationService.navigateToCourseDetail(context, course),
+              child: Container(
+                margin: const EdgeInsets.only(right: 6, bottom: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 10, offset: const Offset(0, 3))],
+                ),
+                child: Row(
+                  children: [
+                    // Left thumbnail
+                    ClipRRect(
+                      borderRadius: const BorderRadius.only(topLeft: Radius.circular(14), bottomLeft: Radius.circular(14)),
+                      child: SizedBox(
+                        width: AppSizer.deviceWidth35,
+                        height: double.infinity,
+                        child: Stack(fit: StackFit.expand, children: [
+                          // Gradient fallback
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: grad, begin: Alignment.topLeft, end: Alignment.bottomRight),
+                            ),
+                            child: Center(child: Icon(Icons.play_lesson, color: Colors.white.withOpacity(0.4), size: 36)),
+                          ),
+                          // Network image
+                          Image.network(
+                            course.thumbnail,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                          ),
+                          // FREE badge
+                          Positioned(
+                            top: 8, left: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                              decoration: BoxDecoration(color: const Color(0xFF059669), borderRadius: BorderRadius.circular(6)),
+                              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                const Icon(Icons.lock_open, color: Colors.white, size: 12),
+                                const SizedBox(width: 2),
+                                Text('FREE', style: TextStyle(color: Colors.white, fontSize: AppSizer.deviceSp10, fontWeight: FontWeight.bold)),
+                              ]),
+                            ),
+                          ),
+                        ]),
+                      ),
+                    ),
+                    // Right content
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(AppSizer.deviceWidth3),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(course.title, maxLines: 2, overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: AppSizer.deviceSp16, fontWeight: FontWeight.bold, color: const Color(0xFF172554), height: 1.2)),
+                            SizedBox(height: AppSizer.deviceHeight0_5),
+                            Text(course.instructor, maxLines: 1, overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: AppSizer.deviceSp13, color: const Color(0xFF64748B))),
+                            SizedBox(height: AppSizer.deviceHeight1),
+                            Row(children: [
+                              const Icon(Icons.star, color: Color(0xFFF97316), size: 14),
+                              const SizedBox(width: 3),
+                              Text('${course.rating > 0 ? course.rating.toStringAsFixed(1) : "4.0"}(${course.reviews.length})',
+                                style: TextStyle(fontSize: AppSizer.deviceSp12, fontWeight: FontWeight.bold, color: const Color(0xFFF97316))),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.access_time, color: Color(0xFF2563EB), size: 12),
+                              const SizedBox(width: 2),
+                              Flexible(child: Text(course.duration.isNotEmpty ? course.duration : '—', maxLines: 1, overflow: TextOverflow.ellipsis,
+                                style: TextStyle(fontSize: AppSizer.deviceSp12, color: const Color(0xFF2563EB), fontWeight: FontWeight.w600))),
+                            ]),
+                            SizedBox(height: AppSizer.deviceHeight0_5),
+                            Text('₹0',
+                              style: TextStyle(fontSize: AppSizer.deviceSp18, fontWeight: FontWeight.bold, color: const Color(0xFF059669))),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       ),
     ],
   );
@@ -1306,15 +1381,15 @@ Widget _buildQuizzesAmbassadorSection(BuildContext context) {
             Expanded(
               child: _buildDetailedFeatureCard(
                 context,
-                title: 'Refral Programs',
+                title: 'Campus Ambassador',
                 subtitle:
-                    'Become a partner and represent Coders{Adda} in your college',
-                icon: Icons.people_alt,
+                    'Represent CodersAdda in your college & earn exciting rewards',
+                icon: Icons.campaign_rounded,
                 iconColor: AppColors.primaryColor,
                 buttonText: 'Apply Now',
                 gradientColors: [AppColors.outline, AppColors.backgroundColor],
                 onTap: () {
-                  NavigationService.navigateTo(context, RefralProgram());
+                  NavigationService.navigateTo(context, const RefralProgram());
                 },
               ),
             ),
@@ -1427,3 +1502,4 @@ Widget _buildDetailedFeatureCard(
     ),
   );
 }
+

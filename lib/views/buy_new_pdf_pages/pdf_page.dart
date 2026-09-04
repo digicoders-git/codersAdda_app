@@ -10,6 +10,9 @@ import 'package:coders_adda_app/views/navigation_class.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
 
 class PdfPage extends StatefulWidget {
+  final int initialTabIndex;
+  const PdfPage({super.key, this.initialTabIndex = 0});
+
   @override
   State<PdfPage> createState() => _PdfPageState();
 }
@@ -22,7 +25,12 @@ class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     viewModel = PdfViewModel();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTabIndex,
+    );
+    viewModel.setSelectedTabIndex(widget.initialTabIndex);
     _tabController.addListener(_handleTabSelection);
   }
 
@@ -43,9 +51,13 @@ class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
     return ChangeNotifierProvider(
       create: (context) => viewModel,
       child: Scaffold(
+        backgroundColor: const Color(0xFFF9FAFB),
         appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF172554)),
             onPressed: () {
               if (Navigator.canPop(context)) {
                 Navigator.pop(context);
@@ -60,15 +72,19 @@ class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
           title: Text(
             'PDF Resources',
             style: TextStyle(
-              fontSize: AppSizer.deviceSp20,
+              fontSize: AppSizer.deviceSp18,
               fontWeight: FontWeight.bold,
+              color: const Color(0xFF172554),
             ),
           ),
           bottom: TabBar(
             controller: _tabController,
-            labelColor: AppColors.primaryColor,
-            unselectedLabelColor: AppColors.onSurfaceVariant,
-            indicatorColor: AppColors.primaryColor,
+            labelColor: const Color(0xFF2563EB),
+            unselectedLabelColor: const Color(0xFF64748B),
+            indicatorColor: const Color(0xFF2563EB),
+            indicatorWeight: 3,
+            labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
             tabs: [
               Tab(text: 'Free PDFs'),
               Tab(text: 'Premium PDFs'),
@@ -118,53 +134,50 @@ class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
   }
 
   Widget _buildCategoryFilter(PdfViewModel viewModel) {
+    if (viewModel.categories.isEmpty) return const SizedBox.shrink();
+
     return Container(
-      height: AppSizer.deviceHeight8,
-      padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth4),
+      height: 38,
+      margin: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth4),
         itemCount: viewModel.categories.length,
         itemBuilder: (context, index) {
           final category = viewModel.categories[index];
           final isSelected = viewModel.selectedCategoryId == category.id;
           
-          return Builder(
-            builder: (chipContext) {
-              return Container(
-                margin: EdgeInsets.only(
-                  right: AppSizer.deviceWidth2,
-                  top: AppSizer.deviceHeight1,
-                  bottom: AppSizer.deviceHeight1,
+          return GestureDetector(
+            onTap: () => viewModel.setSelectedCategory(category),
+            child: Container(
+              margin: EdgeInsets.only(right: AppSizer.deviceWidth2),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF2563EB) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF2563EB) : Colors.grey.shade300,
                 ),
-                child: FilterChip(
-                  label: Text(
+              ),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isSelected) ...[
+                    const Icon(Icons.check, color: Colors.white, size: 13),
+                    const SizedBox(width: 4),
+                  ],
+                  Text(
                     '${category.name} (${category.ebookCount})',
                     style: TextStyle(
-                      fontSize: AppSizer.deviceSp14,
-                      color: isSelected ? Colors.white : AppColors.logoNavy,
+                      fontSize: 12,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? Colors.white : Colors.grey.shade700,
                     ),
                   ),
-                  selected: isSelected,
-                  backgroundColor: Colors.white,
-                  selectedColor: AppColors.primaryColor,
-                  checkmarkColor: Colors.white,
-                  shape: StadiumBorder(
-                    side: BorderSide(
-                      color: isSelected ? AppColors.primaryColor : AppColors.outline,
-                    ),
-                  ),
-                  onSelected: (selected) {
-                    viewModel.setSelectedCategory(category);
-                    Scrollable.ensureVisible(
-                      chipContext,
-                      alignment: 0.5,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                    );
-                  },
-                ),
-              );
-            },
+                ],
+              ),
+            ),
           );
         },
       ),
@@ -174,30 +187,78 @@ class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
   Widget _buildPdfsList(BuildContext context, List<PdfItem> pdfs) {
     if (pdfs.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.picture_as_pdf,
-              size: AppSizer.deviceSp64,
-              color: Colors.grey,
-            ),
-            SizedBox(height: AppSizer.deviceHeight2),
-            Text(
-              'No PDFs Found',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp20,
-                color: Colors.grey,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Illustration placeholder
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: AppSizer.deviceWidth50,
+                    height: AppSizer.deviceWidth50,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Icon(
+                    Icons.insert_drive_file,
+                    size: AppSizer.deviceWidth25,
+                    color: Colors.white,
+                  ),
+                  Positioned(
+                    top: AppSizer.deviceHeight2,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'PDF',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: AppSizer.deviceSp20),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: AppSizer.deviceHeight4,
+                    right: AppSizer.deviceWidth10,
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF2563EB),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.download, color: Colors.white, size: 24),
+                    ),
+                  )
+                ],
               ),
-            ),
-            SizedBox(height: AppSizer.deviceHeight1),
-            Text(
-              'Try selecting a different category',
-              style: TextStyle(
-                color: Colors.grey,
+              SizedBox(height: AppSizer.deviceHeight3),
+              Text(
+                'No PDFs Found!',
+                style: TextStyle(
+                  fontSize: AppSizer.deviceSp24,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF172554),
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: AppSizer.deviceHeight1_5),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth10),
+                child: Text(
+                  'Looks like there are no PDFs available in this category.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: const Color(0xFF64748B),
+                    fontSize: AppSizer.deviceSp14,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -215,34 +276,44 @@ class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
   Widget _buildPdfCard(BuildContext context, PdfItem pdf) {
     return GestureDetector(
       onTap: () {
-        // Card click pe PDF viewer open karega for free PDFs
         _handleCardClick(context, pdf);
       },
-      child: Card(
-        elevation: 2,
+      child: Container(
         margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         child: Padding(
           padding: EdgeInsets.all(AppSizer.deviceWidth4),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // PDF Icon
+              // PDF Icon (Red Container)
               Container(
-                width: AppSizer.deviceWidth15,
-                height: AppSizer.deviceWidth15,
+                width: AppSizer.deviceWidth18,
+                height: AppSizer.deviceWidth18,
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(AppSizer.deviceWidth3),
+                  color: const Color(0xFFFEE2E2), // Light red
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Center(
                   child: Icon(
                     Icons.picture_as_pdf,
-                    color: Colors.red,
-                    size: AppSizer.deviceSp24,
+                    color: const Color(0xFFDC2626), // Red
+                    size: AppSizer.deviceSp32,
                   ),
                 ),
               ),
               
-              SizedBox(width: AppSizer.deviceWidth3),
+              SizedBox(width: AppSizer.deviceWidth4),
               
               // PDF Info
               Expanded(
@@ -255,19 +326,20 @@ class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
                       style: TextStyle(
                         fontSize: AppSizer.deviceSp16,
                         fontWeight: FontWeight.bold,
+                        color: const Color(0xFF172554),
                       ),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     
                     SizedBox(height: AppSizer.deviceHeight0_5),
                     
-                    // PDF Description
+                    // PDF Description/Subtitle
                     Text(
-                      pdf.description,
+                      pdf.description.isNotEmpty ? pdf.description : 'Unknown Details',
                       style: TextStyle(
-                        fontSize: AppSizer.deviceSp14,
-                        color: AppColors.onSurfaceVariant,
+                        fontSize: AppSizer.deviceSp13,
+                        color: const Color(0xFF64748B),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -279,129 +351,109 @@ class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
                     Row(
                       children: [
                         // File Size
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.description,
-                              color: AppColors.onSurfaceVariant,
-                              size: AppSizer.deviceSp14,
-                            ),
-                            SizedBox(width: AppSizer.deviceWidth1),
-                            Text(
-                              pdf.fileSize,
-                              style: TextStyle(
-                                fontSize: AppSizer.deviceSp12,
-                                color: AppColors.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
+                        Icon(
+                          Icons.description_outlined,
+                          color: const Color(0xFF64748B),
+                          size: AppSizer.deviceSp14,
+                        ),
+                        SizedBox(width: AppSizer.deviceWidth1),
+                        Text(
+                          pdf.fileSize,
+                          style: TextStyle(
+                            fontSize: AppSizer.deviceSp12,
+                            color: const Color(0xFF64748B),
+                          ),
                         ),
                         
-                        SizedBox(width: AppSizer.deviceWidth3),
+                        SizedBox(width: AppSizer.deviceWidth4),
                         
-                        // Downloads
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.remove_red_eye,
-                              color: AppColors.onSurfaceVariant,
-                              size: AppSizer.deviceSp14,
-                            ),
-                            SizedBox(width: AppSizer.deviceWidth1),
-                            Text(
-                              '${pdf.viewCount}',
-                              style: TextStyle(
-                                fontSize: AppSizer.deviceSp12,
-                                color: AppColors.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
+                        // Downloads/Views
+                        Icon(
+                          Icons.remove_red_eye_outlined,
+                          color: const Color(0xFF64748B),
+                          size: AppSizer.deviceSp14,
                         ),
+                        SizedBox(width: AppSizer.deviceWidth1),
+                        Text(
+                          '${pdf.viewCount}',
+                          style: TextStyle(
+                            fontSize: AppSizer.deviceSp12,
+                            color: const Color(0xFF64748B),
+                          ),
+                        ),
+                      ],
+                    ),
+                    
+                    SizedBox(height: AppSizer.deviceHeight1_5),
+                    
+                    // Category & Price Tags
+                    Row(
+                      children: [
+                        // Category Tag
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF), // Light blue
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            pdf.category,
+                            style: TextStyle(
+                              fontSize: AppSizer.deviceSp11,
+                              color: const Color(0xFF2563EB),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: AppSizer.deviceWidth2),
                         
-                        SizedBox(width: AppSizer.deviceWidth3),
-                        
-                        // Category
-                        Row(
-                          children: [
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: AppSizer.deviceWidth2,
-                                vertical: AppSizer.deviceHeight0_5,
-                              ),
+                        // Price/Status Tag
+                        Consumer<ProfileViewModel>(
+                          builder: (context, profileVM, child) {
+                            final isPurchased = profileVM.user?.purchaseEbookIds.contains(pdf.id) ?? false;
+                            
+                            if (isPurchased) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'UNLOCKED',
+                                  style: TextStyle(
+                                    fontSize: AppSizer.deviceSp11,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF16A34A),
+                                  ),
+                                ),
+                              );
+                            }
+                            
+                            // User question requested: "Should we show 0 or keep dynamic?" We will show price tag like mockups.
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                               decoration: BoxDecoration(
-                                color: AppColors.surfaceVariant,
+                                color: pdf.isFree 
+                                    ? const Color(0xFFDCFCE7) 
+                                    : const Color(0xFFFEE2E2), // Light red as in mockup
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
-                                pdf.category,
+                                pdf.isFree ? 'FREE' : '₹${pdf.price}',
                                 style: TextStyle(
-                                  fontSize: AppSizer.deviceSp12,
-                                  color: AppColors.primaryColor,
+                                  fontSize: AppSizer.deviceSp11,
+                                  fontWeight: FontWeight.w600,
+                                  color: pdf.isFree 
+                                      ? const Color(0xFF16A34A) 
+                                      : const Color(0xFFDC2626), // Red as in mockup
                                 ),
                               ),
-                            ),
-                  SizedBox(width: AppSizer.deviceWidth4,),         
-                  
-                  Consumer<ProfileViewModel>(
-                    builder: (context, profileVM, child) {
-                      final isPurchased = profileVM.user?.purchaseEbookIds.contains(pdf.id) ?? false;
-                      
-                      if (isPurchased) {
-                        return Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: AppSizer.deviceWidth2,
-                            vertical: AppSizer.deviceHeight0_5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.successColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.successColor.withOpacity(0.3)),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.lock_open, size: AppSizer.deviceSp12, color: AppColors.successColor),
-                              SizedBox(width: 4),
-                              Text(
-                                'UNLOCKED',
-                                style: TextStyle(
-                                  fontSize: AppSizer.deviceSp10,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.successColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                      
-                      return Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppSizer.deviceWidth2,
-                          vertical: AppSizer.deviceHeight0_5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: pdf.isFree 
-                              ? AppColors.successColor.withOpacity(0.1)
-                              : AppColors.primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          pdf.isFree ? 'FREE' : '₹${pdf.price}',
-                          style: TextStyle(
-                            fontSize: AppSizer.deviceSp12,
-                            fontWeight: FontWeight.bold,
-                            color: pdf.isFree 
-                                ? AppColors.successColor 
-                                : AppColors.primaryColor,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  
-                 
-                          ],
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -409,8 +461,20 @@ class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
                 ),
               ),
               
-              
-              
+              // Right side download button
+              Container(
+                margin: EdgeInsets.only(top: AppSizer.deviceHeight2),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: const Icon(
+                  Icons.download_outlined,
+                  color: Color(0xFF2563EB),
+                  size: 20,
+                ),
+              ),
             ],
           ),
         ),
@@ -439,10 +503,7 @@ class _PdfPageState extends State<PdfPage> with SingleTickerProviderStateMixin {
         context,
         PdfDetailPage(pdf: pdf),
       );
-      // Download free PDF
-      //_downloadPdf(context, pdf);
     } else {
-      // Navigate to PDF detail page for paid PDFs
       NavigationService.navigateTo(
         context,
         PdfDetailPage(pdf: pdf),

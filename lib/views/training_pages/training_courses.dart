@@ -17,13 +17,10 @@ class TrainingCourses extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor,
         appBar: AppBar(
-          title: Text(
-            'Training Programs',
-            style: TextStyle(
-              color: AppColors.logoNavy,
-              fontSize: AppSizer.deviceSp20,
-              fontWeight: FontWeight.bold,
-            ),
+          title: Image.asset(
+            'assets/images/mainLogo.png',
+            height: AppSizer.deviceHeight10,
+            fit: BoxFit.contain,
           ),
           backgroundColor: AppColors.cardColor,
           elevation: 0,
@@ -48,18 +45,21 @@ class TrainingCourses extends StatelessWidget {
               );
             }
 
-            return Padding(
-              padding: EdgeInsets.all(AppSizer.deviceWidth4),
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSizer.deviceWidth4,
+                vertical: AppSizer.deviceHeight1_5,
+              ),
               child: Column(
                 children: [
                   // Header Text
                   Padding(
-                    padding: EdgeInsets.only(bottom: AppSizer.deviceHeight3),
+                    padding: EdgeInsets.only(bottom: AppSizer.deviceHeight1_5),
                     child: Text(
                       'Choose Your Learning Path',
                       style: TextStyle(
                         color: AppColors.logoNavy,
-                        fontSize: AppSizer.deviceSp18,
+                        fontSize: AppSizer.deviceSp15,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -71,8 +71,7 @@ class TrainingCourses extends StatelessWidget {
                     viewModel.courses[0],
                     AppColors.primaryColor,
                   ),
-                  
-                  //SizedBox(height: AppSizer.deviceHeight3),
+                  SizedBox(height: AppSizer.deviceHeight1_5),
                   
                   // Internship Card
                   _buildCourseCard(
@@ -80,6 +79,7 @@ class TrainingCourses extends StatelessWidget {
                     viewModel.courses[1],
                     AppColors.accentColor,
                   ),
+                  SizedBox(height: AppSizer.deviceHeight1_5),
 
                   // Winter Training Card
                   _buildCourseCard(
@@ -105,18 +105,18 @@ class TrainingCourses extends StatelessWidget {
       onTap: () => Provider.of<TrainingCoursesViewModel>(context, listen: false)
           .navigateToCourseDetails(context, course),
       child: Card(
-        elevation: 4,
+        elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         child: Container(
           width: double.infinity,
-          padding: EdgeInsets.all(AppSizer.deviceWidth4),
+          padding: EdgeInsets.all(AppSizer.deviceWidth3_5),
           decoration: BoxDecoration(
             color: AppColors.cardColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: color.withOpacity(0.3),
+              color: color.withOpacity(0.2),
               width: 1,
             ),
           ),
@@ -125,11 +125,11 @@ class TrainingCourses extends StatelessWidget {
             children: [
               // Course Icon/Image
               Container(
-                width: AppSizer.deviceWidth20,
-                height: AppSizer.deviceWidth20,
+                width: AppSizer.deviceWidth14,
+                height: AppSizer.deviceWidth14,
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                   image: course.imageUrl.isNotEmpty
                       ? DecorationImage(
                           image: NetworkImage(course.imageUrl),
@@ -143,12 +143,12 @@ class TrainingCourses extends StatelessWidget {
                             ? Icons.school 
                             : Icons.work,
                         color: color,
-                        size: AppSizer.deviceSp24,
+                        size: AppSizer.deviceSp18,
                       )
                     : null,
               ),
               
-              SizedBox(width: AppSizer.deviceWidth4),
+              SizedBox(width: AppSizer.deviceWidth3),
               
               // Course Details
               Expanded(
@@ -160,12 +160,12 @@ class TrainingCourses extends StatelessWidget {
                       course.title,
                       style: TextStyle(
                         color: AppColors.logoNavy,
-                        fontSize: AppSizer.deviceSp18,
+                        fontSize: AppSizer.deviceSp14,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     
-                    SizedBox(height: AppSizer.deviceHeight1),
+                    SizedBox(height: AppSizer.deviceHeight0_5),
                     
                     // Duration Badge
                     Container(
@@ -181,26 +181,26 @@ class TrainingCourses extends StatelessWidget {
                         course.duration,
                         style: TextStyle(
                           color: color,
-                          fontSize: AppSizer.deviceSp12,
+                          fontSize: AppSizer.deviceSp10,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                     
-                    SizedBox(height: AppSizer.deviceHeight1),
+                    SizedBox(height: AppSizer.deviceHeight0_5),
                     
                     // Description
                     Text(
                       course.description,
                       style: TextStyle(
                         color: AppColors.onSurfaceVariant,
-                        fontSize: AppSizer.deviceSp14,
+                        fontSize: AppSizer.deviceSp12,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     
-                    SizedBox(height: AppSizer.deviceHeight2),
+                    SizedBox(height: AppSizer.deviceHeight1),
                     
                     // Location
                     Row(
@@ -208,14 +208,14 @@ class TrainingCourses extends StatelessWidget {
                         Icon(
                           Icons.location_on,
                           color: AppColors.outline,
-                          size: AppSizer.deviceSp16,
+                          size: AppSizer.deviceSp13,
                         ),
                         SizedBox(width: AppSizer.deviceWidth1),
                         Text(
                           course.location,
                           style: TextStyle(
                             color: AppColors.outline,
-                            fontSize: AppSizer.deviceSp12,
+                            fontSize: AppSizer.deviceSp11,
                           ),
                         ),
                       ],
@@ -228,7 +228,7 @@ class TrainingCourses extends StatelessWidget {
               Icon(
                 Icons.arrow_forward_ios,
                 color: AppColors.outline,
-                size: AppSizer.deviceSp16,
+                size: AppSizer.deviceSp13,
               ),
             ],
           ),

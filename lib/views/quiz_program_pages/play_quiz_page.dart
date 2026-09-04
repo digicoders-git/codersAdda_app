@@ -200,11 +200,11 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
-            backgroundColor: const Color(0xFF0F0C24),
+            backgroundColor: AppColors.logoNavy,
             title: Center(
               child: Icon(
                 isPassed ? Icons.emoji_events : Icons.sentiment_dissatisfied,
-                color: isPassed ? const Color(0xFFFFD700) : Colors.redAccent,
+                color: isPassed ? AppColors.logoOrange : Colors.redAccent,
                 size: AppSizer.deviceSp48,
               ),
             ),
@@ -233,7 +233,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                   style: TextStyle(
                     fontSize: AppSizer.deviceSp28,
                     fontWeight: FontWeight.w900,
-                    color: const Color(0xFFFFD700),
+                    color: AppColors.logoOrange,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -242,7 +242,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                   style: TextStyle(
                     fontSize: AppSizer.deviceSp14,
                     fontWeight: FontWeight.bold,
-                    color: isPassed ? const Color(0xFF00FFCC) : Colors.redAccent,
+                    color: isPassed ? AppColors.successColor : Colors.redAccent,
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -302,7 +302,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                           : const Icon(Icons.workspace_premium, color: Colors.white),
                       label: Text(certLoading ? "Generating..." : "Download Certificate"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00B87C),
+                        backgroundColor: AppColors.successColor,
                         foregroundColor: Colors.white,
                         minimumSize: const Size(double.infinity, 48),
                         shape: RoundedRectangleBorder(
@@ -327,11 +327,11 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                         Navigator.pop(this.context, true); // Close quiz page when returning
                       });
                     },
-                    icon: const Icon(Icons.rate_review, color: Color(0xFFFFD700)),
+                    icon: const Icon(Icons.rate_review, color: AppColors.logoOrange),
                     label: const Text("Review Answers"),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFFFD700),
-                      side: const BorderSide(color: Color(0xFFFFD700)),
+                      foregroundColor: AppColors.logoOrange,
+                      side: const BorderSide(color: AppColors.logoOrange),
                       minimumSize: const Size(double.infinity, 45),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -394,16 +394,16 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: Color(0xFF0F0C24),
+        backgroundColor: AppColors.logoNavy,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+          child: CircularProgressIndicator(color: AppColors.logoOrange),
         ),
       );
     }
 
     if (_errorMessage != null) {
       return Scaffold(
-        backgroundColor: const Color(0xFF0F0C24),
+        backgroundColor: AppColors.logoNavy,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -432,9 +432,9 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
     final String? selectedOption = _userAnswers[_currentQuestionIndex];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0C24),
+      backgroundColor: AppColors.logoNavy,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF15122E),
+        backgroundColor: AppColors.logoNavy,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
@@ -513,7 +513,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
           LinearProgressIndicator(
             value: (_currentQuestionIndex + 1) / _questions.length,
             backgroundColor: Colors.white10,
-            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.logoOrange),
           ),
           
           Expanded(
@@ -526,7 +526,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                   Text(
                     "QUESTION ${_currentQuestionIndex + 1} OF ${_questions.length}",
                     style: const TextStyle(
-                      color: Color(0xFFFFD700),
+                      color: AppColors.logoOrange,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.0,
                     ),
@@ -558,7 +558,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
           Container(
             padding: const EdgeInsets.all(20.0),
             decoration: const BoxDecoration(
-              color: Color(0xFF15122E),
+              color: AppColors.logoNavy,
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Row(
@@ -615,7 +615,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                                 Navigator.pop(context); // Pop dialog
                                 _submitQuiz();
                               },
-                              child: const Text("Submit", style: TextStyle(color: Color(0xFFFFD700))),
+                              child: const Text("Submit", style: TextStyle(color: AppColors.logoOrange)),
                             ),
                           ],
                         ),
@@ -623,8 +623,8 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFD700),
-                    foregroundColor: const Color(0xFF0F0C24),
+                    backgroundColor: AppColors.logoOrange,
+                    foregroundColor: AppColors.logoNavy,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -662,10 +662,10 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1E1A3D) : const Color(0xFF15122E),
+          color: isSelected ? AppColors.logoBlue.withOpacity(0.2) : AppColors.logoNavy,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? const Color(0xFFFFD700) : Colors.white.withOpacity(0.08),
+            color: isSelected ? AppColors.logoOrange : Colors.white.withOpacity(0.08),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -676,14 +676,14 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFFFFD700) : Colors.white10,
+                color: isSelected ? AppColors.logoOrange : Colors.white10,
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: Text(
                   key.toUpperCase(),
                   style: TextStyle(
-                    color: isSelected ? const Color(0xFF0F0C24) : Colors.white70,
+                    color: isSelected ? AppColors.logoNavy : Colors.white70,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

@@ -666,17 +666,21 @@ class _SubscriptionCheckoutPageState extends State<SubscriptionCheckoutPage> {
   }
 
   Widget _buildFeatureItem(String text) {
+    final cleanText = text.replaceFirst(RegExp(r'^[✓\s]+'), '');
     return Padding(
       padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight0_5),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(Icons.check, color: AppColors.logoGreen, size: AppSizer.deviceSp16),
           SizedBox(width: AppSizer.deviceWidth2),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: AppSizer.deviceSp14,
-              color: AppColors.onSurfaceVariant,
+          Expanded(
+            child: Text(
+              cleanText,
+              style: TextStyle(
+                fontSize: AppSizer.deviceSp14,
+                color: AppColors.onSurfaceVariant,
+              ),
             ),
           ),
         ],

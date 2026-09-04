@@ -104,18 +104,7 @@ class RegisterPage extends StatelessWidget {
                             hintText: "Enter your full name",
                             prefixIcon: Icon(
                               Icons.person_outline,
-                              color: AppColors.primaryColor,
                             ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.outline),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.primaryColor),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[50],
                           ),
                           style: TextStyle(fontSize: AppSizer.deviceSp14),
                           validator: (value) =>
@@ -140,18 +129,7 @@ class RegisterPage extends StatelessWidget {
                             hintText: "Enter your email address",
                             prefixIcon: Icon(
                               Icons.email_outlined,
-                              color: AppColors.primaryColor,
                             ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.outline),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: AppColors.primaryColor),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[50],
                           ),
                           keyboardType: TextInputType.emailAddress,
                           style: TextStyle(fontSize: AppSizer.deviceSp14),

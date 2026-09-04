@@ -625,11 +625,11 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: AppColors.primaryColor,
+                        color: AppColors.successColor,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primaryColor.withOpacity(0.3),
+                            color: AppColors.successColor.withOpacity(0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),

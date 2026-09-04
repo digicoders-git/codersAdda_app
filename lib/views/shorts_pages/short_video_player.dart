@@ -19,6 +19,7 @@ class ShortVideoPlayer extends StatefulWidget {
 class _ShortVideoPlayerState extends State<ShortVideoPlayer> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   late VideoPlayerController _controller;
   bool _isInitialized = false;
+  bool _hasError = false;
   
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -49,16 +50,25 @@ class _ShortVideoPlayerState extends State<ShortVideoPlayer> with WidgetsBinding
   }
 
   void _initializeController() {
+    _hasError = false;
     _controller = VideoPlayerController.networkUrl(Uri.parse(widget.short.videoUrl))
       ..initialize().then((_) {
         if (mounted) {
           setState(() {
             _isInitialized = true;
+            _hasError = false;
           });
           if (widget.isCurrent) {
             _controller.play();
             _controller.setLooping(true);
           }
+        }
+      }).catchError((error) {
+        debugPrint("Error initializing short video: $error");
+        if (mounted) {
+          setState(() {
+            _hasError = true;
+          });
         }
       });
   }
@@ -200,9 +210,37 @@ class _ShortVideoPlayerState extends State<ShortVideoPlayer> with WidgetsBinding
                 ],
               ),
             )
-          : const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
+          : _hasError
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.videocam_off_rounded, color: Colors.white60, size: 48),
+                      const SizedBox(height: 12),
+                      const Text(
+                        "Video load failed",
+                        style: TextStyle(color: Colors.white70, fontSize: 13),
+                      ),
+                      const SizedBox(height: 10),
+                      TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _initializeController();
+                          });
+                        },
+                        icon: const Icon(Icons.refresh, color: Colors.white, size: 16),
+                        label: const Text("Retry", style: TextStyle(color: Colors.white)),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.white24,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
     );
   }
 }

@@ -31,7 +31,14 @@ class _MySubscriptionsPageState extends State<MySubscriptionsPage> with SingleTi
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
-        title: const Text('My Subscriptions'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: Image.asset(
+          'assets/images/mainLogo.png',
+          height: AppSizer.deviceHeight10,
+          fit: BoxFit.contain,
+        ),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.primaryColor,

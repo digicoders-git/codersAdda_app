@@ -109,17 +109,26 @@ class _DownloadedPdfsPageState extends State<DownloadedPdfsPage> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            'Downloaded PDFs',
-            style: TextStyle(
-              fontSize: AppSizer.deviceSp20,
-              fontWeight: FontWeight.bold,
-            ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          title: Image.asset(
+            'assets/images/mainLogo.png',
+            height: AppSizer.deviceHeight10,
+            fit: BoxFit.contain,
           ),
           bottom: TabBar(
             labelColor: AppColors.primaryColor,
             unselectedLabelColor: AppColors.onSurfaceVariant,
             indicatorColor: AppColors.primaryColor,
+            labelStyle: TextStyle(
+              fontSize: AppSizer.deviceSp13,
+              fontWeight: FontWeight.w600,
+            ),
+            unselectedLabelStyle: TextStyle(
+              fontSize: AppSizer.deviceSp13,
+              fontWeight: FontWeight.w500,
+            ),
             tabs: const [
               Tab(text: 'Resources'),
               Tab(text: 'E-Books'),
@@ -144,12 +153,12 @@ class _DownloadedPdfsPageState extends State<DownloadedPdfsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.folder_open, size: 64, color: AppColors.onSurfaceVariant),
-            SizedBox(height: AppSizer.deviceHeight2),
+            Icon(Icons.folder_open, size: 44, color: AppColors.onSurfaceVariant),
+            SizedBox(height: AppSizer.deviceHeight1_5),
             Text(
               'No downloaded files found.',
               style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
+                fontSize: AppSizer.deviceSp13,
                 color: AppColors.onSurfaceVariant,
               ),
             ),
@@ -159,18 +168,21 @@ class _DownloadedPdfsPageState extends State<DownloadedPdfsPage> {
     }
 
     return ListView.builder(
-      padding: EdgeInsets.all(AppSizer.deviceWidth4),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSizer.deviceWidth4,
+        vertical: AppSizer.deviceHeight1,
+      ),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
         return Card(
-          elevation: 2,
-          margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 1.5,
+          margin: EdgeInsets.only(bottom: AppSizer.deviceHeight1),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           child: ListTile(
             contentPadding: EdgeInsets.symmetric(
-              horizontal: AppSizer.deviceWidth4,
-              vertical: AppSizer.deviceHeight1,
+              horizontal: AppSizer.deviceWidth3_5,
+              vertical: AppSizer.deviceHeight0_5,
             ),
             leading: Container(
               padding: EdgeInsets.all(AppSizer.deviceWidth2),
@@ -178,27 +190,27 @@ class _DownloadedPdfsPageState extends State<DownloadedPdfsPage> {
                 color: Colors.red.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(Icons.picture_as_pdf, color: Colors.red),
+              child: const Icon(Icons.picture_as_pdf, color: Colors.red, size: 22),
             ),
             title: Text(
               item.title,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: AppSizer.deviceSp16,
+                fontSize: AppSizer.deviceSp13,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: Padding(
-              padding: EdgeInsets.only(top: AppSizer.deviceHeight1),
+              padding: EdgeInsets.only(top: AppSizer.deviceHeight0_5),
               child: Row(
                 children: [
-                  Icon(Icons.sd_storage, size: 14, color: AppColors.onSurfaceVariant),
+                  Icon(Icons.sd_storage, size: 12, color: AppColors.onSurfaceVariant),
                   SizedBox(width: 4),
                   Text(
                     item.size,
                     style: TextStyle(
-                      fontSize: AppSizer.deviceSp12,
+                      fontSize: AppSizer.deviceSp11,
                       color: AppColors.onSurfaceVariant,
                     ),
                   ),
@@ -206,7 +218,7 @@ class _DownloadedPdfsPageState extends State<DownloadedPdfsPage> {
               ),
             ),
             trailing: IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
               onPressed: () => _deleteItem(item),
             ),
             onTap: () => _openPdf(item),

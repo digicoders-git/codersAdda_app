@@ -224,49 +224,8 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   decoration: InputDecoration(
                     labelText: 'Phone Number',
-                    labelStyle: TextStyle(
-                      color: AppColors.onSurfaceVariant,
-                      fontSize: AppSizer.deviceSp14,
-                    ),
-                    prefix: Text(
-                      '+91 ',
-                      style: TextStyle(
-                        color: AppColors.logoNavy,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    prefixIcon: Container(
-                      margin: EdgeInsets.only(right: 8),
-                      child: Icon(
-                        Icons.phone_android_rounded,
-                        color: AppColors.primaryColor,
-                        size: AppSizer.deviceSp20,
-                      ),
-                    ),
-                    prefixIconConstraints: BoxConstraints(
-                      minWidth: 40,
-                      minHeight: 20,
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: Colors.grey.shade300,
-                        width: 1,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: AppColors.primaryColor,
-                        width: 2,
-                      ),
-                    ),
+                    prefix: const Text('+91 ', style: TextStyle(fontWeight: FontWeight.w600)),
+                    prefixIcon: const Icon(Icons.phone_android_rounded),
                   ),
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
@@ -868,12 +827,29 @@ SizedBox(height: AppSizer.deviceHeight2),
       if (!mounted) return;
 
       if (response.success) {
-        context.read<ProfileViewModel>().fetchUserProfile();
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => MainNavigation()),
-          (route) => false,
-        );
+        if (response.requireOtp) {
+          setState(() {
+            _phoneController.text = response.mobile ?? '';
+            _isOtpSent = true;
+          });
+          _startResendTimer();
+          Future.delayed(Duration(milliseconds: 500), () {
+            FocusScope.of(context).requestFocus(_otpFocusNode);
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.message ?? 'OTP sent successfully'),
+              backgroundColor: AppColors.successColor,
+            ),
+          );
+        } else {
+          context.read<ProfileViewModel>().fetchUserProfile();
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => MainNavigation()),
+            (route) => false,
+          );
+        }
       } else if (response.requireMobile) {
         // Requires mobile number to complete registration
         _showMobileNumberBottomSheet(viewModel, googleData);
@@ -966,12 +942,29 @@ SizedBox(height: AppSizer.deviceHeight2),
                         );
                         if (!mounted) return;
                         if (response.success) {
-                          context.read<ProfileViewModel>().fetchUserProfile();
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => MainNavigation()),
-                            (route) => false,
-                          );
+                          if (response.requireOtp) {
+                            setState(() {
+                              _phoneController.text = response.mobile ?? googlePhoneController.text;
+                              _isOtpSent = true;
+                            });
+                            _startResendTimer();
+                            Future.delayed(Duration(milliseconds: 500), () {
+                              FocusScope.of(context).requestFocus(_otpFocusNode);
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(response.message ?? 'OTP sent successfully'),
+                                backgroundColor: AppColors.successColor,
+                              ),
+                            );
+                          } else {
+                            context.read<ProfileViewModel>().fetchUserProfile();
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (context) => MainNavigation()),
+                              (route) => false,
+                            );
+                          }
                         } else if (response.message != null) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(

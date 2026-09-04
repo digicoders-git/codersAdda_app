@@ -19,9 +19,13 @@ class MyCoursesPage extends StatelessWidget {
         length: 2,
         child: Scaffold(
           appBar: AppBar(
-            title: Text(
-              'My Learning',
-              style: TextStyle(fontSize: AppSizer.deviceSp20),
+            backgroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: true,
+            title: Image.asset(
+              'assets/images/mainLogo.png',
+              height: AppSizer.deviceHeight10,
+              fit: BoxFit.contain,
             ),
             bottom: TabBar(
               tabs: [

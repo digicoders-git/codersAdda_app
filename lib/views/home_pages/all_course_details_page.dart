@@ -26,78 +26,83 @@ class AllCourseDetailPage extends StatelessWidget {
           final currentCourse = viewModel.course ?? course;
 
           return Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: true,
+              title: Image.asset(
+                'assets/images/mainLogo.png', 
+                height: AppSizer.deviceHeight10,
+                fit: BoxFit.contain,
+              ),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+                onPressed: () => Navigator.pop(context),
+              ),
+              actions: [
+                Consumer<WishlistViewModel>(
+                  builder: (context, wishlistVM, child) {
+                    final isFav = wishlistVM.isFavorite(currentCourse.id);
+                    return IconButton(
+                      icon: Icon(
+                        isFav ? Icons.favorite : Icons.favorite_border,
+                        color: isFav ? Colors.red : const Color(0xFF1E293B),
+                      ),
+                      onPressed: () => wishlistVM.toggleFavorite(currentCourse.id),
+                    );
+                  },
+                ),
+                const SizedBox(width: 8),
+              ],
+            ),
             body: viewModel.isLoading && viewModel.course?.curriculum.isEmpty == true
                 ? const Center(child: CircularProgressIndicator())
                 : viewModel.errorMessage != null
                     ? Center(child: Text(viewModel.errorMessage!))
-                    : CustomScrollView(
-                        slivers: [
-                          // Header with Course Image
-                          SliverAppBar(
-                            expandedHeight: AppSizer.deviceHeight30,
-                            flexibleSpace: FlexibleSpaceBar(
-                              background: _buildCourseHeaderImage(context, currentCourse),
-                            ),
-                            pinned: true,
-                            actions: [
-                              Consumer<WishlistViewModel>(
-                                builder: (context, wishlistVM, child) {
-                                  final isFav = wishlistVM.isFavorite(currentCourse.id);
-                                  return IconButton(
-                                    icon: Icon(
-                                      isFav ? Icons.favorite : Icons.favorite_border,
-                                      color: isFav ? Colors.red : null,
-                                    ),
-                                    onPressed: () {
-                                      wishlistVM.toggleFavorite(currentCourse.id);
-                                    },
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-
-                          // Course Content
-                          SliverToBoxAdapter(
-                            child: Padding(
-                              padding: EdgeInsets.all(AppSizer.deviceWidth4),
+                    : SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 1. Header Card & Overlapping Instructor Card
+                            _buildHeaderAndInstructor(context, currentCourse),
+                            
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth4),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Course Title and Price Tag
-                                  _buildCourseTitleSection(currentCourse),
+                                  SizedBox(height: AppSizer.deviceHeight3),
                                   
-                                  SizedBox(height: AppSizer.deviceHeight2),
-                                  
-                                  // Instructor Info
-                                  _buildInstructorSection(currentCourse),
+                                  // 2. Quick Facts Row
+                                  _buildQuickFactsCard(currentCourse),
                                   
                                   SizedBox(height: AppSizer.deviceHeight3),
                                   
-                                  // Course Description
+                                  // 3. Course Description
                                   _buildCourseDescription(currentCourse),
                                   
                                   SizedBox(height: AppSizer.deviceHeight3),
                                   
-                                  // What You'll Learn
+                                  // 4. What You'll Learn
                                   if (currentCourse.whatYouWillLearn.isNotEmpty)
                                     _buildLearningOutcomes(currentCourse),
                                   
                                   SizedBox(height: AppSizer.deviceHeight3),
                                   
-                                  // Course Curriculum
+                                  // 5. Course Curriculum
                                   if (currentCourse.curriculum.isNotEmpty)
                                     _buildCourseCurriculum(context, currentCourse),
                                   
                                   SizedBox(height: AppSizer.deviceHeight3),
                                   
-                                  // FAQs Section
+                                  // 6. FAQs Section
                                   if (currentCourse.faqs.isNotEmpty)
                                     _buildCourseFAQs(currentCourse),
                                   
                                   SizedBox(height: AppSizer.deviceHeight3),
                                   
-                                  // Reviews Section
+                                  // 7. Reviews Section
                                   if (currentCourse.reviews.isNotEmpty)
                                     _buildCourseReviews(currentCourse),
                                   
@@ -105,8 +110,8 @@ class AllCourseDetailPage extends StatelessWidget {
                                 ],
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
             
             // Fixed Bottom Action Button
@@ -117,153 +122,163 @@ class AllCourseDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildCourseHeaderImage(BuildContext context, Course course) {
-    return Stack(
-      children: [
-        // Course Image
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceVariant,
-            image: course.thumbnail.isNotEmpty
-                ? DecorationImage(
-                    image: NetworkImage(course.thumbnail),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-          ),
-          child: course.thumbnail.isEmpty
-              ? Center(
-                  child: Icon(
-                    Icons.play_circle_filled,
-                    color: AppColors.primaryColor,
-                    size: AppSizer.deviceSp48,
-                  ),
-                )
-              : null,
-        ),
-        
-        // Gradient Overlay
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.primaryColor,
-          ),
-        ),
-        
-        // Paid Tag
-        if (!course.isFree)
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 10, // Adjust for status bar
-            right: AppSizer.deviceWidth4,
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSizer.deviceWidth3,
-                vertical: AppSizer.deviceHeight0_5,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.primaryColor,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.workspace_premium, color: Colors.white, size: AppSizer.deviceSp12),
-                  SizedBox(width: AppSizer.deviceWidth1),
-                  Text(
-                    'PAID',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: AppSizer.deviceSp10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildCourseTitleSection(Course course) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
+  Widget _buildHeaderAndInstructor(BuildContext context, Course course) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                course.title,
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp20,
-                  fontWeight: FontWeight.bold,
-                  height: 1.3,
+              Expanded(
+                flex: 5,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E3A8A), // Dark blue badge
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        course.isFree ? 'FREE' : 'PREMIUM',
+                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight1_5),
+                    // Title
+                    Text(
+                      course.title,
+                      style: const TextStyle(color: Color(0xFF1E293B), fontSize: 20, fontWeight: FontWeight.bold, height: 1.3),
+                    ),
+                    SizedBox(height: AppSizer.deviceHeight1_5),
+                    // Stats Row
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.star, color: Color(0xFFF97316), size: 16),
+                            const SizedBox(width: 4),
+                            Text(course.rating.toStringAsFixed(1), style: const TextStyle(color: Color(0xFFF97316), fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 4),
+                            Text('(${course.reviews.length})', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          ],
+                        ),
+                        const Text('•', style: TextStyle(color: Colors.grey)),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.people, color: Color(0xFF1E293B), size: 14),
+                            const SizedBox(width: 4),
+                            Text('${course.totalStudents} Students', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          ],
+                        ),
+                        const Text('•', style: TextStyle(color: Colors.grey)),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.schedule, color: Color(0xFF1E293B), size: 14),
+                            const SizedBox(width: 4),
+                            Text(course.duration.isNotEmpty ? course.duration : '0h', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: AppSizer.deviceHeight1),
-              Row(
-                children: [
-                  Icon(Icons.star, color: AppColors.logoOrange, size: AppSizer.deviceSp16),
-                  SizedBox(width: AppSizer.deviceWidth1),
-                  Text('${course.rating}', style: TextStyle(fontSize: AppSizer.deviceSp14)),
-                  SizedBox(width: AppSizer.deviceWidth3),
-                  Icon(Icons.people, color: AppColors.onSurfaceVariant, size: AppSizer.deviceSp16),
-                  SizedBox(width: AppSizer.deviceWidth1),
-                  Text('${course.totalStudents}', style: TextStyle(fontSize: AppSizer.deviceSp14)),
-                  SizedBox(width: AppSizer.deviceWidth3),
-                  Icon(Icons.schedule, color: AppColors.onSurfaceVariant, size: AppSizer.deviceSp16),
-                  SizedBox(width: AppSizer.deviceWidth1),
-                  Text(course.duration, style: TextStyle(fontSize: AppSizer.deviceSp14)),
-                ],
+              SizedBox(width: AppSizer.deviceWidth3),
+              // Right Square Image
+              Expanded(
+                flex: 5,
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: const Color(0xFF0F172A),
+                      image: course.thumbnail.isNotEmpty ? DecorationImage(
+                        image: NetworkImage(course.thumbnail),
+                        fit: BoxFit.cover,
+                      ) : null,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
-        ),
-        if (!course.isFree)
+          SizedBox(height: AppSizer.deviceHeight2),
+          // Tags
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: (course.technology.isNotEmpty ? course.technology.split(',') : ['General']).map((tech) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(tech.trim(), style: const TextStyle(color: Color(0xFF1E293B), fontSize: 11, fontWeight: FontWeight.w500)),
+            )).toList(),
+          ),
+          
+          SizedBox(height: AppSizer.deviceHeight3),
+          
+          // Instructor Card
           Container(
-            padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth3, vertical: AppSizer.deviceHeight1),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.primaryColor,
-              borderRadius: BorderRadius.circular(AppSizer.deviceWidth2),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  '₹${course.price.toStringAsFixed(0)}',
-                  style: TextStyle(fontSize: AppSizer.deviceSp18, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                Text('one-time', style: TextStyle(fontSize: AppSizer.deviceSp10, color: Colors.white70)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.withOpacity(0.1)),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
               ],
             ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildInstructorSection(Course course) {
-    return Container(
-      padding: EdgeInsets.all(AppSizer.deviceWidth4),
-      decoration: BoxDecoration(color: AppColors.surfaceVariant, borderRadius: BorderRadius.circular(AppSizer.deviceWidth3)),
-      child: Row(
-        children: [
-          Container(
-            width: AppSizer.deviceWidth12, height: AppSizer.deviceWidth12,
-            decoration: const BoxDecoration(color: AppColors.primaryColor, shape: BoxShape.circle),
-            child: Center(
-              child: Text(
-                course.instructor.isNotEmpty ? course.instructor.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join() : 'IN',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: AppSizer.deviceSp14),
-              ),
-            ),
-          ),
-          SizedBox(width: AppSizer.deviceWidth3),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                Text('Instructor', style: TextStyle(fontSize: AppSizer.deviceSp12, color: AppColors.onSurfaceVariant)),
-                SizedBox(height: AppSizer.deviceHeight0_5),
-                Text(course.instructor, style: TextStyle(fontSize: AppSizer.deviceSp14, fontWeight: FontWeight.w600)),
+                Container(
+                  width: 50, height: 50,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF1E3A8A), // Dark blue
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      course.instructor.isNotEmpty ? course.instructor.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join() : 'IN',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Instructor', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      const SizedBox(height: 2),
+                      Text(course.instructor, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                      const SizedBox(height: 2),
+                      const Text('AI & ML Expert | 10+ Years Experience', style: TextStyle(fontSize: 11, color: Colors.grey)), 
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9), // Light gray bg
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.person_add_alt_1_outlined, color: Color(0xFF64748B), size: 20),
+                ),
               ],
             ),
           ),
@@ -272,57 +287,77 @@ class AllCourseDetailPage extends StatelessWidget {
     );
   }
 
+  Widget _buildQuickFactsCard(Course course) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildQuickFactItem(Icons.play_circle_outline, const Color(0xFF8B5CF6), '${course.totalLessons}', 'Lessons'),
+          _buildQuickFactDivider(),
+          _buildQuickFactItem(Icons.schedule, const Color(0xFF3B82F6), course.duration.isNotEmpty ? course.duration : '0h', 'Duration'),
+          _buildQuickFactDivider(),
+          _buildQuickFactItem(Icons.trending_up, const Color(0xFF10B981), 'Beginner to', 'Advanced'),
+          _buildQuickFactDivider(),
+          _buildQuickFactItem(Icons.workspace_premium_outlined, const Color(0xFFF59E0B), 'Certificate', 'Included'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickFactItem(IconData icon, Color iconColor, String title, String subtitle) {
+    return Expanded(
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(height: 8),
+          Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF1E293B))),
+          const SizedBox(height: 2),
+          Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickFactDivider() {
+    return Container(width: 1, height: 40, color: Colors.grey.withOpacity(0.2));
+  }
+
   Widget _buildCourseDescription(Course course) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('About This Course', style: TextStyle(fontSize: AppSizer.deviceSp18, fontWeight: FontWeight.bold)),
-        SizedBox(height: AppSizer.deviceHeight1),
-        Text(course.description, style: TextStyle(fontSize: AppSizer.deviceSp15, color: AppColors.onSurfaceVariant, height: 1.6)),
-        SizedBox(height: AppSizer.deviceHeight2),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: _buildStatItem('${course.totalLessons}', 'Lessons')),
-            SizedBox(width: AppSizer.deviceWidth2),
-            Expanded(child: _buildStatItem(course.duration, 'Duration')),
-            SizedBox(width: AppSizer.deviceWidth2),
-            Expanded(child: _buildStatItemLong(course.technology, 'Tech')),
-          ],
+        const Text('About This Course', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+        const SizedBox(height: 12),
+        Text(course.description, style: const TextStyle(fontSize: 14, color: Colors.grey, height: 1.5)),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () {
+            // Read more action placeholder
+          },
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Read More', style: TextStyle(color: Color(0xFFEA580C), fontWeight: FontWeight.bold, fontSize: 14)),
+              SizedBox(width: 4),
+              Icon(Icons.keyboard_arrow_down, color: Color(0xFFEA580C), size: 18),
+            ],
+          ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildStatItem(String value, String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: TextStyle(fontSize: AppSizer.deviceSp16, fontWeight: FontWeight.bold, color: AppColors.primaryColor),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        ),
-        SizedBox(height: AppSizer.deviceHeight0_5),
-        Text(label, style: TextStyle(fontSize: AppSizer.deviceSp13, color: AppColors.onSurfaceVariant)),
-      ],
-    );
-  }
-
-  // For long technology strings — uses full available width with ellipsis
-  Widget _buildStatItemLong(String value, String label) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: TextStyle(fontSize: AppSizer.deviceSp16, fontWeight: FontWeight.bold, color: AppColors.primaryColor),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 2,
-        ),
-        SizedBox(height: AppSizer.deviceHeight0_5),
-        Text(label, style: TextStyle(fontSize: AppSizer.deviceSp13, color: AppColors.onSurfaceVariant)),
       ],
     );
   }
@@ -331,23 +366,40 @@ class AllCourseDetailPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('What You\'ll Learn', style: TextStyle(fontSize: AppSizer.deviceSp18, fontWeight: FontWeight.bold)),
-        SizedBox(height: AppSizer.deviceHeight2),
-        Wrap(
-          spacing: AppSizer.deviceWidth2,
-          runSpacing: AppSizer.deviceHeight1,
-          children: course.whatYouWillLearn.map((outcome) => Container(
-            padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth3, vertical: AppSizer.deviceHeight1),
-            decoration: BoxDecoration(color: AppColors.surfaceVariant, borderRadius: BorderRadius.circular(20)),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.check_circle, color: AppColors.successColor, size: AppSizer.deviceSp14),
-                SizedBox(width: AppSizer.deviceWidth1),
-                Text(outcome, style: TextStyle(fontSize: AppSizer.deviceSp14)),
-              ],
-            ),
-          )).toList(),
+        const Text('What You\'ll Learn', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+        const SizedBox(height: 16),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final double cardWidth = (constraints.maxWidth - 12) / 2;
+            return Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: course.whatYouWillLearn.map((outcome) => Container(
+                width: cardWidth,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E3A8A), // Dark blue
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Icon(Icons.check, color: Colors.white, size: 14),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(outcome, style: const TextStyle(fontSize: 12, color: Color(0xFF1E293B)), maxLines: 2, overflow: TextOverflow.ellipsis)),
+                  ],
+                ),
+              )).toList(),
+            );
+          }
         ),
       ],
     );
@@ -390,10 +442,10 @@ class AllCourseDetailPage extends StatelessWidget {
 
   Widget _buildLessonItem(BuildContext context, Course course, CourseModule module, CourseLesson lesson) {
     return ListTile(
-      leading: Icon(lesson.isFree ? Icons.play_circle_outline : Icons.lock_outline, color: lesson.isFree ? AppColors.primaryColor : Colors.grey),
+      leading: Icon(lesson.isFree ? Icons.play_circle_outline : Icons.lock_outline, color: lesson.isFree ? AppColors.logoBlue : Colors.grey),
       title: Text(lesson.title, style: TextStyle(fontSize: AppSizer.deviceSp13)),
       subtitle: Text(lesson.duration, style: TextStyle(fontSize: AppSizer.deviceSp11)),
-      trailing: lesson.isFree ? Icon(Icons.play_circle_filled, color: AppColors.primaryColor) : const Icon(Icons.lock, size: 16),
+      trailing: lesson.isFree ? Icon(Icons.play_circle_filled, color: AppColors.logoBlue) : const Icon(Icons.lock, size: 16),
       onTap: () {
         if (lesson.isFree) {
           Navigator.push(
@@ -530,77 +582,110 @@ class AllCourseDetailPage extends StatelessWidget {
                        profileVM.user?.subscriptionCourseIds.contains(course.id) == true;
 
     return Container(
-      padding: EdgeInsets.all(AppSizer.deviceWidth4),
-      decoration: const BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, -2))]),
-      child: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: isEnrolled 
-              ? () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MyLearningCoursePlayer(courseId: course.id)),
-                  );
-                }
-              : (viewModel.isLoading 
-                  ? null 
-                  : () async {
-                    if (course.isFree) {
-                      final success = await viewModel.enrollInFreeCourse();
-                      if (context.mounted) {
-                        if (success) {
-                          // Refresh profile to update course counts and purchaseCourseIds list
-                          profileVM.fetchUserProfile();
-                          PurchaseSuccessModal.show(
-                            context,
-                            title: course.title,
-                            itemType: 'course',
-                            onGoToMyLearning: () {
-                              final tabIndex = PurchaseSuccessModal.getTabIndexForItemType('course', true);
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
-                                (route) => route.isFirst,
-                              );
-                            },
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(viewModel.errorMessage ?? 'Enrollment failed'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    } else {
-                      Navigator.push(
-                        context, 
-                        MaterialPageRoute(builder: (context) => CourseCheckoutPage(course: course))
-                      );
-                    }
-                  }),
-            style: FilledButton.styleFrom(
-              backgroundColor: isEnrolled 
-                  ? AppColors.primaryColor 
-                  : (course.isFree ? AppColors.successColor : AppColors.primaryColor),
-              padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
-            ),
-            child: viewModel.isLoading && course.isFree && !isEnrolled
-              ? const SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                )
-              : Text(
-                  isEnrolled 
-                      ? 'START LEARNING' 
-                      : (course.isFree ? 'ENROLL FOR FREE' : 'BUY NOW - ₹${course.price.toStringAsFixed(0)}'),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      padding: EdgeInsets.fromLTRB(AppSizer.deviceWidth4, AppSizer.deviceHeight2, AppSizer.deviceWidth4, MediaQuery.of(context).padding.bottom + 8),
+      decoration: const BoxDecoration(
+        color: Colors.white, 
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -4))]
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              if (!isEnrolled && !course.isFree) ...[
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '₹${course.price.toStringAsFixed(0)}',
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                    ),
+                    const Text('one-time payment', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                  ],
                 ),
+                SizedBox(width: AppSizer.deviceWidth4),
+              ],
+              Expanded(
+                child: FilledButton(
+                  onPressed: isEnrolled 
+                    ? () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => MyLearningCoursePlayer(courseId: course.id)),
+                        );
+                      }
+                    : (viewModel.isLoading 
+                        ? null 
+                        : () async {
+                          if (course.isFree) {
+                            final success = await viewModel.enrollInFreeCourse();
+                            if (context.mounted) {
+                              if (success) {
+                                profileVM.fetchUserProfile();
+                                PurchaseSuccessModal.show(
+                                  context,
+                                  title: course.title,
+                                  itemType: 'course',
+                                  onGoToMyLearning: () {
+                                    final tabIndex = PurchaseSuccessModal.getTabIndexForItemType('course', true);
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => MyLearningPage(initialTabIndex: tabIndex)),
+                                      (route) => route.isFirst,
+                                    );
+                                  },
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(viewModel.errorMessage ?? 'Enrollment failed'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            }
+                          } else {
+                            Navigator.push(
+                              context, 
+                              MaterialPageRoute(builder: (context) => CourseCheckoutPage(course: course))
+                            );
+                          }
+                        }),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF0F172A), // Dark navy blue
+                    padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: viewModel.isLoading && course.isFree && !isEnrolled
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : Text(
+                        isEnrolled 
+                            ? 'START LEARNING' 
+                            : (course.isFree ? 'ENROLL FOR FREE' : 'BUY NOW - ₹${course.price.toStringAsFixed(0)}'),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                ),
+              ),
+            ],
           ),
-        ),
+          if (!isEnrolled && !course.isFree) ...[
+            SizedBox(height: AppSizer.deviceHeight2),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Row(children: [Icon(Icons.lock_outline, size: 12, color: Colors.grey), SizedBox(width: 4), Text('Secure Payment', style: TextStyle(fontSize: 10, color: Colors.grey))]),
+                Text('|', style: TextStyle(color: Colors.grey, fontSize: 10)),
+                Row(children: [Icon(Icons.flash_on, size: 12, color: Colors.grey), SizedBox(width: 4), Text('Instant Access', style: TextStyle(fontSize: 10, color: Colors.grey))]),
+                Text('|', style: TextStyle(color: Colors.grey, fontSize: 10)),
+                Row(children: [Icon(Icons.all_inclusive, size: 12, color: Colors.grey), SizedBox(width: 4), Text('Lifetime Access', style: TextStyle(fontSize: 10, color: Colors.grey))]),
+              ],
+            ),
+          ],
+        ],
       ),
     );
   }

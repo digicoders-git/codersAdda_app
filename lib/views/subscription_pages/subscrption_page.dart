@@ -28,19 +28,19 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     return ChangeNotifierProvider(
       create: (context) => viewModel,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F0C24),
+        backgroundColor: const Color(0xFFF9FAFB),
         appBar: AppBar(
-          backgroundColor: Colors.transparent,
+          backgroundColor: const Color(0xFF0B1033),
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 18),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text(
+          title: const Text(
             'Premium Plans',
             style: TextStyle(
               color: Colors.white,
-              fontSize: AppSizer.deviceSp20,
+              fontSize: 17,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -74,7 +74,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                       _buildFeaturesSection(),
                       
                       // Add extra space for the fixed button
-                      SizedBox(height: AppSizer.deviceHeight15),
+                      SizedBox(height: AppSizer.deviceHeight12),
                     ],
                   ),
                 ),
@@ -98,54 +98,55 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
-        horizontal: AppSizer.deviceWidth6,
-        vertical: AppSizer.deviceHeight2,
+        horizontal: AppSizer.deviceWidth4,
+        vertical: AppSizer.deviceHeight1_5,
       ),
       child: Column(
         children: [
-          // App Icon/Logo (Premium Crown with Glow)
           Container(
+            margin: EdgeInsets.all(AppSizer.deviceWidth2),
             padding: EdgeInsets.all(AppSizer.deviceWidth4),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primaryColor,
+              color: const Color(0xFF0033CC),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFFD700).withOpacity(0.3),
-                  blurRadius: 20,
+                  color: const Color(0xFF0033CC).withOpacity(0.2),
+                  blurRadius: 16,
                   spreadRadius: 2,
+                  offset: const Offset(0, 6),
                 )
               ],
             ),
             child: Icon(
               Icons.workspace_premium,
-              color: const Color(0xFF0F0C24),
-              size: AppSizer.deviceSp32,
+              color: Colors.white,
+              size: AppSizer.deviceSp22,
             ),
           ),
           
-          SizedBox(height: AppSizer.deviceHeight2.toDouble()),
+          SizedBox(height: AppSizer.deviceHeight0_5),
           
           // Main Title
           Text(
             'Choose Your Premium Pass',
             style: TextStyle(
-              fontSize: AppSizer.deviceSp22,
+              fontSize: AppSizer.deviceSp16,
               fontWeight: FontWeight.w900,
-              color: Colors.white,
-              letterSpacing: 0.5,
+              color: const Color(0xFF0B1033),
+              letterSpacing: 0.3,
             ),
             textAlign: TextAlign.center,
           ),
           
-          SizedBox(height: AppSizer.deviceHeight1.toDouble()),
+          SizedBox(height: AppSizer.deviceHeight0_5),
           
           // Subtitle
           Text(
             'Unlock all features, courses, eBooks, and boost your career',
             style: TextStyle(
-              fontSize: AppSizer.deviceSp14,
-              color: Colors.white.withOpacity(0.6),
+              fontSize: AppSizer.deviceSp12,
+              color: Colors.grey.shade600,
             ),
             textAlign: TextAlign.center,
           ),
@@ -158,10 +159,10 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     if (plans.isEmpty) {
       return Container(
         padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight5),
-        child: const Center(
+        child: Center(
           child: Text(
             'No premium plans available right now.',
-            style: TextStyle(color: Colors.white70),
+            style: TextStyle(color: Colors.grey.shade600),
           ),
         ),
       );
@@ -170,20 +171,30 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth4),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Padding(
-            padding: EdgeInsets.only(
-              left: AppSizer.deviceWidth1,
-              bottom: AppSizer.deviceHeight2,
-            ),
-            child: Text(
-              'Available Memberships',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white.withOpacity(0.9),
-              ),
+            padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(width: 30, height: 2, color: const Color(0xFFF59E0B)),
+                const SizedBox(width: 8),
+                const Icon(Icons.circle, size: 6, color: Color(0xFF0033CC)),
+                const SizedBox(width: 8),
+                Text(
+                  'Available Memberships',
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp16,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFF0B1033),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.circle, size: 6, color: Color(0xFF0033CC)),
+                const SizedBox(width: 8),
+                Container(width: 30, height: 2, color: const Color(0xFFF59E0B)),
+              ],
             ),
           ),
           
@@ -191,14 +202,14 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
           ...plans.asMap().entries.map((entry) {
             final index = entry.key;
             final plan = entry.value;
-            return _buildHotstarPlanCard(context, plan, index);
+            return _buildPlanCard(context, plan, index);
           }).toList(),
         ],
       ),
     );
   }
 
-  Widget _buildHotstarPlanCard(BuildContext context, SubscriptionPlan plan, int index) {
+  Widget _buildPlanCard(BuildContext context, SubscriptionPlan plan, int index) {
     bool isSelected = _selectedPlan?.id == plan.id;
     final isYearly = plan.duration.toLowerCase().contains('year') || plan.duration.toLowerCase().contains('12 month');
     
@@ -212,64 +223,43 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
         duration: const Duration(milliseconds: 300),
         margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1E1A3D) : const Color(0xFF15122E),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: isSelected
-              ? Border.all(color: const Color(0xFFFFD700), width: 2)
-              : Border.all(color: Colors.white.withOpacity(0.1), width: 1),
+              ? Border.all(color: const Color(0xFF0033CC), width: 2)
+              : Border.all(color: const Color(0xFF0033CC), width: 1.5),
           boxShadow: [
-            if (isSelected)
-              BoxShadow(
-                color: const Color(0xFFFFD700).withOpacity(0.15),
-                blurRadius: 15,
-                offset: const Offset(0, 4),
-              )
-            else
-              BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 5,
-                offset: const Offset(0, 2),
-              ),
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
-              // Premium Background Glow
-              if (isSelected)
-                Positioned(
-                  right: -30,
-                  top: -30,
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: const Color(0xFFFFD700).withOpacity(0.08),
-                    ),
-                  ),
-                ),
-              
-              // Top Right Label (Popular / Best Value Badge)
+              // Top Right Label (BEST VALUE / POPULAR Badge)
               if (isYearly || index == 0)
                 Positioned(
                   top: 0,
                   right: 0,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFFFFD700) : const Color(0xFF2E2A5D),
-                      borderRadius: const BorderRadius.only(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFF8C00),
+                      borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(12),
                       ),
                     ),
                     child: Text(
                       isYearly ? 'BEST VALUE' : 'POPULAR',
-                      style: TextStyle(
-                        color: isSelected ? const Color(0xFF0F0C24) : Colors.white,
-                        fontSize: 9,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
                         fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
@@ -283,56 +273,73 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     // Plan Name and Icon
                     Row(
                       children: [
-                        Icon(
-                          Icons.workspace_premium,
-                          color: isSelected ? const Color(0xFFFFD700) : Colors.white70,
-                          size: AppSizer.deviceSp20,
+                        Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF0033CC),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.star,
+                            color: const Color(0xFFFFD700),
+                            size: AppSizer.deviceSp15,
+                          ),
                         ),
-                        SizedBox(width: AppSizer.deviceWidth2),
-                        Text(
-                          plan.planType,
-                          style: TextStyle(
-                            fontSize: AppSizer.deviceSp18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        SizedBox(width: AppSizer.deviceWidth2_5),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                plan.planType,
+                                style: TextStyle(
+                                  fontSize: AppSizer.deviceSp15,
+                                  fontWeight: FontWeight.w900,
+                                  color: const Color(0xFF0B1033),
+                                ),
+                              ),
+                              SizedBox(height: AppSizer.deviceHeight0_5),
+                              Text(
+                                'Validity: ${plan.duration}',
+                                style: TextStyle(
+                                  color: const Color(0xFF0033CC),
+                                  fontSize: AppSizer.deviceSp11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                     
-                    SizedBox(height: AppSizer.deviceHeight1_5),
-                    
-                    // Duration & Description
-                    Text(
-                      'Validity: ${plan.duration}',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: AppSizer.deviceSp13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    
                     const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Divider(color: Colors.white10),
+                      padding: EdgeInsets.symmetric(vertical: 10.0),
+                      child: Divider(color: Color(0xFFE5E7EB)),
                     ),
                     
                     // Benefits list
                     ...plan.planBenefits.take(3).map((benefit) => Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 3.0),
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.check_circle,
-                            color: Color(0xFF00FFCC),
-                            size: 14,
+                          Container(
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF0033CC),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 12,
+                            ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               benefit,
                               style: TextStyle(
-                                color: Colors.white.withOpacity(0.85),
+                                color: Colors.grey.shade800,
                                 fontSize: AppSizer.deviceSp12,
                               ),
                             ),
@@ -343,23 +350,26 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                     
                     if (plan.planBenefits.length > 3)
                       Padding(
-                        padding: const EdgeInsets.only(top: 4.0, left: 22),
+                        padding: const EdgeInsets.only(top: 6.0, left: 22),
                         child: Text(
                           '+ ${plan.planBenefits.length - 3} more benefits',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.5),
+                            color: const Color(0xFF0033CC),
                             fontSize: AppSizer.deviceSp11,
-                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                       
-                    const SizedBox(height: 12),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10.0),
+                      child: Divider(color: Color(0xFFE5E7EB)),
+                    ),
 
                     // Price & Select Button Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -367,17 +377,18 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                             Text(
                               '₹${plan.price.toInt()}',
                               style: TextStyle(
-                                fontSize: AppSizer.deviceSp24,
+                                fontSize: AppSizer.deviceSp20,
                                 fontWeight: FontWeight.w900,
-                                color: const Color(0xFFFFD700),
+                                color: const Color(0xFF0033CC),
                               ),
                             ),
                             if (isYearly)
                               Text(
-                                '₹${(plan.price / 12).toInt()}/month',
+                                '₹${(plan.price / 12).toInt()} / month',
                                 style: TextStyle(
-                                  color: Colors.white54,
+                                  color: Colors.grey.shade600,
                                   fontSize: AppSizer.deviceSp11,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                           ],
@@ -385,22 +396,31 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                         
                         // Select indicator
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: isSelected ? const Color(0xFFFFD700) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(30),
+                            color: isSelected ? const Color(0xFFEFF6FF) : Colors.transparent,
+                            borderRadius: BorderRadius.circular(24),
                             border: Border.all(
-                              color: isSelected ? const Color(0xFFFFD700) : Colors.white24,
+                              color: isSelected ? const Color(0xFF0033CC) : Colors.grey.shade300,
                               width: 1.5,
                             ),
                           ),
-                          child: Text(
-                            isSelected ? 'SELECTED' : 'SELECT',
-                            style: TextStyle(
-                              color: isSelected ? const Color(0xFF0F0C24) : Colors.white70,
-                              fontSize: AppSizer.deviceSp12,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                isSelected ? 'SELECTED' : 'SELECT',
+                                style: TextStyle(
+                                  color: isSelected ? const Color(0xFF0033CC) : Colors.grey.shade600,
+                                  fontSize: AppSizer.deviceSp11,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              if (isSelected) ...[
+                                const SizedBox(width: 4),
+                                const Icon(Icons.check_circle, color: Color(0xFF0033CC), size: 14),
+                              ]
+                            ],
                           ),
                         ),
                       ],
@@ -423,31 +443,50 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       ),
       child: Column(
         children: [
-          Text(
-            'All Plan Inclusions',
-            style: TextStyle(
-              fontSize: AppSizer.deviceSp18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(width: 30, height: 2, color: const Color(0xFFF59E0B)),
+                const SizedBox(width: 8),
+                const Icon(Icons.circle, size: 6, color: Color(0xFF0033CC)),
+                const SizedBox(width: 8),
+                Text(
+                  'All Plan Inclusions',
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp16,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFF0B1033),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(Icons.circle, size: 6, color: Color(0xFF0033CC)),
+                const SizedBox(width: 8),
+                Container(width: 30, height: 2, color: const Color(0xFFF59E0B)),
+              ],
             ),
           ),
           
           SizedBox(height: AppSizer.deviceHeight2),
           
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            childAspectRatio: 3,
-            crossAxisSpacing: AppSizer.deviceWidth3,
-            mainAxisSpacing: AppSizer.deviceHeight1_5,
+          Row(
             children: [
-              _buildFeatureItem('All Premium Courses', Icons.school),
-              _buildFeatureItem('Verified PDF eBooks', Icons.menu_book),
-              _buildFeatureItem('Ad-Free Learning', Icons.verified_user),
-              _buildFeatureItem('Job Referrals', Icons.work),
-              _buildFeatureItem('Offline Download', Icons.cloud_download),
-              _buildFeatureItem('1-on-1 Support', Icons.support_agent),
+              Expanded(
+                child: _buildFeatureCard(
+                  'All Premium Courses',
+                  'Unlimited access to all premium courses',
+                  Icons.school,
+                ),
+              ),
+              SizedBox(width: AppSizer.deviceWidth3),
+              Expanded(
+                child: _buildFeatureCard(
+                  'Verified PDF eBooks',
+                  'Download unlimited verified PDFs',
+                  Icons.menu_book,
+                ),
+              ),
             ],
           ),
         ],
@@ -455,37 +494,58 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
     );
   }
 
-  Widget _buildFeatureItem(String text, IconData icon) {
+  Widget _buildFeatureCard(String title, String subtitle, IconData icon) {
     return Container(
-      padding: EdgeInsets.all(AppSizer.deviceWidth2),
+      padding: EdgeInsets.all(AppSizer.deviceWidth3),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(6),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFD700).withOpacity(0.1),
-              shape: BoxShape.circle,
+              color: const Color(0xFF0033CC),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               icon,
-              color: const Color(0xFFFFD700),
-              size: AppSizer.deviceSp14,
+              color: Colors.white,
+              size: AppSizer.deviceSp20,
             ),
           ),
           SizedBox(width: AppSizer.deviceWidth2),
           Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
-                fontSize: AppSizer.deviceSp12,
-                fontWeight: FontWeight.w500,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: const Color(0xFF0B1033),
+                    fontSize: AppSizer.deviceSp13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: AppSizer.deviceHeight0_5),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: AppSizer.deviceSp10,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -495,18 +555,21 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
 
   Widget _buildFixedSubscribeButton(BuildContext context, SubscriptionViewModel viewModel) {
     return Container(
-      padding: EdgeInsets.all(AppSizer.deviceWidth4),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSizer.deviceWidth4,
+        vertical: AppSizer.deviceHeight1,
+      ),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F0C24),
+        color: Colors.white,
         border: Border(
           top: BorderSide(
-            color: Colors.white.withOpacity(0.08),
+            color: Colors.grey.shade200,
             width: 1,
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 15,
             offset: const Offset(0, -4),
           ),
@@ -514,41 +577,77 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _selectedPlan != null 
-                ? () {
-                    _navigateToSubscriptionCheckout(context, _selectedPlan!);
-                  }
-                : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _selectedPlan != null 
-                  ? const Color(0xFFFFD700) 
-                  : Colors.grey.shade800,
-              foregroundColor: const Color(0xFF0F0C24),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _selectedPlan != null 
+                    ? () {
+                        _navigateToSubscriptionCheckout(context, _selectedPlan!);
+                      }
+                    : null,
+                icon: Icon(
+                  Icons.workspace_premium, 
+                  color: _selectedPlan != null ? const Color(0xFFFF8C00) : Colors.grey,
+                  size: AppSizer.deviceSp16,
+                ),
+                label: Text(
+                  _selectedPlan != null 
+                      ? 'SUBSCRIBE NOW - ₹${_selectedPlan!.price.toInt()}' 
+                      : 'SELECT A PASS',
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _selectedPlan != null 
+                      ? const Color(0xFF0033CC) 
+                      : Colors.grey.shade300,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppSizer.deviceHeight1,
+                  ),
+                  elevation: 0,
+                ),
               ),
-              padding: EdgeInsets.symmetric(
-                vertical: AppSizer.deviceHeight2,
-              ),
-              elevation: 4,
-              shadowColor: const Color(0xFFFFD700).withOpacity(0.4),
             ),
-            child: Text(
-              _selectedPlan != null 
-                  ? 'SUBSCRIBE NOW - ₹${_selectedPlan!.price.toInt()}' 
-                  : 'SELECT A PASS',
-              style: TextStyle(
-                fontSize: AppSizer.deviceSp16,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.5,
-              ),
+            SizedBox(height: AppSizer.deviceHeight1),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildTrustIndicator(Icons.verified_user_outlined, 'Secure Payment'),
+                _buildTrustIndicator(Icons.refresh, 'Cancel Anytime'),
+                _buildTrustIndicator(Icons.headset_mic_outlined, '24/7 Support'),
+              ],
             ),
-          ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTrustIndicator(IconData icon, String text) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14, color: const Color(0xFF0033CC)),
+        const SizedBox(width: 4),
+        Text(
+          text,
+          style: TextStyle(
+            color: Colors.grey.shade700,
+            fontSize: AppSizer.deviceSp11,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 

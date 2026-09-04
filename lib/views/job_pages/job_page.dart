@@ -155,18 +155,16 @@ class _JobsPageState extends State<JobsPage> {
               Scaffold(
                 backgroundColor: Colors.white,
                 appBar: AppBar(
-                  backgroundColor: AppColors.primaryColor,
+                  backgroundColor: Colors.white,
                   elevation: 0,
-                  title: Text(
-                    'Jobs Portal',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: AppSizer.deviceSp20,
-                    ),
+                  centerTitle: true,
+                  title: Image.asset(
+                    'assets/images/mainLogo.png',
+                    height: AppSizer.deviceHeight10,
+                    fit: BoxFit.contain,
                   ),
                   leading: IconButton(
-                    icon: Icon(Icons.arrow_back, color: Colors.white),
+                    icon: const Icon(Icons.arrow_back, color: Color(0xFF0B1033)),
                     onPressed: () {
                       if (Navigator.canPop(context)) {
                         Navigator.pop(context);
@@ -180,7 +178,8 @@ class _JobsPageState extends State<JobsPage> {
                   ),
                   actions: [
                     IconButton(
-                      icon: Icon(Icons.assignment_ind_outlined, color: Colors.white),
+                      icon: const Icon(Icons.assignment_ind_outlined, color: Color(0xFF0B1033)),
+                      tooltip: 'My Applications',
                       onPressed: () {
                         Navigator.push(
                           context,
@@ -189,10 +188,9 @@ class _JobsPageState extends State<JobsPage> {
                           ),
                         );
                       },
-                      tooltip: 'My Applications',
                     ),
                     IconButton(
-                      icon: Icon(Icons.refresh, color: Colors.white),
+                      icon: const Icon(Icons.refresh, color: Color(0xFF0B1033)),
                       onPressed: () => viewModel.fetchJobs(refresh: true),
                     ),
                   ],
@@ -299,20 +297,22 @@ class _JobsPageState extends State<JobsPage> {
   Widget _buildSearchFilterSection(BuildContext context, JobsViewModel viewModel) {
     return Container(
       padding: EdgeInsets.all(AppSizer.deviceWidth4),
-      color: Colors.white,
+      color: const Color(0xFFF9FAFB), // Very light grey background as per mockup
       child: Column(
         children: [
           // Search Bar
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey[100],
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
             ),
             child: TextField(
               onChanged: (value) => viewModel.setSearchQuery(value),
               decoration: InputDecoration(
                 hintText: 'Search jobs by title, skills, company...',
-                prefixIcon: Icon(Icons.search, color: Colors.grey),
+                hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: AppSizer.deviceSp14),
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.symmetric(
                   horizontal: AppSizer.deviceWidth4,
@@ -320,7 +320,7 @@ class _JobsPageState extends State<JobsPage> {
                 ),
                 suffixIcon: viewModel.searchQuery.isNotEmpty
                     ? IconButton(
-                        icon: Icon(Icons.clear, color: Colors.grey),
+                        icon: const Icon(Icons.clear, color: Colors.grey),
                         onPressed: () => viewModel.setSearchQuery(''),
                       )
                     : null,
@@ -341,18 +341,19 @@ class _JobsPageState extends State<JobsPage> {
                   onChanged: (value) => viewModel.setSelectedExperience(value!),
                 ),
               ),
-              SizedBox(width: AppSizer.deviceWidth2),
+              SizedBox(width: AppSizer.deviceWidth3),
               
               // Filter Button
               Container(
                 decoration: BoxDecoration(
-                  color: viewModel.hasActiveFilters ? AppColors.primaryColor : Colors.grey[300],
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: viewModel.hasActiveFilters ? const Color(0xFF0033CC) : Colors.grey.shade300),
                 ),
                 child: IconButton(
                   icon: Icon(
-                    Icons.filter_alt,
-                    color: viewModel.hasActiveFilters ? Colors.white : Colors.grey,
+                    Icons.filter_alt_outlined,
+                    color: const Color(0xFF0033CC),
                   ),
                   onPressed: () => _showAdvancedFilterDialog(context, viewModel),
                 ),
@@ -378,30 +379,42 @@ class _JobsPageState extends State<JobsPage> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
       ),
-      padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth2),
-      child: DropdownButton<String>(
-        value: value.isEmpty ? null : value,
-        isExpanded: true,
-        underline: SizedBox(),
-        icon: Icon(Icons.arrow_drop_down, color: Colors.grey),
-        hint: Text(
-          hint,
-          style: TextStyle(fontSize: AppSizer.deviceSp14, color: Colors.grey),
-        ),
-        items: items.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(
-              value,
-              style: TextStyle(fontSize: AppSizer.deviceSp12),
-              overflow: TextOverflow.ellipsis,
+      padding: EdgeInsets.symmetric(horizontal: AppSizer.deviceWidth3, vertical: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            hint,
+            style: TextStyle(fontSize: AppSizer.deviceSp10, color: Colors.grey.shade600),
+          ),
+          DropdownButton<String>(
+            value: value.isEmpty ? null : value,
+            isExpanded: true,
+            isDense: true,
+            underline: const SizedBox(),
+            icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF172554)),
+            hint: Text(
+              'Select',
+              style: TextStyle(fontSize: AppSizer.deviceSp14, color: const Color(0xFF0033CC), fontWeight: FontWeight.w600),
             ),
-          );
-        }).toList(),
-        onChanged: (newValue) => onChanged(newValue ?? ''),
+            items: items.map((String val) {
+              return DropdownMenuItem<String>(
+                value: val,
+                child: Text(
+                  val,
+                  style: TextStyle(fontSize: AppSizer.deviceSp14, color: const Color(0xFF0033CC), fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            }).toList(),
+            onChanged: (newValue) => onChanged(newValue ?? ''),
+          ),
+        ],
       ),
     );
   }
@@ -501,27 +514,40 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                     maxWidth: MediaQuery.of(context).size.width * 0.9,
                   ),
                   child: Card(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     child: Padding(
-                      padding: EdgeInsets.all(16),
+                      padding: EdgeInsets.all(AppSizer.deviceWidth4),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Title
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Icon(Icons.filter_list, color: AppColors.primaryColor),
-                              SizedBox(width: AppSizer.deviceWidth2),
-                              Text(
-                                'Advanced Filters',
-                                style: TextStyle(
-                                  fontSize: AppSizer.deviceSp18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              Row(
+                                children: [
+                                  Icon(Icons.filter_list, color: const Color(0xFF172554)),
+                                  SizedBox(width: AppSizer.deviceWidth2),
+                                  Text(
+                                    'Advanced Filters',
+                                    style: TextStyle(
+                                      fontSize: AppSizer.deviceSp16,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF172554),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close, color: Colors.grey),
+                                onPressed: () => Navigator.pop(context),
+                                constraints: const BoxConstraints(),
+                                padding: EdgeInsets.zero,
                               ),
                             ],
                           ),
-                          SizedBox(height: AppSizer.deviceHeight4),
+                          SizedBox(height: AppSizer.deviceHeight3),
                           
                           Expanded(
                             child: SingleChildScrollView(
@@ -532,10 +558,11 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
 
                                   // Location Filter
                                   Text(
-                                    'Location:',
+                                    'Location',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: AppSizer.deviceSp14,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppSizer.deviceSp13,
+                                      color: const Color(0xFF172554),
                                     ),
                                   ),
                                   SizedBox(height: AppSizer.deviceHeight1),
@@ -560,20 +587,30 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                                         focusNode: focusNode,
                                         decoration: InputDecoration(
                                           hintText: viewModel.selectedLocation.isEmpty ? 'Search Location' : viewModel.selectedLocation,
-                                          border: OutlineInputBorder(),
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          hintStyle: TextStyle(color: Colors.grey.shade500),
+                                          prefixIcon: const Icon(Icons.location_on_outlined, color: Colors.grey),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                            borderSide: BorderSide(color: Colors.grey.shade300),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                            borderSide: BorderSide(color: Colors.grey.shade300),
+                                          ),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                                         ),
                                       );
                                     },
                                   ),
-                                  SizedBox(height: AppSizer.deviceHeight2),
+                                  SizedBox(height: AppSizer.deviceHeight2_5),
 
                                   // Skills Filter
                                   Text(
-                                    'Skill:',
+                                    'Skill',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: AppSizer.deviceSp14,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppSizer.deviceSp13,
+                                      color: const Color(0xFF172554),
                                     ),
                                   ),
                                   SizedBox(height: AppSizer.deviceHeight1),
@@ -598,77 +635,90 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                                         focusNode: focusNode,
                                         decoration: InputDecoration(
                                           hintText: 'Search Skills',
-                                          border: OutlineInputBorder(),
-                                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          hintStyle: TextStyle(color: Colors.grey.shade500),
+                                          prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                            borderSide: BorderSide(color: Colors.grey.shade300),
+                                          ),
+                                          enabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                            borderSide: BorderSide(color: Colors.grey.shade300),
+                                          ),
+                                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                                         ),
                                       );
                                     },
                                   ),
-                                  SizedBox(height: AppSizer.deviceHeight1),
-                                  Wrap(
-                                    spacing: 8.0,
-                                    children: viewModel.selectedSkills.map((skill) {
-                                      return Chip(
-                                        label: Text(skill),
-                                        onDeleted: () {
-                                          setState(() {
-                                            viewModel.removeSelectedSkill(skill);
-                                          });
-                                        },
-                                      );
-                                    }).toList(),
-                                  ),
-                                  SizedBox(height: AppSizer.deviceHeight2),
+                                  if (viewModel.selectedSkills.isNotEmpty) ...[
+                                    SizedBox(height: AppSizer.deviceHeight1),
+                                    Wrap(
+                                      spacing: 8.0,
+                                      children: viewModel.selectedSkills.map((skill) {
+                                        return Chip(
+                                          label: Text(skill),
+                                          onDeleted: () {
+                                            setState(() {
+                                              viewModel.removeSelectedSkill(skill);
+                                            });
+                                          },
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+                                  SizedBox(height: AppSizer.deviceHeight2_5),
 
                                   // Work Type Filter
                                   Text(
-                                    'Filter by Work Type:',
+                                    'Filter by Work Type',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: AppSizer.deviceSp14,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppSizer.deviceSp13,
+                                      color: const Color(0xFF172554),
                                     ),
                                   ),
                                   SizedBox(height: AppSizer.deviceHeight1),
-                                  Wrap(
-                                    spacing: 8.0,
-                                    children: allWorkTypes.map((type) {
-                                      final isSelected = viewModel.selectedWorkType == type;
-                                      return ChoiceChip(
-                                        label: Text(type),
-                                        selected: isSelected,
-                                        onSelected: (selected) {
-                                          setState(() {
-                                            viewModel.setSelectedWorkType(selected ? type : '');
-                                          });
-                                        },
-                                      );
-                                    }).toList(),
+                                  Row(
+                                    children: [
+                                      _buildCustomFilterButton('Work From Office', Icons.business, viewModel.selectedWorkType == 'Work From Office', () {
+                                        setState(() { viewModel.setSelectedWorkType('Work From Office'); });
+                                      }),
+                                      SizedBox(width: AppSizer.deviceWidth2),
+                                      _buildCustomFilterButton('Work From Home', Icons.home_outlined, viewModel.selectedWorkType == 'Work From Home', () {
+                                        setState(() { viewModel.setSelectedWorkType('Work From Home'); });
+                                      }),
+                                      SizedBox(width: AppSizer.deviceWidth2),
+                                      _buildCustomFilterButton('Hybrid', Icons.share, viewModel.selectedWorkType == 'Hybrid', () {
+                                        setState(() { viewModel.setSelectedWorkType('Hybrid'); });
+                                      }),
+                                    ],
                                   ),
-                                  SizedBox(height: AppSizer.deviceHeight2),
+                                  SizedBox(height: AppSizer.deviceHeight2_5),
 
                                   // Price Type Filter
                                   Text(
-                                    'Filter by Price Type:',
+                                    'Filter by Price Type',
                                     style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: AppSizer.deviceSp14,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: AppSizer.deviceSp13,
+                                      color: const Color(0xFF172554),
                                     ),
                                   ),
                                   SizedBox(height: AppSizer.deviceHeight1),
-                                  Wrap(
-                                    spacing: 8.0,
-                                    children: allPriceTypes.map((type) {
-                                      final isSelected = viewModel.selectedPriceType == type;
-                                      return ChoiceChip(
-                                        label: Text(type),
-                                        selected: isSelected,
-                                        onSelected: (selected) {
-                                          setState(() {
-                                            viewModel.setSelectedPriceType(selected ? type : '');
-                                          });
-                                        },
-                                      );
-                                    }).toList(),
+                                  Row(
+                                    children: [
+                                      _buildCustomFilterButton('All', Icons.apps, viewModel.selectedPriceType == 'All', () {
+                                        setState(() { viewModel.setSelectedPriceType('All'); });
+                                      }),
+                                      SizedBox(width: AppSizer.deviceWidth2),
+                                      _buildCustomFilterButton('Free', Icons.local_offer_outlined, viewModel.selectedPriceType == 'free', () {
+                                        setState(() { viewModel.setSelectedPriceType('free'); });
+                                      }),
+                                      SizedBox(width: AppSizer.deviceWidth2),
+                                      _buildCustomFilterButton('Paid', Icons.credit_card, viewModel.selectedPriceType == 'paid', () {
+                                        setState(() { viewModel.setSelectedPriceType('paid'); });
+                                      }),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -676,28 +726,48 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                           ),
                           
                           // Buttons
-                          SizedBox(height: AppSizer.deviceHeight4),
+                          SizedBox(height: AppSizer.deviceHeight3),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              TextButton(
+                              OutlinedButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: Text('Cancel'),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: Colors.grey.shade300),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                ),
+                                child: Text('Cancel', style: TextStyle(color: const Color(0xFF172554), fontWeight: FontWeight.bold)),
                               ),
-                              SizedBox(width: AppSizer.deviceWidth2),
-                              TextButton(
-                                onPressed: () {
-                                  viewModel.clearAllFilters();
-                                  Navigator.pop(context);
-                                },
-                                child: Text('Reset'),
-                              ),
-                              SizedBox(width: AppSizer.deviceWidth2),
-                              FilledButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: Text('Apply Filters'),
+                              Row(
+                                children: [
+                                  OutlinedButton(
+                                    onPressed: () {
+                                      viewModel.clearAllFilters();
+                                      Navigator.pop(context);
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(color: Color(0xFF0033CC)),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    ),
+                                    child: Text('Reset', style: TextStyle(color: const Color(0xFF0033CC), fontWeight: FontWeight.bold)),
+                                  ),
+                                  SizedBox(width: AppSizer.deviceWidth2),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF0033CC),
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      elevation: 0,
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                    ),
+                                    child: const Text('Apply Filters', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -714,301 +784,228 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
     ),
   );
 }
+
+  Widget _buildCustomFilterButton(String label, IconData icon, bool isSelected, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF0033CC) : Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: isSelected ? const Color(0xFF0033CC) : Colors.grey.shade300),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: isSelected ? Colors.white : const Color(0xFF64748B), size: 18),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppSizer.deviceSp10,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected ? Colors.white : const Color(0xFF172554),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
  
 
  Widget _buildJobCard(JobDetail job, BuildContext context, JobsViewModel viewModel) {
   final canApply = viewModel.canApplyForJob(job.id);
   
   return Card(
-    margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2),
-    elevation: 4,
+    margin: EdgeInsets.only(bottom: AppSizer.deviceHeight2_5),
+    elevation: 2,
+    shadowColor: Colors.black.withOpacity(0.05),
+    color: Colors.white,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
+      side: BorderSide(color: Colors.grey.shade200),
     ),
     child: InkWell(
       onTap: () => _navigateToJobDetails(context, job),
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: EdgeInsets.all(AppSizer.deviceWidth4),
+        padding: EdgeInsets.all(AppSizer.deviceWidth5),
         child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Section with Title and Premium Badge
-          Stack(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Section with Title and Category Badge
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    job.jobTitle,
+                    style: TextStyle(
+                      fontSize: AppSizer.deviceSp18,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0033CC),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                SizedBox(width: AppSizer.deviceWidth2),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    job.jobCategory,
+                    style: TextStyle(
+                      fontSize: AppSizer.deviceSp12,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF0033CC),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            
+            SizedBox(height: AppSizer.deviceHeight2),
+            
+            // Key Details Rows
+            Wrap(
+              spacing: AppSizer.deviceWidth4,
+              runSpacing: AppSizer.deviceHeight1,
+              children: [
+                _buildMockupDetailItem(Icons.location_on, job.location),
+                _buildMockupDetailItem(Icons.business_center, job.workType),
+                _buildMockupDetailItem(Icons.trending_up, job.requiredExperience),
+                _buildMockupDetailItem(Icons.currency_rupee, job.salaryPackage),
+                _buildMockupDetailItem(Icons.people, '${job.numberOfOpenings} Openings'),
+                _buildMockupDetailItem(Icons.calendar_today, 'Posted: ${job.createdAt.split('T')[0]}'),
+              ],
+            ),
+            
+            SizedBox(height: AppSizer.deviceHeight2_5),
+            
+            // Skills Section
+            Text(
+              'Required Skills:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: AppSizer.deviceSp14,
+                color: const Color(0xFF172554),
+              ),
+            ),
+            SizedBox(height: AppSizer.deviceHeight1_5),
+            Wrap(
+              spacing: AppSizer.deviceWidth2,
+              runSpacing: AppSizer.deviceHeight1,
+              children: job.requiredSkills.map((skill) => Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF6FF),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  skill,
+                  style: TextStyle(
+                    fontSize: AppSizer.deviceSp12,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0033CC),
+                  ),
+                ),
+              )).toList(),
+            ),
+            
+            SizedBox(height: AppSizer.deviceHeight3),
+            
+            // Company Details Section
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(AppSizer.deviceWidth4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
                 children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0033CC),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.business, color: Colors.white, size: 20),
+                  ),
+                  SizedBox(width: AppSizer.deviceWidth3),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          job.jobTitle,
+                          'Company Details',
                           style: TextStyle(
-                            fontSize: AppSizer.deviceSp18,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primaryColor,
-                          ) ,
-                          maxLines: 2,
+                            fontSize: AppSizer.deviceSp14,
+                            color: const Color(0xFF172554),
+                          ),
+                        ),
+                        SizedBox(height: AppSizer.deviceHeight0_5),
+                        Text(
+                          'Company: ${job.locked ? _hideMiddleCharacters(job.companyName) : job.companyName}',
+                          style: TextStyle(
+                            fontSize: AppSizer.deviceSp12,
+                            color: Colors.grey.shade600,
+                          ),
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppSizer.deviceWidth3,
-                      vertical: AppSizer.deviceHeight1,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      job.jobCategory,
-                      style: TextStyle(
-                        fontSize: AppSizer.deviceSp14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primaryColor,
-                      ),
-                    ),
-                  ),
                 ],
               ),
-              // Premium Lock Badge
-              if (!canApply)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    padding: EdgeInsets.all(AppSizer.deviceWidth1),
-                    decoration: BoxDecoration(
-                      color: AppColors.logoOrange,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.lock, size: AppSizer.deviceSp12, color: Colors.white),
-                        SizedBox(width: AppSizer.deviceWidth1),
-                        Text(
-                          'Premium',
-                          style: TextStyle(
-                            fontSize: AppSizer.deviceSp10,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          
-          SizedBox(height: AppSizer.deviceHeight1),
-          
-          // Key Details Row
-          Row(
-            children: [
-              _buildDetailItem(Icons.location_on, job.location),
-              SizedBox(width: AppSizer.deviceWidth3),
-              _buildDetailItem(Icons.work_outline, job.workType),
-              SizedBox(width: AppSizer.deviceWidth3),
-              _buildDetailItem(Icons.timeline, job.requiredExperience),
-            ],
-          ),
-          
-          SizedBox(height: AppSizer.deviceHeight1),
-          
-          // Salary and Openings Row
-          Row(
-            children: [
-              _buildDetailItem(Icons.currency_rupee, job.salaryPackage),
-              SizedBox(width: AppSizer.deviceWidth3),
-              _buildDetailItem(Icons.people, '${job.numberOfOpenings} Openings'),
-              SizedBox(width: AppSizer.deviceWidth3),
-              _buildDetailItem(Icons.calendar_today, 'Posted: ${job.createdAt.split('T')[0]}'),
-            ],
-          ),
-          
-          SizedBox(height: AppSizer.deviceHeight1),
-          
-          // Skills Section
-          Text(
-            'Required Skills:',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: AppSizer.deviceSp16,
-              color: Colors.grey[700],
             ),
-          ),
-          SizedBox(height: AppSizer.deviceHeight1),
-          Wrap(
-            spacing: AppSizer.deviceWidth2,
-            runSpacing: AppSizer.deviceHeight1,
-            children: job.requiredSkills.map((skill) => Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppSizer.deviceWidth3,
-                vertical: AppSizer.deviceHeight1,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                skill,
-                style: TextStyle(
-                  fontSize: AppSizer.deviceSp14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.primaryColor,
-                ),
-              ),
-            )).toList(),
-          ),
-          
-          SizedBox(height: AppSizer.deviceHeight1),
-          
-          // Company Details Section (NEW)
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(AppSizer.deviceWidth4),
-            decoration: BoxDecoration(
-              color: Colors.grey[50],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            
+            SizedBox(height: AppSizer.deviceHeight3),
+            
+            // Action Buttons
+            Row(
               children: [
-                Text(
-                  'Company Details:',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: AppSizer.deviceSp14,
-                    color: Colors.grey[700],
-                  ),
-                ),
-                SizedBox(height: AppSizer.deviceHeight2),
-                
-                 // Company Name
-                _buildHiddenDetailItem(
-                  Icons.business,
-                  'Company: ${job.locked ? _hideMiddleCharacters(job.companyName) : job.companyName}',
-                ),
-                SizedBox(height: AppSizer.deviceHeight1),
-                
-                // Company Email
-                if (job.contactEmail != null) ...[
-                  _buildHiddenDetailItem(
-                    Icons.email,
-                    'Email: ${job.locked ? _hideMiddleCharacters(job.contactEmail!) : job.contactEmail!}',
-                  ),
-                  SizedBox(height: AppSizer.deviceHeight1),
-                ],
-                
-                // Company Mobile
-                if (job.companyMobile != null) ...[
-                  _buildHiddenDetailItem(
-                    Icons.phone,
-                    'Mobile: ${job.locked ? _hideMiddleCharacters(job.companyMobile!) : job.companyMobile!}',
-                  ),
-                  SizedBox(height: AppSizer.deviceHeight1),
-                ],
-                
-                // Company Website
-                if (job.companyWebsite != null) ...[
-                  _buildHiddenDetailItem(
-                    Icons.language,
-                    'Website: ${job.locked ? _hideMiddleCharacters(job.companyWebsite!.replaceAll('https://', '').replaceAll('http://', '')) : job.companyWebsite!}',
-                  ),
-                ],
-              ],
-            ),
-          ),
-          
-          SizedBox(height: AppSizer.deviceHeight1),
-          
-           Row(
-            children: [
-               Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    _toggleSaveJob(job);
-                  },
-                  icon: Icon(_savedJobIds.contains(job.id) ? Icons.bookmark : Icons.bookmark_border, size: AppSizer.deviceSp16),
-                  label: Text(
-                    _savedJobIds.contains(job.id) ? 'Saved' : 'Save',
-                    style: TextStyle(fontSize: AppSizer.deviceSp16),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: AppSizer.deviceWidth1),
-              // Show button based on priceType and CompanyIsHide
-              if (job.priceType == 'free')
                 Expanded(
-                  child: FilledButton.icon(
+                  child: OutlinedButton.icon(
                     onPressed: () {
-                      final profileViewModel = context.read<ProfileViewModel>();
-                      viewModel.handleJobUnlock(
-                        job, 
-                        profileViewModel,
-                        onSuccess: (msg) {
-                          _showSnackBar(msg, AppColors.logoGreen);
-                          _navigateToJobDetails(context, job);
-                        },
-                        onError: (msg) => _showSnackBar(msg, Colors.red),
-                        onPaymentRequired: (orderResponse) => _startPayment(orderResponse),
-                      );
+                      _toggleSaveJob(job);
                     },
                     icon: Icon(
-                      viewModel.purchasingJobId == job.id ? Icons.hourglass_empty : Icons.check_circle_outline,
-                      size: AppSizer.deviceSp16,
+                      _savedJobIds.contains(job.id) ? Icons.bookmark : Icons.bookmark_border, 
+                      size: 18,
+                      color: const Color(0xFF0033CC),
                     ),
                     label: Text(
-                      viewModel.purchasingJobId == job.id ? 'Processing...' : 'Free Enroll',
-                      style: TextStyle(fontSize: AppSizer.deviceSp16),
+                      _savedJobIds.contains(job.id) ? 'Saved' : 'Save',
+                      style: TextStyle(fontSize: AppSizer.deviceSp14, color: const Color(0xFF0033CC), fontWeight: FontWeight.bold),
                     ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.logoGreen,
-                      padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
+                      side: const BorderSide(color: Color(0xFF0033CC)),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),
-                )
-
-              else if (!job.locked)
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () => _navigateToJobDetails(context, job),
-                    icon: Icon(Icons.visibility, size: AppSizer.deviceSp16),
-                    label: Text(
-                      'View Details',
-                      style: TextStyle(fontSize: AppSizer.deviceSp16),
-                    ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                )
-              else if (job.companyIsHide || job.priceType == 'paid')
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      _showUnlockDialog(context, job.jobTitle, job, () {
+                ),
+                SizedBox(width: AppSizer.deviceWidth3),
+                
+                // Show button based on priceType and CompanyIsHide
+                if (job.priceType == 'free')
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
                         final profileViewModel = context.read<ProfileViewModel>();
                         viewModel.handleJobUnlock(
                           job, 
@@ -1020,31 +1017,109 @@ void _showAdvancedFilterDialog(BuildContext context, JobsViewModel viewModel) {
                           onError: (msg) => _showSnackBar(msg, Colors.red),
                           onPaymentRequired: (orderResponse) => _startPayment(orderResponse),
                         );
-                      });
-                    },
-                    icon: Icon(
-                      viewModel.purchasingJobId == job.id ? Icons.hourglass_empty : Icons.lock_open,
-                      size: AppSizer.deviceSp16,
+                      },
+                      icon: Icon(
+                        viewModel.purchasingJobId == job.id ? Icons.hourglass_empty : Icons.check_circle_outline,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      label: Text(
+                        viewModel.purchasingJobId == job.id ? 'Processing...' : 'Free Enroll',
+                        style: TextStyle(fontSize: AppSizer.deviceSp14, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.logoGreen,
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                     ),
-                    label: Text(
-                      viewModel.purchasingJobId == job.id ? 'Processing...' : 'Unlock Now',
-                      style: TextStyle(fontSize: AppSizer.deviceSp16),
+                  )
+                else if (!job.locked)
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _navigateToJobDetails(context, job),
+                      icon: const Icon(Icons.visibility, size: 18, color: Colors.white),
+                      label: Text(
+                        'View Details',
+                        style: TextStyle(fontSize: AppSizer.deviceSp14, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0033CC),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                     ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: AppColors.primaryColor,
-                      padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  )
+                else if (job.companyIsHide || job.priceType == 'paid')
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _showUnlockDialog(context, job.jobTitle, job, () {
+                          final profileViewModel = context.read<ProfileViewModel>();
+                          viewModel.handleJobUnlock(
+                            job, 
+                            profileViewModel,
+                            onSuccess: (msg) {
+                              _showSnackBar(msg, AppColors.logoGreen);
+                              _navigateToJobDetails(context, job);
+                            },
+                            onError: (msg) => _showSnackBar(msg, Colors.red),
+                            onPaymentRequired: (orderResponse) => _startPayment(orderResponse),
+                          );
+                        });
+                      },
+                      icon: Icon(
+                        viewModel.purchasingJobId == job.id ? Icons.hourglass_empty : Icons.lock_outline,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      label: Text(
+                        viewModel.purchasingJobId == job.id ? 'Processing...' : 'Unlock Now',
+                        style: TextStyle(fontSize: AppSizer.deviceSp14, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0033CC),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: AppSizer.deviceHeight1_5),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
-                ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     ),
-    ),
+  );
+}
+
+Widget _buildMockupDetailItem(IconData icon, String text) {
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(icon, size: 16, color: Colors.grey.shade600),
+      SizedBox(width: AppSizer.deviceWidth1),
+      Text(
+        text,
+        style: TextStyle(
+          fontSize: AppSizer.deviceSp12,
+          color: const Color(0xFF172554),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ],
   );
 }
 
