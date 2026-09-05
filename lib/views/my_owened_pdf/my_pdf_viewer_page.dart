@@ -88,14 +88,14 @@ class MyPdfViewerPage extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.picture_as_pdf,
-                    size: AppSizer.deviceSp64,
+                    size: 64, // Reduced from AppSizer.deviceSp64
                     color: Colors.grey,
                   ),
                   SizedBox(height: AppSizer.deviceHeight2),
                   Text(
                     'PDF Viewer',
                     style: TextStyle(
-                      fontSize: AppSizer.deviceSp18,
+                      fontSize: 16, // Reduced from AppSizer.deviceSp18
                       fontWeight: FontWeight.bold,
                       color: Colors.grey,
                     ),

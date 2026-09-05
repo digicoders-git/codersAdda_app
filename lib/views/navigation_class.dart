@@ -8,6 +8,7 @@ import 'package:coders_adda_app/views/downloaded_pdfs/downloaded_pdfs_page.dart'
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:coders_adda_app/veiw_model/profile_viewmodel.dart';
+import 'package:coders_adda_app/services/network_service.dart';
 
 class MainNavigation extends StatefulWidget {
   @override
@@ -129,12 +130,16 @@ class _MainNavigationState extends State<MainNavigation> {
           child: InkWell(
             onTap: () {
               if (index == 2) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ShortsFullscreenPage(),
-                  ),
-                );
+                if (NetworkService().isOffline) {
+                  NetworkService().showOfflineModal();
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ShortsFullscreenPage(),
+                    ),
+                  );
+                }
               } else {
                 setState(() {
                   _currentIndex = index;

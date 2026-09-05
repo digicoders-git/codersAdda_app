@@ -14,6 +14,7 @@ import 'package:coders_adda_app/services/api_client.dart';
 import 'package:coders_adda_app/services/api_urls.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:coders_adda_app/services/network_service.dart';
 
 class LectureVideoPlayerPage extends StatefulWidget {
   final CourseLecture lecture;
@@ -68,6 +69,11 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
               duration: Duration(seconds: 4),
             ),
           );
+        }
+      } else {
+        if (mounted && _error != null) {
+          setState(() { _isLoading = true; _error = null; });
+          _initPlayer();
         }
       }
     });
@@ -131,12 +137,7 @@ class _LectureVideoPlayerPageState extends State<LectureVideoPlayerPage> {
     if (connectivityResult.contains(ConnectivityResult.none)) {
       if (mounted) {
         setState(() { _error = 'No internet connection. Cannot load video.'; _isLoading = false; });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No internet connection. Cannot load video.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        NetworkService().showOfflineModal();
       }
       return;
     }

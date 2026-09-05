@@ -233,18 +233,21 @@ class _JobsPageState extends State<JobsPage> {
                                         if (viewModel.filteredJobs.isEmpty && !viewModel.isLoading)
                                           Container(
                                             padding: EdgeInsets.all(AppSizer.deviceWidth8),
+                                            alignment: Alignment.center,
                                             child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Icon(
                                                   Icons.search_off,
-                                                  size: AppSizer.deviceSp48,
+                                                  size: 64, // Reduced from AppSizer.deviceSp48
                                                   color: Colors.grey,
                                                 ),
                                                 SizedBox(height: AppSizer.deviceHeight2),
                                                 Text(
                                                   'No jobs found',
                                                   style: TextStyle(
-                                                    fontSize: AppSizer.deviceSp16,
+                                                    fontSize: 16, // Fixed font size
                                                     color: Colors.grey,
                                                   ),
                                                 ),

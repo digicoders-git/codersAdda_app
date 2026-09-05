@@ -180,19 +180,21 @@ class _CoursePageState extends State<AllCoursePage>
         physics: const AlwaysScrollableScrollPhysics(),
         child: Container(
           height: MediaQuery.of(context).size.height * 0.5,
+          alignment: Alignment.center,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 Icons.search_off,
-                size: AppSizer.deviceSp64,
+                size: 64, // Reduced from AppSizer.deviceSp64
                 color: Colors.grey,
               ),
               SizedBox(height: AppSizer.deviceHeight2),
               Text(
                 'No Courses Found',
                 style: TextStyle(
-                  fontSize: AppSizer.deviceSp19,
+                  fontSize: 18, // Reduced from AppSizer.deviceSp19
                   color: Colors.grey,
                 ),
               ),
